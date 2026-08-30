@@ -3,7 +3,7 @@ psycopg[binary]==3.3.4
 dj-database-url==3.1.2
 python-dotenv==1.2.3
 whitenoise==6.12.0
-Pillow==12.3.0
+Pillow==10.4.0
 gunicorn==23.0.0
 platerec==0.0.3
 onnxruntime==1.29.0
