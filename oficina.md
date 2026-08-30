@@ -34,7 +34,7 @@ aqui **sem pedir** quando entregar código ou decisão permanente.
 | **Regra de ouro** | Em segundos: onde está o carro, quem mexeu, há quanto tempo, o que falta |
 | **UX** | Poucos cliques · desktop + mobile · marca vermelho/azul-escuro · nav superior |
 | **Fora de escopo agora** | Financeiro, estoque, CRM, WhatsApp, agendamento, fiscal |
-| **Testes** | `pytest` · ~172 testes (30/08/2026) |
+| **Testes** | `pytest` · suíte verde (30/08/2026) |
 | **Fases 1–13** | Concluídas (núcleo operacional) |
 
 ---
@@ -263,12 +263,15 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 ### Versão / estado · 30/08/2026
 
 - **Fases 1–13:** concluídas (núcleo operacional utilizável)
-- **Testes:** suíte verde (~172)
+- **Testes:** suíte verde
 - **Dev:** `http://127.0.0.1:8010/` · Postgres local
-- **GitHub:** https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO · branch `main` @ `4342599`
-- **Render:** Blueprint pronto — aplicar em https://dashboard.render.com/blueprint/new?repo=https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO (cria `dr-centro-automotivo` + `dr-centro-db`; **não** mexe SistVale/Agro)
-- **Custo estimado:** web Starter ~US$ 7 + Postgres Basic-256mb ~US$ 6 ≈ **US$ 13/mês** (no lugar do Food/Finanças)
+- **Revisão 30/08:** bugs alta→baixa corrigidos (P-004…P-012)
+- **GitHub:** https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO · branch `main`
+- **Render:** ✅ **Live** · https://dr-centro-automotivo.onrender.com/ · `/healthz` ok (30/08 noite)
+- **Custo estimado:** web Starter ~US$ 7 + Postgres Basic-256mb ~US$ 6 ≈ **US$ 13/mês**
+- **Login demo:** só no **PC local** após `seed_demo` — user `admin` / senha `oficina123` (seed **bloqueado** em produção DEBUG=False)
 - **Atenção fotos:** P-002 — media no disco Render some no restart; OK pra smoke; produção com fotos → S3/R2
+- **Produção:** ainda **sem** superuser até criar no Shell Render (`createsuperuser`)
 
 ### WIP / recentes
 
