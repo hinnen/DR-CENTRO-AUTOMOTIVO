@@ -274,7 +274,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | Data | O quê | Notas |
 | ---- | ----- | ----- |
-| 30/08 | Prep online: liberou Food/Finanças no Render; Agro intacto | Código Food/Finanças no GitHub; slot p/ DR CENTRO |
+| 30/08 | Fix deploy Render: healthz isento de SSL redirect · migrate no preDeploy · Python 3.13.4 | Blueprint sync / Manual Deploy |
 | 30/08 | `render.yaml` + `runtime.txt` + `/healthz` | Blueprint Oregon · não misturar SistVale |
 | 30/08 | Docs `oficina.md` + `oficina-roteiro.md` + rule Cursor | Espelho do padrão banana do Agro |
 | 30/08 | Dashboard: removeu “Painel operacional” + Nova entrada duplicada; Recolher cards nos filtros | menos desperdício de tela |

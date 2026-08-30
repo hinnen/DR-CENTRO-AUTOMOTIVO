@@ -173,6 +173,8 @@ SECURE_REFERRER_POLICY = "same-origin"
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    # Health check interno do Render usa HTTP sem X-Forwarded-Proto — sem isenção o deploy falha.
+    SECURE_REDIRECT_EXEMPT = [r"^healthz/?$"]
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))

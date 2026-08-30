@@ -14,12 +14,13 @@ services:
     plan: starter
     region: oregon
     branch: main
-    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 180
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
-        value: "3.13.2"
+        value: "3.13.4"
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
@@ -35,7 +36,7 @@ services:
       - key: WORKSHOP_NAME
         value: "DR Centro Automotivo"
       - key: USE_MANIFEST_STATIC
-        value: "True"
+        value: "False"
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: USE_X_FORWARDED_PROTO

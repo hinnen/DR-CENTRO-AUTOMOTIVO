@@ -7,6 +7,7 @@ from apps.core.views import healthz
 
 urlpatterns = [
     path("healthz", healthz, name="healthz"),
+    path("healthz/", healthz),
     path("admin/", admin.site.urls),
     path("conta/", include("apps.accounts.urls")),
     path("clientes/", include("apps.customers.urls")),
