@@ -1,0 +1,106 @@
+{% comment %}
+Lista de serviços da OS. É recarregada inteira pelo HTMX após cada ação:
+são poucas linhas e trocar o bloco todo evita que a tela fique divergente
+do banco quando duas pessoas mexem na mesma OS.
+{% endcomment %}
+<div id="tasks-panel">
+  {% if progress.total %}
+    <div class="progress">
+      <div class="progress__bar">
+        <span class="progress__fill{% if progress.all_done %} progress__fill--done{% endif %}"
+              style="width: {{ progress.percent }}%"></span>
+      </div>
+      <p class="progress__label">
+        {{ progress.done }} de {{ progress.total }} serviço{{ progress.total|pluralize }} concluído{{ progress.total|pluralize }}
+      </p>
+    </div>
+  {% endif %}
+
+  {% if tasks %}
+    <ul class="task-list">
+      {% for task in tasks %}
+        <li class="task task--{{ task.status_slug }}">
+          <div class="task__main">
+            <p class="task__title">
+              <span class="task__mark" aria-hidden="true">{% if task.is_done %}✓{% elif task.status == 'CANCELADO' %}✕{% elif task.status == 'EM_EXECUCAO' %}▶{% else %}○{% endif %}</span>
+              {{ task.title }}
+            </p>
+
+            {% if task.requested_description %}
+              <p class="task__note">{{ task.requested_description }}</p>
+            {% endif %}
+            {% if task.performed_service %}
+              <p class="task__note task__note--done">Realizado: {{ task.performed_service }}</p>
+            {% endif %}
+
+            <p class="task__meta">
+              <span class="task__status">{{ task.get_status_display }}</span>
+              {% if task.mechanic %}<span>🔧 {{ task.mechanic.short_name }}</span>{% endif %}
+              {% if task.completed_at %}<span>{{ task.completed_at|date:"d/m H:i" }}</span>{% endif %}
+            </p>
+          </div>
+
+          {% if order.is_open and user.can_manage_tasks %}
+            <div class="task__actions">
+              {% if task.is_done %}
+                <form method="post"
+                      action="{% url 'workorders:task_action' order.uuid task.id 'reabrir' %}"
+                      hx-post="{% url 'workorders:task_action' order.uuid task.id 'reabrir' %}"
+                      hx-target="#tasks-panel" hx-swap="outerHTML">
+                  {% csrf_token %}
+                  <button class="btn btn--ghost btn--sm" type="submit">Reabrir</button>
+                </form>
+              {% elif task.is_open %}
+                {% if task.status == 'PENDENTE' %}
+                  <form method="post"
+                        action="{% url 'workorders:task_action' order.uuid task.id 'iniciar' %}"
+                        hx-post="{% url 'workorders:task_action' order.uuid task.id 'iniciar' %}"
+                        hx-target="#tasks-panel" hx-swap="outerHTML">
+                    {% csrf_token %}
+                    <button class="btn btn--ghost btn--sm" type="submit">Iniciar</button>
+                  </form>
+                {% endif %}
+                <form method="post"
+                      action="{% url 'workorders:task_action' order.uuid task.id 'concluir' %}"
+                      hx-post="{% url 'workorders:task_action' order.uuid task.id 'concluir' %}"
+                      hx-target="#tasks-panel" hx-swap="outerHTML">
+                  {% csrf_token %}
+                  <button class="btn btn--secondary btn--sm" type="submit">Concluir</button>
+                </form>
+                <form method="post"
+                      action="{% url 'workorders:task_action' order.uuid task.id 'cancelar' %}"
+                      hx-post="{% url 'workorders:task_action' order.uuid task.id 'cancelar' %}"
+                      hx-target="#tasks-panel" hx-swap="outerHTML"
+                      hx-confirm="Cancelar o serviço “{{ task.title }}”?">
+                  {% csrf_token %}
+                  <button class="btn btn--ghost btn--sm" type="submit">Cancelar</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state empty-state--inline">
+      Nenhum serviço registrado ainda. Liste abaixo o que precisa ser feito neste veículo.
+    </p>
+  {% endif %}
+
+  {% if order.is_open and user.can_manage_tasks %}
+    <form class="task-form" method="post"
+          action="{% url 'workorders:add_task' order.uuid %}"
+          hx-post="{% url 'workorders:add_task' order.uuid %}"
+          hx-target="#tasks-panel" hx-swap="outerHTML">
+      {% csrf_token %}
+      <div class="task-form__row">
+        {% include "components/_field.html" with field=task_form.title %}
+        {% include "components/_field.html" with field=task_form.mechanic %}
+      </div>
+      {% include "components/_field.html" with field=task_form.requested_description %}
+      <button class="btn btn--primary" type="submit">
+        <span aria-hidden="true">+</span> Adicionar serviço
+      </button>
+    </form>
+  {% endif %}
+</div>

@@ -1,0 +1,74 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}Recepção — DR Vistoria{% endblock %}
+
+{% block content %}
+  <section class="m-hero">
+    <h1 class="m-hero__title">Primeiro contato</h1>
+    <p class="m-hero__sub">
+      Abra a entrada no pátio, faça a vistoria e tire fotos.
+      O restante fica no computador.
+    </p>
+  </section>
+
+  {% if user.can_register_entry %}
+    <a class="m-cta" href="{% url 'mobile:entry_start' %}">
+      <span aria-hidden="true">+</span> Nova entrada
+    </a>
+  {% endif %}
+
+  <form class="m-search" method="get" action="{% url 'mobile:home' %}" role="search">
+    <label class="sr-only" for="m-q">Placa, OS ou cliente</label>
+    <input
+      id="m-q"
+      class="m-search__input"
+      type="search"
+      name="q"
+      value="{{ term }}"
+      placeholder="Placa, OS ou cliente"
+      autocomplete="off"
+      enterkeyhint="search"
+    >
+    <button class="m-search__btn" type="submit">Buscar</button>
+  </form>
+
+  {% if term %}
+    <p class="m-section-label">Resultados para “{{ term }}”</p>
+  {% else %}
+    <p class="m-section-label">Na oficina — prioridade sem vistoria</p>
+  {% endif %}
+
+  {% if orders %}
+    <ul class="m-order-list">
+      {% for order in orders %}
+        <li>
+          <a class="m-order" href="{% url 'mobile:inspection' order.uuid %}">
+            <div class="m-order__plate">{{ order.vehicle.plate_display }}</div>
+            <div class="m-order__meta">
+              <span>{{ order.number_display }}</span>
+              <span>{{ order.vehicle.brand }} {{ order.vehicle.model }}</span>
+            </div>
+            <div class="m-order__foot">
+              <span class="m-status m-status--{{ order.status_slug }}">{{ order.get_status_display }}</span>
+              {% if order.has_inspection %}
+                <span class="m-order__hint">Vistoria iniciada</span>
+              {% else %}
+                <span class="m-order__hint m-order__hint--warn">Sem vistoria</span>
+              {% endif %}
+            </div>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="m-empty">
+      {% if term %}
+        Nenhuma OS aberta encontrada. Confira a placa ou o número.
+      {% elif user.can_register_entry %}
+        Nenhum veículo na oficina. Toque em <strong>Nova entrada</strong> para começar.
+      {% else %}
+        Nenhum veículo na oficina no momento.
+      {% endif %}
+    </p>
+  {% endif %}
+{% endblock %}

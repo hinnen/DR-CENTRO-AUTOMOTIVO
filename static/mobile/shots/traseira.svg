@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+  <!-- rear view silhouette -->
+  <rect width="96" height="96" rx="14" fill="#e8eef8"/>
+  <!-- body -->
+  <path d="M22 62h52l-3 8H25l-3-8z" fill="#152e69"/>
+  <path d="M28 46c3-12 12-18 20-18s17 6 20 18l4 16H24l4-16z" fill="#152e69"/>
+  <!-- rear glass -->
+  <path d="M36 44c2-7 7-10 12-10s10 3 12 10l1 7H35l1-7z" fill="#8fa0c4"/>
+  <!-- plate placeholder (blank) -->
+  <rect x="38" y="58" width="20" height="8" rx="1.5" fill="#e8eef8"/>
+  <!-- taillights -->
+  <rect x="25" y="56" width="8" height="5" rx="1" fill="#a31b33"/>
+  <rect x="63" y="56" width="8" height="5" rx="1" fill="#a31b33"/>
+  <!-- wheels -->
+  <circle cx="32" cy="72" r="5" fill="#0b1838"/>
+  <circle cx="64" cy="72" r="5" fill="#0b1838"/>
+</svg>

@@ -1,0 +1,66 @@
+{% comment %}
+Quadro completo. Recarregado inteiro pelo HTMX; #board é o alvo do swap.
+{% endcomment %}
+<div id="board">
+  {% if total_orders %}
+    {% comment %}
+    No celular o Kanban vira uma coluna por vez, escolhida nestas abas. Arrastar
+    card em tela pequena é impraticável, então lá a mudança de status é feita
+    pela tela da OS. Em desktop as abas somem e as colunas voltam lado a lado.
+    {% endcomment %}
+    <nav class="board-tabs" data-board-tabs aria-label="Colunas do quadro">
+      <button class="board-tabs__btn" type="button" data-board-tab="all">
+        Todos <span class="board-tabs__count">{{ total_orders }}</span>
+      </button>
+      {% for column in columns %}
+        <button class="board-tabs__btn" type="button" data-board-tab="{{ column.slug }}">
+          {{ column.label }} <span class="board-tabs__count">{{ column.count }}</span>
+        </button>
+      {% endfor %}
+    </nav>
+
+    <div id="kanban" class="kanban" data-kanban>
+    {% for column in columns %}
+      <section class="kanban__column" data-column-slug="{{ column.slug }}"
+               aria-labelledby="coluna-{{ column.slug }}">
+        <header class="kanban__header">
+          <h2 class="kanban__title" id="coluna-{{ column.slug }}">
+            <span class="status__dot status__dot--{{ column.slug }}" aria-hidden="true"></span>
+            {{ column.label }}
+          </h2>
+          <span class="kanban__count">{{ column.count }}</span>
+        </header>
+
+        <div class="kanban__cards" data-column-status="{{ column.status }}">
+          {% for order in column.orders %}
+            {% include "dashboard/partials/_order_card.html" with order=order %}
+          {% empty %}
+            <p class="kanban__empty">Nenhum veículo</p>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+    </div>
+  {% else %}
+    <section class="card empty-state">
+      <span class="empty-state__icon" aria-hidden="true">▦</span>
+      <h2 class="empty-state__title">
+        {% if filters.has_any %}Nenhum veículo com esses filtros.{% else %}Nenhum veículo na oficina.{% endif %}
+      </h2>
+      <p class="empty-state__text">
+        {% if filters.has_any %}
+          Ajuste os filtros para ver outros veículos.
+        {% else %}
+          O Kanban aparece aqui assim que a primeira entrada for registrada.
+        {% endif %}
+      </p>
+      {% if filters.has_any %}
+        <a class="btn btn--secondary" href="{% url 'dashboard:home' %}">Limpar filtros</a>
+      {% elif user.can_register_entry %}
+        <a class="btn btn--brand" href="{% url 'workorders:new_entry' %}">
+          <span aria-hidden="true">+</span> Registrar primeira entrada
+        </a>
+      {% endif %}
+    </section>
+  {% endif %}
+</div>

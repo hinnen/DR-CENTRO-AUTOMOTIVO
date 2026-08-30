@@ -1,0 +1,375 @@
+"""Testes do PWA de vistoria em /m/."""
+
+import io
+import shutil
+import tempfile
+from unittest.mock import PropertyMock, patch
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase, override_settings
+from django.urls import reverse
+from PIL import Image
+
+from apps.accounts.models import Role
+from apps.accounts.tests import make_user
+from apps.customers.models import Client as Customer
+from apps.vehicles.models import Vehicle
+from apps.workorders.models import (
+    DEFAULT_INSPECTION_ITEMS,
+    FuelLevel,
+    ItemCondition,
+    PhotoCategory,
+    ServiceOrderPhoto,
+)
+from apps.workorders.services import create_service_order, get_or_build_inspection
+
+MEDIA_ROOT = tempfile.mkdtemp(prefix="dr-mobile-media-")
+
+
+def make_image(name="foto.jpg"):
+    buffer = io.BytesIO()
+    Image.new("RGB", (48, 36), (21, 46, 105)).save(buffer, format="JPEG")
+    buffer.seek(0)
+    return SimpleUploadedFile(name, buffer.read(), content_type="image/jpeg")
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class MobileInspectionTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+
+    def setUp(self):
+        self.reception = make_user("recepcao_m", Role.RECEPTION, first_name="Ana")
+        self.owner = Customer.objects.create(name="Marcos Ferreira", phone="13991234567")
+        self.vehicle = Vehicle.objects.create(
+            client=self.owner,
+            plate="ABC1D23",
+            brand="Chevrolet",
+            model="Onix",
+            model_year=2020,
+        )
+        self.order = create_service_order(
+            client=self.owner,
+            vehicle=self.vehicle,
+            entry_km=10000,
+            customer_complaint="Barulho.",
+            user=self.reception,
+        )
+        self.client.force_login(self.reception)
+
+    def test_home_lists_open_orders(self):
+        response = self.client.get(reverse("mobile:home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.vehicle.plate_display)
+        self.assertContains(response, self.order.number_display)
+
+    def test_home_search_by_plate_redirects_to_inspection(self):
+        response = self.client.get(reverse("mobile:home"), {"q": "abc1d23"})
+        self.assertRedirects(
+            response,
+            reverse("mobile:inspection", kwargs={"uuid": self.order.uuid}),
+        )
+
+    def test_home_requires_login(self):
+        anon = Client()
+        response = anon.get(reverse("mobile:home"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/conta/entrar/", response["Location"])
+
+    def test_user_without_capabilities_gets_403(self):
+        with (
+            patch.object(
+                type(self.reception),
+                "can_perform_inspection",
+                new_callable=PropertyMock,
+                return_value=False,
+            ),
+            patch.object(
+                type(self.reception),
+                "can_register_entry",
+                new_callable=PropertyMock,
+                return_value=False,
+            ),
+        ):
+            response = self.client.get(reverse("mobile:home"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_saving_inspection_persists_on_same_os(self):
+        get_or_build_inspection(self.order)
+        payload = {
+            "fuel_level": FuelLevel.THREE_QUARTERS,
+            "notes": "Entrada pelo app",
+        }
+        for key, _label in DEFAULT_INSPECTION_ITEMS:
+            if key == "estepe":
+                payload[f"condition_{key}"] = ItemCondition.DAMAGE
+                payload[f"note_{key}"] = "Risco no estepe"
+            elif key == "pneus":
+                payload[f"condition_{key}"] = ItemCondition.ATTENTION
+                payload[f"note_{key}"] = "Desgaste irregular"
+            else:
+                payload[f"condition_{key}"] = ItemCondition.OK
+                payload[f"note_{key}"] = ""
+
+        response = self.client.post(
+            reverse("mobile:inspection", kwargs={"uuid": self.order.uuid}),
+            payload,
+        )
+        self.assertRedirects(response, reverse("mobile:home"))
+
+        self.order.refresh_from_db()
+        inspection = self.order.inspection
+        self.assertEqual(inspection.fuel_level, FuelLevel.THREE_QUARTERS)
+        self.assertEqual(inspection.notes, "Entrada pelo app")
+        self.assertEqual(inspection.performed_by_id, self.reception.pk)
+
+        items = {item.key: item for item in inspection.items.all()}
+        self.assertEqual(items["estepe"].condition, ItemCondition.DAMAGE)
+        self.assertEqual(items["estepe"].note, "Risco no estepe")
+        self.assertEqual(items["pneus"].condition, ItemCondition.ATTENTION)
+        self.assertEqual(items["lataria"].condition, ItemCondition.OK)
+
+    def test_guided_angle_photo_replaces_previous(self):
+        first = self.client.post(
+            reverse("mobile:upload_photos", kwargs={"uuid": self.order.uuid}),
+            {
+                "category": "VISTORIA",
+                "angle": "FRENTE",
+                "images": make_image("frente1.jpg"),
+            },
+        )
+        self.assertEqual(first.status_code, 302)
+        second = self.client.post(
+            reverse("mobile:upload_photos", kwargs={"uuid": self.order.uuid}),
+            {
+                "category": "VISTORIA",
+                "angle": "FRENTE",
+                "images": make_image("frente2.jpg"),
+            },
+        )
+        self.assertEqual(second.status_code, 302)
+        from apps.workorders.models import PhotoAngle, ServiceOrderPhoto
+
+        visible = ServiceOrderPhoto.objects.filter(
+            service_order=self.order, angle=PhotoAngle.FRONT, is_deleted=False
+        )
+        self.assertEqual(visible.count(), 1)
+        deleted = ServiceOrderPhoto.objects.filter(
+            service_order=self.order, angle=PhotoAngle.FRONT, is_deleted=True
+        )
+        self.assertEqual(deleted.count(), 1)
+
+    def test_inspection_page_lists_guided_slots(self):
+        response = self.client.get(
+            reverse("mobile:inspection", kwargs={"uuid": self.order.uuid})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Frente")
+        self.assertContains(response, "Traseira")
+        self.assertContains(response, "Foto extra")
+        self.assertContains(response, "0/5")
+
+
+    def test_manifest_and_service_worker_are_public(self):
+        anon = Client()
+        manifest = anon.get(reverse("mobile:manifest"))
+        self.assertEqual(manifest.status_code, 200)
+        self.assertIn("application/manifest+json", manifest["Content-Type"])
+        self.assertEqual(manifest.json()["short_name"], "Vistoria")
+
+        sw = anon.get(reverse("mobile:service_worker"))
+        self.assertEqual(sw.status_code, 200)
+        self.assertIn("javascript", sw["Content-Type"])
+
+    def test_home_shows_new_entry_cta_not_sistema(self):
+        response = self.client.get(reverse("mobile:home"))
+        self.assertContains(response, "Nova entrada")
+        self.assertNotContains(response, ">Sistema<")
+
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class MobileEntryTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+
+    def setUp(self):
+        self.reception = make_user("recepcao_e", Role.RECEPTION, first_name="Ana")
+        self.mechanic = make_user("mecanico_e", Role.MECHANIC, first_name="Carlos")
+        self.owner = Customer.objects.create(name="Marcos Ferreira", phone="13991234567")
+        self.vehicle = Vehicle.objects.create(
+            client=self.owner,
+            plate="XYZ1A23",
+            brand="Fiat",
+            model="Argo",
+            color="Prata",
+        )
+        self.client.force_login(self.reception)
+
+    def test_mechanic_cannot_open_entry(self):
+        self.client.force_login(self.mechanic)
+        response = self.client.get(reverse("mobile:entry_start"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_existing_vehicle_opens_os_and_goes_to_inspection(self):
+        response = self.client.post(
+            reverse("mobile:entry_existing", kwargs={"uuid": self.vehicle.uuid}),
+            {
+                "phone": "13991234567",
+                "entry_km": 45000,
+                "customer_complaint": "Barulho na suspensão",
+            },
+        )
+        from apps.workorders.models import ServiceOrder
+
+        order = ServiceOrder.objects.get(vehicle=self.vehicle)
+        self.assertRedirects(
+            response,
+            reverse("mobile:inspection", kwargs={"uuid": order.uuid}),
+        )
+        self.assertEqual(order.entry_km, 45000)
+        self.assertEqual(order.customer_complaint, "Barulho na suspensão")
+
+    def test_open_order_redirects_to_inspection_instead_of_duplicating(self):
+        order = create_service_order(
+            client=self.owner,
+            vehicle=self.vehicle,
+            entry_km=1000,
+            customer_complaint="Já aberto",
+            user=self.reception,
+        )
+        response = self.client.get(
+            reverse("mobile:entry_existing", kwargs={"uuid": self.vehicle.uuid})
+        )
+        self.assertRedirects(
+            response,
+            reverse("mobile:inspection", kwargs={"uuid": order.uuid}),
+        )
+
+    def test_new_plate_creates_client_vehicle_and_order(self):
+        response = self.client.post(
+            reverse("mobile:entry_new") + "?plate=QWE1R23",
+            {
+                "name": "Paula Souza",
+                "phone": "13998887766",
+                "phone_whatsapp": "",
+                "plate": "QWE1R23",
+                "brand": "VW",
+                "model": "Polo",
+                "color": "Branco",
+                "model_year": 2022,
+                "entry_km": 12000,
+                "customer_complaint": "Revisão dos 10 mil",
+            },
+        )
+        vehicle = Vehicle.objects.get(plate="QWE1R23")
+        self.assertEqual(vehicle.client.name, "Paula Souza")
+        self.assertEqual(vehicle.client.phone, "13998887766")
+        order = vehicle.service_orders.get()
+        self.assertRedirects(
+            response,
+            reverse("mobile:inspection", kwargs={"uuid": order.uuid}),
+        )
+
+    def test_plate_lookup_offers_register_when_not_found(self):
+        response = self.client.get(
+            reverse("mobile:entry_plate_lookup"), {"plate": "ZZZ9Z99"}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Cadastrar cliente e veículo")
+        self.assertContains(response, "m-hit")
+
+    def test_profile_stays_inside_mobile_app(self):
+        response = self.client.get(reverse("mobile:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sair da conta")
+        self.assertContains(response, "DR Vistoria")
+        self.assertNotContains(response, "Dashboard")
+
+    def test_mobile_logout_returns_to_mobile_login(self):
+        response = self.client.post(reverse("mobile:logout"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/conta/entrar/", response["Location"])
+        self.assertIn("/m/", response["Location"])
+
+    def test_entry_start_exposes_server_ocr_endpoint(self):
+        response = self.client.get(reverse("mobile:entry_start"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("mobile:entry_read_plate"))
+        self.assertContains(response, "data-plate-ocr-url")
+
+
+class PlateOcrUnitTests(TestCase):
+    def test_fix_old_plate_i_as_1(self):
+        from apps.mobile.plate_ocr import _fix_old, _pick_best
+
+        self.assertEqual(_fix_old("JKK2I88"), "JKK2188")
+        plate, _conf = _pick_best(["[br]JKK2I88"], [0.9])
+        self.assertEqual(plate, "JKK2188")
+
+    def test_pick_mercosul_strips_region(self):
+        from apps.mobile.plate_ocr import _pick_best
+
+        plate, conf = _pick_best(["[br]REI5G32"], [0.99])
+        self.assertEqual(plate, "REI5G32")
+        self.assertAlmostEqual(conf, 0.99)
+
+    def test_old_and_mercosul_same_score_tier(self):
+        from apps.mobile.plate_ocr import _score
+
+        self.assertEqual(_score("ABC1234"), _score("ABC1D23"))
+
+    @patch("apps.mobile.plate_ocr._engine")
+    def test_read_plate_from_upload_uses_platerec(self, mock_engine):
+        from apps.mobile.plate_ocr import read_plate_from_upload
+
+        engine = mock_engine.return_value
+        engine.platedet.inference.return_value = {
+            "boxes": {"boxes": [[0, 0, 10, 10]]},
+            "pil": {"images": [make_image("crop.jpg")]},
+        }
+        engine.read.return_value = {"word": "[br]REI5G32", "confidence": 0.98}
+        result = read_plate_from_upload(make_image("placa.jpg"))
+        self.assertEqual(result["plate"], "REI5G32")
+        self.assertGreaterEqual(result["confidence"], 0.98)
+
+    @patch("apps.mobile.plate_ocr._engine")
+    def test_read_plate_accepts_old_format(self, mock_engine):
+        from apps.mobile.plate_ocr import read_plate_from_upload
+
+        engine = mock_engine.return_value
+        engine.platedet.inference.return_value = {
+            "boxes": {"boxes": [[0, 0, 10, 10]]},
+            "pil": {"images": [make_image("crop.jpg")]},
+        }
+        engine.read.return_value = {"word": "[br]JKK2I88", "confidence": 0.88}
+        result = read_plate_from_upload(make_image("placa_antiga.jpg"))
+        self.assertEqual(result["plate"], "JKK2188")
+
+    def test_entry_read_plate_returns_json(self):
+        reception = make_user("ocr_recep", Role.RECEPTION)
+        client = Client()
+        client.force_login(reception)
+
+        with patch("apps.mobile.views.read_plate_from_upload") as mock_read:
+            mock_read.return_value = {"plate": "REI5G32", "confidence": 0.95, "raw": []}
+            response = client.post(
+                reverse("mobile:entry_read_plate"),
+                {"image": make_image()},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["plate"], "REI5G32")
+
+    def test_entry_read_plate_requires_image(self):
+        reception = make_user("ocr_empty", Role.RECEPTION)
+        client = Client()
+        client.force_login(reception)
+        response = client.post(reverse("mobile:entry_read_plate"))
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["ok"])

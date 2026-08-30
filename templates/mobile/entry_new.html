@@ -1,0 +1,51 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}Cadastrar entrada — DR Vistoria{% endblock %}
+{% block main_class %}m-main--inspect{% endblock %}
+
+{% block content %}
+  <a class="m-back" href="{% url 'mobile:entry_start' %}">← Voltar</a>
+
+  <section class="m-hero">
+    <h1 class="m-hero__title">Cadastro rápido</h1>
+    <p class="m-hero__sub">Só o essencial no pátio. Mecânico, local e o resto vão no notebook.</p>
+  </section>
+
+  <form method="post" class="m-entry-form" id="m-entry-form" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="m-alert" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <section class="m-block">
+      <h2 class="m-block__title">Cliente</h2>
+      {% include "mobile/partials/_field.html" with field=form.name %}
+      {% include "mobile/partials/_field.html" with field=form.phone %}
+      {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
+    </section>
+
+    <section class="m-block">
+      <h2 class="m-block__title">Veículo</h2>
+      {% include "mobile/partials/_field.html" with field=form.plate %}
+      {% include "mobile/partials/_field.html" with field=form.brand %}
+      {% include "mobile/partials/_field.html" with field=form.model %}
+      <div class="m-field-row">
+        {% include "mobile/partials/_field.html" with field=form.color %}
+        {% include "mobile/partials/_field.html" with field=form.model_year %}
+      </div>
+    </section>
+
+    <section class="m-block">
+      <h2 class="m-block__title">Entrada</h2>
+      {% include "mobile/partials/_field.html" with field=form.entry_km %}
+      {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
+    </section>
+  </form>
+
+  <div class="m-sticky-save">
+    <button class="m-save" type="submit" form="m-entry-form">Abrir OS e ir à vistoria</button>
+  </div>
+{% endblock %}

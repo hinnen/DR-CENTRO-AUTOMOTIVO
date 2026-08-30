@@ -1,0 +1,24 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  {% include "dashboard/partials/_summary.html" %}
+
+  {% include "dashboard/partials/_filters.html" with show_cards_toggle=True %}
+
+  <div hx-get="{% url 'dashboard:board' %}?{{ request.GET.urlencode }}"
+       hx-trigger="every 30s"
+       hx-target="#board"
+       hx-select="#board"
+       hx-swap="outerHTML"
+       hx-sync="this:replace">
+    {% include "dashboard/partials/_board.html" %}
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'vendor/sortable.min.js' %}" defer></script>
+  <script src="{% static 'js/kanban.js' %}" defer></script>
+{% endblock %}

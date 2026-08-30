@@ -1,0 +1,24 @@
+<nav class="mobile-nav" aria-label="Navegação rápida">
+  <a class="mobile-nav__item {% if request.resolver_match.namespace == 'dashboard' %}is-active{% endif %}"
+     href="{% url 'dashboard:home' %}">
+    <span aria-hidden="true">▦</span><span>Painel</span>
+  </a>
+  <a class="mobile-nav__item {% if request.resolver_match.url_name == 'workshop' %}is-active{% endif %}"
+     href="{% url 'workorders:workshop' %}">
+    <span aria-hidden="true">▤</span><span>Oficina</span>
+  </a>
+  {% if user.can_register_entry %}
+    <a class="mobile-nav__item mobile-nav__item--cta" href="{% url 'workorders:new_entry' %}"
+       aria-label="Nova entrada" data-shortcut-new-entry>
+      <span aria-hidden="true">+</span>
+    </a>
+  {% endif %}
+  <a class="mobile-nav__item {% if request.resolver_match.url_name == 'history' %}is-active{% endif %}"
+     href="{% url 'workorders:history' %}">
+    <span aria-hidden="true">◷</span><span>Histórico</span>
+  </a>
+  <a class="mobile-nav__item {% if request.resolver_match.namespace == 'accounts' or request.resolver_match.namespace == 'customers' or request.resolver_match.url_name == 'search' or request.resolver_match.namespace == 'mobile' %}is-active{% endif %}"
+     href="{% url 'accounts:profile' %}">
+    <span aria-hidden="true">☺</span><span>Mais</span>
+  </a>
+</nav>

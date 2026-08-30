@@ -1,0 +1,42 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}Confirmar entrada — DR Vistoria{% endblock %}
+{% block main_class %}m-main--inspect{% endblock %}
+
+{% block content %}
+  <a class="m-back" href="{% url 'mobile:entry_start' %}">← Trocar veículo</a>
+
+  <header class="m-os-head">
+    <p class="m-os-head__plate">{{ vehicle.plate_display }}</p>
+    <p class="m-os-head__meta">
+      {{ vehicle.brand }} {{ vehicle.model }}
+      {% if vehicle.color %} · {{ vehicle.color }}{% endif %}
+      · {{ client.name }}
+    </p>
+  </header>
+
+  <form method="post" class="m-entry-form" id="m-entry-form" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="m-alert" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <section class="m-block">
+      <h2 class="m-block__title">Contato</h2>
+      {% include "mobile/partials/_field.html" with field=form.phone %}
+    </section>
+
+    <section class="m-block">
+      <h2 class="m-block__title">Entrada</h2>
+      {% include "mobile/partials/_field.html" with field=form.entry_km %}
+      {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
+    </section>
+  </form>
+
+  <div class="m-sticky-save">
+    <button class="m-save" type="submit" form="m-entry-form">Abrir OS e ir à vistoria</button>
+  </div>
+{% endblock %}

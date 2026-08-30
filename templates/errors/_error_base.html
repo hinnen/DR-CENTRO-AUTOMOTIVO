@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block layout %}
+  <main id="conteudo" class="auth">
+    <div class="auth__card card error-card">
+      <span class="error-card__code">{% block code %}{% endblock %}</span>
+      <h1 class="error-card__title">{% block heading %}{% endblock %}</h1>
+      <p class="error-card__text">{% block description %}{% endblock %}</p>
+      <a class="btn btn--primary" href="{% url 'dashboard:home' %}">Voltar ao painel</a>
+    </div>
+  </main>
+{% endblock %}

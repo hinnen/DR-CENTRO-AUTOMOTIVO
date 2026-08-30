@@ -1,0 +1,55 @@
+{% if summary %}
+  {% with vehicle=summary.vehicle client=summary.client %}
+    <article class="m-hit {% if open_order %}m-hit--busy{% else %}m-hit--ok{% endif %}">
+      <div class="m-hit__top">
+        {% if open_order %}
+          <span class="m-hit__chip m-hit__chip--warn">OS aberta</span>
+        {% else %}
+          <span class="m-hit__chip m-hit__chip--ok">Encontrado</span>
+        {% endif %}
+        <p class="m-hit__plate">{{ vehicle.plate_display }}</p>
+        <p class="m-hit__car">{{ vehicle.brand }} {{ vehicle.model }}{% if vehicle.color %} · {{ vehicle.color }}{% endif %}</p>
+      </div>
+
+      <div class="m-hit__rows">
+        <div class="m-hit__row">
+          <span>Cliente</span>
+          <strong>{{ client.name }}</strong>
+        </div>
+        <div class="m-hit__row">
+          <span>WhatsApp</span>
+          <strong class="m-hit__phone">{{ client.whatsapp_display }}</strong>
+        </div>
+        <div class="m-hit__row">
+          <span>Última visita</span>
+          <strong>{{ summary.last_entry_at|date:"d/m/Y"|default:"Primeira vez" }}</strong>
+        </div>
+      </div>
+
+      {% if open_order %}
+        <div class="m-hit__banner">
+          {{ open_order.number_display }} já está na oficina.
+        </div>
+        <a class="m-hit__btn" href="{% url 'mobile:inspection' open_order.uuid %}">
+          Continuar vistoria
+        </a>
+      {% else %}
+        <a class="m-hit__btn m-hit__btn--navy" href="{% url 'mobile:entry_existing' vehicle.uuid %}">
+          Confirmar e seguir
+        </a>
+      {% endif %}
+    </article>
+  {% endwith %}
+
+{% elif not_found %}
+  <article class="m-hit m-hit--new">
+    <div class="m-hit__top">
+      <span class="m-hit__chip">Placa nova</span>
+      <p class="m-hit__plate">{{ plate }}</p>
+      <p class="m-hit__car">Ainda não tem cadastro — vamos registrar o essencial.</p>
+    </div>
+    <a class="m-hit__btn" href="{% url 'mobile:entry_new' %}?plate={{ plate }}">
+      Cadastrar cliente e veículo
+    </a>
+  </article>
+{% endif %}

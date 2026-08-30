@@ -1,0 +1,38 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}Perfil — DR Vistoria{% endblock %}
+
+{% block content %}
+  <section class="m-hero">
+    <h1 class="m-hero__title">Perfil</h1>
+    <p class="m-hero__sub">Conta usada neste celular. O sistema completo fica no computador.</p>
+  </section>
+
+  <section class="m-panel">
+    <div class="m-profile-head">
+      <span class="m-avatar m-avatar--lg">{{ user.initials }}</span>
+      <div>
+        <p class="m-profile-head__name">{{ user.display_name }}</p>
+        <p class="m-profile-head__role">{{ user.get_role_display }}</p>
+      </div>
+    </div>
+
+    <dl class="m-profile-list">
+      <div>
+        <dt>Usuário</dt>
+        <dd>{{ user.username }}</dd>
+      </div>
+      {% if user.phone %}
+        <div>
+          <dt>Telefone</dt>
+          <dd>{{ user.phone }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+  </section>
+
+  <form method="post" action="{% url 'mobile:logout' %}" class="m-block">
+    {% csrf_token %}
+    <button class="m-cta m-cta--ghost" type="submit">Sair da conta</button>
+  </form>
+{% endblock %}

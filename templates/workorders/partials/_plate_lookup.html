@@ -1,0 +1,54 @@
+{% if summary %}
+  {% with vehicle=summary.vehicle client=summary.client %}
+    <div class="lookup lookup--found">
+      <div class="lookup__head">
+        <span class="plate plate--lg">{{ vehicle.plate_display }}</span>
+        <span class="badge badge--success">Veículo encontrado</span>
+      </div>
+
+      <dl class="lookup__grid">
+        <div><dt>Veículo</dt><dd>{{ vehicle.description }}</dd></div>
+        <div><dt>Cor</dt><dd>{{ vehicle.color|default:"—" }}</dd></div>
+        <div><dt>Cliente</dt><dd>{{ client.name }}</dd></div>
+        <div><dt>Telefone</dt><dd>{{ client.phone_display }}</dd></div>
+        <div><dt>Última visita</dt><dd>{{ summary.last_entry_at|date:"d/m/Y"|default:"Primeira visita" }}</dd></div>
+        <div><dt>KM da última visita</dt><dd>{{ summary.last_km|default:"—" }}</dd></div>
+      </dl>
+
+      {% if summary.visit_count %}
+        <p class="lookup__note">
+          {{ summary.visit_count }} atendimento{{ summary.visit_count|pluralize:",s" }} anterior{{ summary.visit_count|pluralize:",es" }}.
+        </p>
+      {% endif %}
+
+      {% if open_order %}
+        <div class="alert alert--warning" role="status">
+          <strong>Já há OS aberta:</strong>
+          <a href="{{ open_order.get_absolute_url }}">{{ open_order.number_display }}</a>
+          · {{ open_order.get_status_display }}.
+          Finalize ou cancele antes de registrar nova entrada.
+        </div>
+        <div class="lookup__actions">
+          <a class="btn btn--primary" href="{{ open_order.get_absolute_url }}">Abrir OS atual</a>
+          <a class="btn btn--secondary" href="{% url 'vehicles:detail' vehicle.uuid %}">Ver histórico</a>
+        </div>
+      {% else %}
+        <div class="lookup__actions">
+          <a class="btn btn--primary" href="{% url 'workorders:new_entry' %}?vehicle={{ vehicle.uuid }}">
+            Usar este veículo
+          </a>
+          <a class="btn btn--secondary" href="{% url 'vehicles:detail' vehicle.uuid %}">Ver histórico</a>
+        </div>
+      {% endif %}
+    </div>
+  {% endwith %}
+
+{% elif not_found %}
+  <div class="lookup lookup--empty">
+    <p class="lookup__title">Veículo não encontrado</p>
+    <p class="lookup__note">Nenhum veículo cadastrado com a placa <strong>{{ plate }}</strong>.</p>
+    <a class="btn btn--primary" href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}">
+      <span aria-hidden="true">+</span> Cadastrar novo veículo
+    </a>
+  </div>
+{% endif %}

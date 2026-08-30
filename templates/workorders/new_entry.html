@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Nova entrada — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Nova entrada</h1>
+      <p class="page-subtitle">Comece pela placa. Se o carro já passou aqui, o resto vem preenchido.</p>
+    </div>
+  </div>
+
+  <ol class="steps" aria-label="Etapas">
+    <li class="step {% if not vehicle %}is-active{% else %}is-done{% endif %}"><span>1</span> Veículo</li>
+    <li class="step {% if vehicle %}is-done{% endif %}"><span>2</span> Cliente</li>
+    <li class="step {% if vehicle %}is-active{% endif %}"><span>3</span> Entrada</li>
+  </ol>
+
+  {% if not vehicle %}
+    <section class="card">
+      <h2 class="section-title">Etapa 1 — Identificar o veículo</h2>
+
+      <div class="field">
+        <label class="field__label" for="placa">Digite a placa</label>
+        <input class="input-plate" id="placa" type="search" name="plate"
+               placeholder="ABC1D23" autocomplete="off" autocapitalize="characters"
+               autofocus inputmode="text"
+               hx-get="{% url 'workorders:plate_lookup' %}"
+               hx-trigger="input changed delay:300ms"
+               hx-target="#resultado-placa"
+               hx-indicator="#buscando-placa">
+        <p class="field__help">Aceita placa antiga (ABC1234) e Mercosul (ABC1D23).</p>
+      </div>
+
+      <p class="htmx-indicator loading" id="buscando-placa">Buscando…</p>
+      <div id="resultado-placa" aria-live="polite"></div>
+    </section>
+
+  {% else %}
+    <section class="card">
+      <div class="entry-vehicle">
+        <div>
+          <span class="plate plate--lg">{{ vehicle.plate_display }}</span>
+          <p class="entry-vehicle__desc">{{ vehicle.description }}{% if vehicle.color %} · {{ vehicle.color }}{% endif %}</p>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="{% url 'workorders:new_entry' %}">Trocar veículo</a>
+      </div>
+
+      <dl class="lookup__grid">
+        <div><dt>Cliente</dt><dd><a href="{% url 'customers:detail' vehicle.client.uuid %}">{{ vehicle.client.name }}</a></dd></div>
+        <div><dt>Telefone</dt><dd>{{ vehicle.client.phone_display }}</dd></div>
+        {% if summary.last_entry_at %}
+          <div><dt>Última visita</dt><dd>{{ summary.last_entry_at|date:"d/m/Y" }}</dd></div>
+          <div><dt>KM da última visita</dt><dd>{{ summary.last_km|default:"—" }}</dd></div>
+        {% endif %}
+      </dl>
+    </section>
+
+    <form class="card mt-4" method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="vehicle" value="{{ vehicle.uuid }}">
+
+      <h2 class="section-title">Etapa 3 — Dados da entrada</h2>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert--danger" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-grid">
+        {% include "components/_field.html" with field=form.entry_km %}
+        {% include "components/_field.html" with field=form.entry_at %}
+      </div>
+
+      {% include "components/_field.html" with field=form.customer_complaint %}
+
+      <div class="form-grid">
+        {% include "components/_field.html" with field=form.mechanic %}
+        {% include "components/_field.html" with field=form.expected_delivery_at %}
+        {% include "components/_field.html" with field=form.location %}
+        {% include "components/_field.html" with field=form.priority %}
+      </div>
+
+      {% include "components/_field.html" with field=form.internal_notes %}
+
+      <div class="form-actions">
+        <button class="btn btn--primary btn--lg" type="submit">Abrir ordem de serviço</button>
+        <a class="btn btn--ghost" href="{% url 'dashboard:home' %}">Cancelar</a>
+      </div>
+    </form>
+  {% endif %}
+{% endblock %}

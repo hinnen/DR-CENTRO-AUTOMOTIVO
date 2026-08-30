@@ -1,0 +1,44 @@
+# Blueprint Render — DR Centro Automotivo
+# Não misturar com Agro / SistVale.
+
+databases:
+  - name: dr-centro-db
+    plan: basic-256mb
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: dr-centro-automotivo
+    runtime: python
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.2"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dr-centro-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://dr-centro-automotivo.onrender.com"
+      - key: WORKSHOP_NAME
+        value: "DR Centro Automotivo"
+      - key: USE_MANIFEST_STATIC
+        value: "True"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: USE_X_FORWARDED_PROTO
+        value: "True"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"

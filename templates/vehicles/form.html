@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ page_title }}</h1>
+      <p class="page-subtitle">Cliente: {{ client.name }}</p>
+    </div>
+  </div>
+
+  <form class="card form-narrow" method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--danger" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% include "components/_field.html" with field=form.plate %}
+
+    <div class="form-grid">
+      {% include "components/_field.html" with field=form.brand %}
+      {% include "components/_field.html" with field=form.model %}
+      {% include "components/_field.html" with field=form.version %}
+      {% include "components/_field.html" with field=form.color %}
+      {% include "components/_field.html" with field=form.model_year %}
+      {% include "components/_field.html" with field=form.manufacture_year %}
+      {% include "components/_field.html" with field=form.fuel %}
+      {% include "components/_field.html" with field=form.chassis %}
+    </div>
+
+    {% include "components/_field.html" with field=form.notes %}
+
+    <div class="form-actions">
+      <button class="btn btn--primary btn--lg" type="submit">Salvar</button>
+      <a class="btn btn--ghost" href="{{ object.get_absolute_url }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+  <!-- left side profile (nose left) -->
+  <rect width="96" height="96" rx="14" fill="#e8eef8"/>
+  <!-- body silhouette -->
+  <path d="M14 58
+    C16 50 20 44 28 40
+    C36 34 44 30 52 30
+    C62 30 70 34 76 42
+    C80 48 84 54 86 58
+    L86 66 H14 Z" fill="#152e69"/>
+  <!-- cabin windows -->
+  <path d="M34 42c4-6 10-9 18-9 6 0 12 2 16 7l2 8H36l-2-6z" fill="#a8b8d8"/>
+  <!-- door line -->
+  <path d="M50 42v22" stroke="#0b1838" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+  <!-- wheel wells -->
+  <circle cx="30" cy="66" r="8" fill="#e8eef8"/>
+  <circle cx="72" cy="66" r="8" fill="#e8eef8"/>
+  <circle cx="30" cy="66" r="5.5" fill="#0b1838"/>
+  <circle cx="72" cy="66" r="5.5" fill="#0b1838"/>
+  <circle cx="30" cy="66" r="2" fill="#87909e"/>
+  <circle cx="72" cy="66" r="2" fill="#87909e"/>
+</svg>

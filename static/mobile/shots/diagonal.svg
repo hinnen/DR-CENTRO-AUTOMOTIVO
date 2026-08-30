@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+  <!-- 3/4 front diagonal silhouette -->
+  <rect width="96" height="96" rx="14" fill="#e8eef8"/>
+  <!-- body -->
+  <path d="M18 60
+    C22 48 30 40 42 36
+    C52 32 64 34 74 42
+    C80 48 84 56 86 62
+    L82 68 H22 Z" fill="#152e69"/>
+  <!-- windshield (front face) -->
+  <path d="M40 42c4-6 10-8 18-7 6 1 11 4 14 9l2 6H44l-4-8z" fill="#a8b8d8"/>
+  <!-- side window (3/4 cue) -->
+  <path d="M58 48l12 2 2 8H60l-2-10z" fill="#8fa0c4"/>
+  <!-- headlight -->
+  <ellipse cx="28" cy="56" rx="4" ry="2.5" fill="#c5d0e4"/>
+  <!-- mirror -->
+  <path d="M74 48h6v3h-6z" fill="#0b1838"/>
+  <!-- wheels -->
+  <circle cx="34" cy="68" r="6" fill="#0b1838"/>
+  <circle cx="70" cy="68" r="6" fill="#0b1838"/>
+  <circle cx="34" cy="68" r="2.2" fill="#87909e"/>
+  <circle cx="70" cy="68" r="2.2" fill="#87909e"/>
+</svg>

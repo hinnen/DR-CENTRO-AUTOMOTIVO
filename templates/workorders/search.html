@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Busca — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{% if term %}Resultados{% else %}Buscar{% endif %}</h1>
+      {% if term %}
+        <p class="page-subtitle">
+          {{ total }} resultado{{ total|pluralize }} para “{{ term }}”
+        </p>
+      {% else %}
+        <p class="page-subtitle">Placa, OS, cliente, telefone ou modelo.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <form class="card search-form" method="get" action="{% url 'workorders:search' %}" role="search">
+    <label class="sr-only" for="search-term">Buscar por placa, OS, cliente, telefone ou modelo</label>
+    <input class="input input--lg" type="search" id="search-term" name="q" value="{{ term }}"
+           placeholder="Placa, número da OS, cliente, telefone ou modelo" autofocus>
+    <button class="btn btn--primary" type="submit">Buscar</button>
+  </form>
+
+  {% if not term %}
+    <p class="empty-state">Digite uma placa, um número de OS, um nome ou um telefone.</p>
+  {% elif not total %}
+    <div class="empty-state">
+      <p>Nada encontrado para “{{ term }}”.</p>
+      {% if user.can_register_entry %}
+        <a class="btn btn--brand mt-4" href="{% url 'workorders:new_entry' %}">
+          <span aria-hidden="true">+</span> Nova entrada
+        </a>
+      {% endif %}
+    </div>
+  {% else %}
+    {% if vehicles %}
+      <section class="card mt-4">
+        <h2 class="section-title">Veículos</h2>
+        <ul class="result-list">
+          {% for vehicle in vehicles %}
+            <li class="result">
+              <a class="plate" href="{% url 'vehicles:detail' vehicle.uuid %}">{{ vehicle.plate_display }}</a>
+              <span class="result__main">{{ vehicle.description }}</span>
+              <span class="result__meta">{{ vehicle.client.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if clients %}
+      <section class="card mt-4">
+        <h2 class="section-title">Clientes</h2>
+        <ul class="result-list">
+          {% for client in clients %}
+            <li class="result">
+              <a class="result__main" href="{% url 'customers:detail' client.uuid %}">{{ client.name }}</a>
+              <span class="result__meta">{{ client.phone_display }}</span>
+              <span class="result__meta">{{ client.vehicles.count }} veículo{{ client.vehicles.count|pluralize }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if orders %}
+      <section class="card mt-4">
+        <h2 class="section-title">Ordens de serviço</h2>
+        <ul class="result-list">
+          {% for order in orders %}
+            <li class="result">
+              <a class="result__main" href="{% url 'workorders:detail' order.uuid %}">{{ order.number_display }}</a>
+              <span class="plate plate--sm">{{ order.vehicle.plate_display }}</span>
+              <span class="result__meta">{{ order.client.name }}</span>
+              <span class="result__meta">{{ order.entry_at|date:"d/m/Y" }}</span>
+              {% include "components/_status_badge.html" with status_slug=order.status_slug status_label=order.get_status_display %}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  {% endif %}
+{% endblock %}

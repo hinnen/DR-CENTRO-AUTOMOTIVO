@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Histórico</h1>
+      <p class="page-subtitle">Veículos entregues ou cancelados. Pesquise pela placa para achar qualquer atendimento.</p>
+    </div>
+  </div>
+
+  <form class="filters" method="get">
+    <div class="filters__row">
+      <div class="filters__search">
+        <label class="sr-only" for="hist-busca">Buscar</label>
+        <input class="filters__input" id="hist-busca" type="search" name="q" value="{{ filters.q }}"
+               placeholder="Placa, cliente, telefone, modelo ou OS">
+      </div>
+
+      <label class="sr-only" for="hist-inicio">Data inicial</label>
+      <input class="filters__select" id="hist-inicio" type="date" name="start" value="{{ start }}">
+
+      <label class="sr-only" for="hist-fim">Data final</label>
+      <input class="filters__select" id="hist-fim" type="date" name="end" value="{{ end }}">
+
+      <label class="sr-only" for="hist-mecanico">Mecânico</label>
+      <select class="filters__select" id="hist-mecanico" name="mechanic">
+        <option value="">Todos os mecânicos</option>
+        {% for mechanic in mechanics %}
+          <option value="{{ mechanic.uuid }}" {% if filters.mechanic == mechanic.uuid|stringformat:'s' %}selected{% endif %}>
+            {{ mechanic.display_name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button class="btn btn--secondary btn--sm" type="submit">Filtrar</button>
+      {% if filters.has_any or start or end %}
+        <a class="filters__clear" href="{% url 'workorders:history' %}">Limpar</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if orders %}
+    <div class="card table-card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>OS</th><th>Placa</th><th>Veículo</th><th>Cliente</th><th>Entrada</th>
+            <th>Tempo</th><th>Mecânico</th><th>Status</th><th>Localização</th>
+            <th>Previsão</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            {% include "workorders/partials/_order_row.html" with order=order %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% include "components/_pagination.html" %}
+  {% else %}
+    <section class="card empty-state">
+      <span class="empty-state__icon" aria-hidden="true">◷</span>
+      <h2 class="empty-state__title">Nada no histórico ainda.</h2>
+      <p class="empty-state__text">Veículos aparecem aqui depois de entregues.</p>
+    </section>
+  {% endif %}
+{% endblock %}

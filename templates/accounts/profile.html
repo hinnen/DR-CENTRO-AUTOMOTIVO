@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Meu perfil — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Meu perfil</h1>
+      <p class="page-subtitle">Dados da sua conta nesta oficina.</p>
+    </div>
+  </div>
+
+  <section class="card profile-links" aria-label="Atalhos">
+    <h2 class="section-title">Atalhos</h2>
+    <ul class="profile-links__list">
+      <li><a class="btn btn--secondary btn--block" href="{% url 'workorders:search' %}">Buscar placa, OS ou cliente</a></li>
+      <li><a class="btn btn--secondary btn--block" href="{% url 'customers:list' %}">Clientes</a></li>
+      {% if user.can_perform_inspection %}
+        <li><a class="btn btn--secondary btn--block" href="{% url 'mobile:home' %}">Vistoria (celular)</a></li>
+      {% endif %}
+      <li><a class="btn btn--secondary btn--block" href="{% url 'workorders:history' %}">Histórico</a></li>
+    </ul>
+  </section>
+
+  <section class="card mt-4">
+    <dl class="data-list">
+      <div class="data-list__row">
+        <dt>Nome</dt><dd>{{ user.display_name }}</dd>
+      </div>
+      <div class="data-list__row">
+        <dt>Usuário</dt><dd>{{ user.username }}</dd>
+      </div>
+      <div class="data-list__row">
+        <dt>Perfil</dt><dd><span class="badge">{{ user.get_role_display }}</span></dd>
+      </div>
+      <div class="data-list__row">
+        <dt>E-mail</dt><dd>{{ user.email|default:"—" }}</dd>
+      </div>
+      <div class="data-list__row">
+        <dt>Telefone</dt><dd>{{ user.phone|default:"—" }}</dd>
+      </div>
+      <div class="data-list__row">
+        <dt>Último acesso</dt><dd>{{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <form method="post" action="{% url 'accounts:logout' %}" class="mt-4">
+    {% csrf_token %}
+    <button class="btn btn--ghost" type="submit">Sair da conta</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar veículo — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Cadastrar veículo</h1>
+      <p class="page-subtitle">Dados do cliente e do carro. Depois disso a entrada é aberta.</p>
+    </div>
+    <a class="btn btn--ghost btn--sm" href="{% url 'workorders:new_entry' %}">Voltar</a>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="plate" value="{{ plate }}">
+
+    <section class="card">
+      <h2 class="section-title">Cliente</h2>
+
+      {% if selected_client %}
+        <input type="hidden" name="client_uuid" value="{{ selected_client.uuid }}">
+        <div class="entry-vehicle">
+          <div>
+            <p class="entry-vehicle__desc"><strong>{{ selected_client.name }}</strong></p>
+            <p class="entry-vehicle__desc">{{ selected_client.phone_display }}</p>
+          </div>
+          <a class="btn btn--ghost btn--sm" href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}">
+            Trocar cliente
+          </a>
+        </div>
+      {% else %}
+        <div class="field {% if client_form.phone.errors %}field--error{% endif %}">
+          <label class="field__label" for="{{ client_form.phone.id_for_label }}">
+            {{ client_form.phone.label }} <span class="field__required" aria-hidden="true">*</span>
+          </label>
+          {{ client_form.phone }}
+          {% for error in client_form.phone.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+          <div hx-get="{% url 'customers:phone_lookup' %}?plate={{ plate }}"
+               hx-trigger="input changed delay:400ms from:#{{ client_form.phone.id_for_label }}"
+               hx-include="#{{ client_form.phone.id_for_label }}"
+               hx-target="this"
+               hx-swap="innerHTML"></div>
+        </div>
+
+        {% include "components/_field.html" with field=client_form.name %}
+
+        <div class="form-grid">
+          {% include "components/_field.html" with field=client_form.phone_whatsapp %}
+          {% include "components/_field.html" with field=client_form.email %}
+          {% include "components/_field.html" with field=client_form.cpf_cnpj %}
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="card mt-4">
+      <h2 class="section-title">Veículo</h2>
+
+      {% include "components/_field.html" with field=vehicle_form.plate %}
+
+      <div class="form-grid">
+        {% include "components/_field.html" with field=vehicle_form.brand %}
+        {% include "components/_field.html" with field=vehicle_form.model %}
+        {% include "components/_field.html" with field=vehicle_form.version %}
+        {% include "components/_field.html" with field=vehicle_form.color %}
+        {% include "components/_field.html" with field=vehicle_form.model_year %}
+        {% include "components/_field.html" with field=vehicle_form.manufacture_year %}
+        {% include "components/_field.html" with field=vehicle_form.fuel %}
+        {% include "components/_field.html" with field=vehicle_form.chassis %}
+      </div>
+
+      {% include "components/_field.html" with field=vehicle_form.notes %}
+    </section>
+
+    <div class="form-actions">
+      <button class="btn btn--primary btn--lg" type="submit">Cadastrar e continuar</button>
+      <a class="btn btn--ghost" href="{% url 'workorders:new_entry' %}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

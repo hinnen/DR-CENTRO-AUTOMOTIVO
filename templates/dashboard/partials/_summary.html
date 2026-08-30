@@ -1,0 +1,8 @@
+<section id="summary" class="summary" aria-label="Resumo da oficina"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {% for card in summary_cards %}
+    <a class="stat {% if card.danger and card.value %}stat--danger{% endif %}" href="{{ card.url }}">
+      <span class="stat__value">{{ card.value }}</span>
+      <span class="stat__label">{{ card.label }}</span>
+    </a>
+  {% endfor %}
+</section>

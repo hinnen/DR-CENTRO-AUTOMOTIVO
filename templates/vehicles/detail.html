@@ -1,0 +1,125 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ vehicle.plate_display }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <span class="plate plate--lg">{{ vehicle.plate_display }}</span>
+      <h1 class="page-title mt-2">{{ vehicle.description }}</h1>
+      <p class="page-subtitle">
+        {% if vehicle.color %}{{ vehicle.color }} · {% endif %}
+        <a href="{% url 'customers:detail' client.uuid %}">{{ client.name }}</a> · {{ client.phone_display }}
+      </p>
+    </div>
+    <div class="page-header__actions">
+      {% if user.can_manage_customers %}
+        <a class="btn btn--secondary" href="{% url 'vehicles:update' vehicle.uuid %}">Editar</a>
+      {% endif %}
+      {% if user.can_register_entry %}
+        <a class="btn btn--brand" href="{% url 'workorders:new_entry' %}?vehicle={{ vehicle.uuid }}">
+          <span aria-hidden="true">+</span> Nova entrada
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="summary" aria-label="Resumo do veículo">
+    <div class="stat"><span class="stat__value">{{ visit_count }}</span><span class="stat__label">Visitas</span></div>
+    <div class="stat">
+      <span class="stat__value stat__value--sm">{{ first_entry_at|date:"d/m/Y"|default:"—" }}</span>
+      <span class="stat__label">Primeira visita</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value stat__value--sm">{{ last_entry_at|date:"d/m/Y"|default:"—" }}</span>
+      <span class="stat__label">Última visita</span>
+    </div>
+    <div class="stat"><span class="stat__value stat__value--sm">{{ last_km|default:"—" }}</span><span class="stat__label">KM última visita</span></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Dados do veículo</h2>
+    <dl class="lookup__grid">
+      <div><dt>Marca</dt><dd>{{ vehicle.brand }}</dd></div>
+      <div><dt>Modelo</dt><dd>{{ vehicle.model }}</dd></div>
+      <div><dt>Versão</dt><dd>{{ vehicle.version|default:"—" }}</dd></div>
+      <div><dt>Ano modelo</dt><dd>{{ vehicle.model_year|default:"—" }}</dd></div>
+      <div><dt>Ano fabricação</dt><dd>{{ vehicle.manufacture_year|default:"—" }}</dd></div>
+      <div><dt>Cor</dt><dd>{{ vehicle.color|default:"—" }}</dd></div>
+      <div><dt>Combustível</dt><dd>{{ vehicle.get_fuel_display|default:"—" }}</dd></div>
+      <div><dt>Chassi</dt><dd>{{ vehicle.chassis|default:"—" }}</dd></div>
+    </dl>
+    {% if vehicle.notes %}
+      <p class="text-block mt-4">{{ vehicle.notes|linebreaksbr }}</p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="section-title">Linha do tempo dos atendimentos</h2>
+
+    {% if orders %}
+      <ol class="history">
+        {% for order in orders %}
+          <li class="history__item">
+            <div class="history__head">
+              <a class="history__number" href="{% url 'workorders:detail' order.uuid %}">{{ order.number_display }}</a>
+              <span class="history__date">{{ order.entry_at|date:"d/m/Y" }}</span>
+              <span class="history__km">KM {{ order.entry_km }}</span>
+              {% include "components/_status_badge.html" with status_slug=order.status_slug status_label=order.get_status_display %}
+            </div>
+
+            <div class="history__body">
+              <p><strong>Reclamação:</strong> {{ order.customer_complaint }}</p>
+              {% if order.diagnosis %}
+                <p><strong>Diagnóstico:</strong> {{ order.diagnosis }}</p>
+              {% endif %}
+
+              {% if order.tasks.all %}
+                <div>
+                  <strong>Serviços:</strong>
+                  <ul class="history__tasks">
+                    {% for task in order.tasks.all %}
+                      <li class="{% if task.is_done %}history__task--done{% endif %}">
+                        {{ task.title }}
+                        {% if not task.is_done %}<span class="history__task-status">({{ task.get_status_display|lower }})</span>{% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              {% if order.mechanic %}
+                <p><strong>Responsável:</strong> {{ order.mechanic.display_name }}</p>
+              {% endif %}
+
+              {% if order.delivered_at %}
+                <p><strong>Entregue:</strong> {{ order.delivered_at|date:"d/m/Y H:i" }}
+                  {% if order.exit_km %}· KM de saída {{ order.exit_km }}{% endif %}</p>
+              {% endif %}
+
+              {% if order.visible_photos %}
+                <ul class="photo-grid photo-grid--compact">
+                  {% for photo in order.visible_photos|slice:":8" %}
+                    <li class="photo">
+                      <a class="photo__link" href="{{ photo.image.url }}" target="_blank" rel="noopener">
+                        <img class="photo__img" src="{{ photo.image.url }}" loading="lazy"
+                             alt="{{ photo.get_category_display }} — {{ order.number_display }}">
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+                {% if order.visible_photos|length > 8 %}
+                  <a href="{% url 'workorders:detail' order.uuid %}#fotos">
+                    Ver as {{ order.visible_photos|length }} fotos
+                  </a>
+                {% endif %}
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="field__help">Este veículo ainda não teve atendimentos.</p>
+    {% endif %}
+  </section>
+{% endblock %}

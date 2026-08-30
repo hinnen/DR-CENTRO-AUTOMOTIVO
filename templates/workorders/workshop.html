@@ -1,0 +1,51 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Veículos na oficina — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Veículos na oficina</h1>
+      <p class="page-subtitle">{{ page_obj.paginator.count }} veículo(s) com serviço em aberto.</p>
+    </div>
+    {% if user.can_register_entry %}
+      <a class="btn btn--brand" href="{% url 'workorders:new_entry' %}" data-shortcut-new-entry>
+        <span aria-hidden="true">+</span> Nova entrada
+      </a>
+    {% endif %}
+  </div>
+
+  {% include "dashboard/partials/_filters.html" %}
+
+  {% if orders %}
+    <div class="card table-card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>OS</th><th>Placa</th><th>Veículo</th><th>Cliente</th><th>Entrada</th>
+            <th>Tempo</th><th>Mecânico</th><th>Status</th><th>Localização</th>
+            <th>Previsão</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            {% include "workorders/partials/_order_row.html" with order=order %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% include "components/_pagination.html" %}
+  {% else %}
+    <section class="card empty-state">
+      <span class="empty-state__icon" aria-hidden="true">▤</span>
+      <h2 class="empty-state__title">Nenhum veículo encontrado.</h2>
+      <p class="empty-state__text">
+        {% if filters.has_any %}Ajuste os filtros para ver outros veículos.{% else %}A oficina está vazia agora.{% endif %}
+      </p>
+      {% if filters.has_any %}
+        <a class="btn btn--secondary" href="{% url 'workorders:workshop' %}">Limpar filtros</a>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+<form class="filters" method="get" action="{{ filter_action|default:request.path }}">
+  <div class="filters__row">
+    <div class="filters__search">
+      <label class="sr-only" for="filtro-busca">Buscar</label>
+      <input class="filters__input" id="filtro-busca" type="search" name="q"
+             value="{{ filters.q }}" placeholder="Placa, cliente, modelo ou OS">
+    </div>
+
+    <label class="sr-only" for="filtro-status">Status</label>
+    <select class="filters__select" id="filtro-status" name="status">
+      <option value="">Todos os status</option>
+      {% for status in board_statuses %}
+        <option value="{{ status.value }}" {% if filters.status == status.value %}selected{% endif %}>
+          {{ status.label }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label class="sr-only" for="filtro-mecanico">Mecânico</label>
+    <select class="filters__select" id="filtro-mecanico" name="mechanic">
+      <option value="">Todos os mecânicos</option>
+      <option value="none" {% if filters.mechanic == 'none' %}selected{% endif %}>Sem responsável</option>
+      {% for mechanic in mechanics %}
+        <option value="{{ mechanic.uuid }}" {% if filters.mechanic == mechanic.uuid|stringformat:'s' %}selected{% endif %}>
+          {{ mechanic.display_name }}
+        </option>
+      {% endfor %}
+    </select>
+
+    {% if locations %}
+      <label class="sr-only" for="filtro-local">Localização</label>
+      <select class="filters__select" id="filtro-local" name="location">
+        <option value="">Todas as localizações</option>
+        <option value="none" {% if filters.location == 'none' %}selected{% endif %}>Sem localização</option>
+        {% for location in locations %}
+          <option value="{{ location.pk }}" {% if filters.location == location.pk|stringformat:'s' %}selected{% endif %}>
+            {{ location.name }}
+          </option>
+        {% endfor %}
+      </select>
+    {% endif %}
+
+    <button class="btn btn--secondary btn--sm" type="submit">Filtrar</button>
+    {% if show_cards_toggle %}
+      <button class="btn btn--ghost btn--sm" type="button" data-cards-toggle-all
+              aria-pressed="false">
+        <span data-cards-toggle-label>Recolher cards</span>
+      </button>
+    {% endif %}
+  </div>
+
+  <div class="filters__chips">
+    <label class="chip {% if filters.mine == '1' %}is-active{% endif %}">
+      <input type="checkbox" name="mine" value="1" {% if filters.mine == '1' %}checked{% endif %}>
+      Meu trabalho
+    </label>
+    <label class="chip {% if filters.late == '1' %}is-active{% endif %}">
+      <input type="checkbox" name="late" value="1" {% if filters.late == '1' %}checked{% endif %}>
+      Somente atrasados
+    </label>
+    <label class="chip {% if filters.today == '1' %}is-active{% endif %}">
+      <input type="checkbox" name="today" value="1" {% if filters.today == '1' %}checked{% endif %}>
+      Previsão para hoje
+    </label>
+
+    {% if filters.has_any %}
+      <a class="filters__clear" href="{{ filter_action|default:request.path }}">Limpar filtros</a>
+    {% endif %}
+  </div>
+</form>

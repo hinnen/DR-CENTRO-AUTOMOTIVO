@@ -1,0 +1,125 @@
+{% load static %}
+{% include "partials/_toasts.html" with swap_oob=True %}
+<div class="m-photos-head">
+  <h2 class="m-block__title">Fotos da vistoria</h2>
+  <p class="m-photos-progress">
+    Obrigatórias: <strong>{{ guided_done }}/{{ guided_total }}</strong>
+  </p>
+</div>
+
+<p class="m-hint">
+  5 fotos padrão bastam para documentar o carro. Use extras só para avaria ou detalhe.
+</p>
+
+<ul class="m-shots">
+  {% for slot in guided_slots %}
+    <li class="m-shot {% if slot.photo %}m-shot--done{% endif %}">
+      {% if slot.photo %}
+        <a class="m-shot__preview" href="{{ slot.photo.image.url }}" target="_blank" rel="noopener">
+          <img src="{{ slot.photo.image.url }}" alt="{{ slot.label }}" loading="lazy">
+        </a>
+      {% else %}
+        <div class="m-shot__example" aria-hidden="true">
+          {% if slot.example %}
+            <img src="{% static slot.example %}?v=2" alt="" width="88" height="88">
+          {% else %}
+            <span>{{ forloop.counter }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="m-shot__body">
+        <p class="m-shot__label">{{ slot.label }}</p>
+        <p class="m-shot__hint">{{ slot.hint }}</p>
+
+        {% if user.can_upload_photos %}
+          <form
+            class="m-shot__form"
+            method="post"
+            enctype="multipart/form-data"
+            action="{% url 'mobile:upload_photos' order.uuid %}"
+            hx-post="{% url 'mobile:upload_photos' order.uuid %}"
+            hx-target="#m-photo-gallery"
+            hx-swap="innerHTML"
+            hx-encoding="multipart/form-data"
+          >
+            {% csrf_token %}
+            <input type="hidden" name="category" value="VISTORIA">
+            <input type="hidden" name="angle" value="{{ slot.angle }}">
+            <label class="m-shot__capture">
+              <input
+                type="file"
+                name="images"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                required
+                data-auto-submit
+              >
+              <span>{% if slot.photo %}Refazer{% else %}Fotografar{% endif %}</span>
+            </label>
+          </form>
+        {% endif %}
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+<section class="m-extras">
+  <h3 class="m-extras__title">Fotos extras</h3>
+  <p class="m-hint">Avarias, detalhes, documentos — o que precisar registrar.</p>
+
+  {% if extra_photos %}
+    <ul class="m-gallery">
+      {% for photo in extra_photos %}
+        <li class="m-gallery__item">
+          <a href="{{ photo.image.url }}" target="_blank" rel="noopener">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Foto extra' }}" loading="lazy">
+          </a>
+          {% if user.can_delete_photos %}
+            <form
+              method="post"
+              action="{% url 'mobile:remove_photo' order.uuid photo.pk %}"
+              hx-post="{% url 'mobile:remove_photo' order.uuid photo.pk %}"
+              hx-target="#m-photo-gallery"
+              hx-swap="innerHTML"
+              hx-confirm="Remover esta foto?"
+            >
+              {% csrf_token %}
+              <button class="m-gallery__remove" type="submit" aria-label="Remover foto">×</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if user.can_upload_photos %}
+    <form
+      class="m-photo-form"
+      method="post"
+      enctype="multipart/form-data"
+      action="{% url 'mobile:upload_photos' order.uuid %}"
+      hx-post="{% url 'mobile:upload_photos' order.uuid %}"
+      hx-target="#m-photo-gallery"
+      hx-swap="innerHTML"
+      hx-encoding="multipart/form-data"
+      id="m-photo-upload"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="category" value="VISTORIA">
+      <input type="hidden" name="angle" value="EXTRA">
+      <label class="m-photo-capture">
+        <input
+          type="file"
+          name="images"
+          accept="image/jpeg,image/png,image/webp"
+          capture="environment"
+          multiple
+          required
+          data-auto-submit
+        >
+        <span class="m-photo-capture__btn">+ Foto extra</span>
+      </label>
+    </form>
+  {% endif %}
+</section>

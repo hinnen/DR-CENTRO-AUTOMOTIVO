@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Vistoria {{ order.number_display }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Vistoria de entrada</h1>
+      <p class="page-subtitle">
+        {{ order.number_display }} · {{ order.vehicle.plate_display }} · {{ order.vehicle.description }}
+      </p>
+    </div>
+    <a class="btn btn--ghost" href="{{ order.get_absolute_url }}#vistoria">Voltar para a OS</a>
+  </div>
+
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--danger" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <p class="field__help">
+      Marque só o que conseguir conferir. Itens deixados como “não verificado” são registrados
+      assim mesmo — é melhor do que marcar OK sem olhar.
+    </p>
+
+    <ul class="inspection-form">
+      {% for item, condition_field, note_field in form.item_rows %}
+        <li class="inspection-row">
+          <p class="inspection-row__label" id="label-{{ item.key }}">{{ item.label }}</p>
+
+          <div class="condition-choice" role="radiogroup" aria-labelledby="label-{{ item.key }}">
+            {% for radio in condition_field %}
+              <label class="condition-choice__option condition-choice__option--{{ radio.data.value|lower }}">
+                {{ radio.tag }}
+                <span>{{ radio.choice_label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+
+          <div class="inspection-row__note">
+            <label class="sr-only" for="{{ note_field.id_for_label }}">{{ note_field.label }}</label>
+            {{ note_field }}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="inspection-footer">
+      {% include "components/_field.html" with field=form.fuel_level %}
+      {% include "components/_field.html" with field=form.notes %}
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn--primary btn--lg" type="submit">Salvar vistoria</button>
+      <a class="btn btn--ghost" href="{{ order.get_absolute_url }}#vistoria">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Clientes</h1>
+      <p class="page-subtitle">{{ page_obj.paginator.count }} cliente(s) cadastrado(s).</p>
+    </div>
+    {% if user.can_manage_customers %}
+      <a class="btn btn--primary" href="{% url 'customers:create' %}"><span aria-hidden="true">+</span> Novo cliente</a>
+    {% endif %}
+  </div>
+
+  <form class="filters" method="get">
+    <div class="filters__row">
+      <div class="filters__search">
+        <label class="sr-only" for="cli-busca">Buscar cliente</label>
+        <input class="filters__input" id="cli-busca" type="search" name="q" value="{{ search_term }}"
+               placeholder="Nome, telefone ou CPF/CNPJ">
+      </div>
+      <button class="btn btn--secondary btn--sm" type="submit">Buscar</button>
+      {% if search_term %}<a class="filters__clear" href="{% url 'customers:list' %}">Limpar</a>{% endif %}
+    </div>
+  </form>
+
+  {% if clients %}
+    <div class="card table-card">
+      <table class="table">
+        <thead>
+          <tr><th>Nome</th><th>Telefone</th><th>Veículos</th><th>Atendimentos</th><th>Última visita</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+            <tr>
+              <td data-label="Nome"><a href="{% url 'customers:detail' client.uuid %}">{{ client.name }}</a></td>
+              <td data-label="Telefone">{{ client.phone_display }}</td>
+              <td data-label="Veículos">{{ client.vehicles.count }}</td>
+              <td data-label="Atendimentos">{{ client.order_count }}</td>
+              <td data-label="Última visita">{{ client.last_visit|date:"d/m/Y"|default:"—" }}</td>
+              <td data-label="Ações">
+                <a class="btn btn--secondary btn--sm" href="{% url 'customers:detail' client.uuid %}">Abrir</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% include "components/_pagination.html" %}
+  {% else %}
+    <section class="card empty-state">
+      <span class="empty-state__icon" aria-hidden="true">☺</span>
+      <h2 class="empty-state__title">
+        {% if search_term %}Nenhum cliente encontrado.{% else %}Nenhum cliente cadastrado.{% endif %}
+      </h2>
+      <p class="empty-state__text">
+        {% if search_term %}Tente outro nome ou telefone.{% else %}O cadastro acontece junto com a primeira entrada.{% endif %}
+      </p>
+      {% if user.can_manage_customers %}
+        <a class="btn btn--primary" href="{% url 'customers:create' %}">Cadastrar cliente</a>
+      {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

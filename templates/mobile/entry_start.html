@@ -1,0 +1,83 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block title %}Nova entrada — DR Vistoria{% endblock %}
+{% block body_class %}m-app--entry{% endblock %}
+
+{% block content %}
+  <div class="m-entry">
+    <a class="m-entry__back" href="{% url 'mobile:home' %}">← Oficina</a>
+
+    <nav class="m-progress" aria-label="Etapas">
+      <div class="m-progress__track" aria-hidden="true"></div>
+      <div class="m-progress__steps">
+        <div class="m-progress__step is-current">
+          <span class="m-progress__dot">1</span>
+          <span class="m-progress__label">Placa</span>
+        </div>
+        <div class="m-progress__step">
+          <span class="m-progress__dot">2</span>
+          <span class="m-progress__label">Dados</span>
+        </div>
+        <div class="m-progress__step">
+          <span class="m-progress__dot">3</span>
+          <span class="m-progress__label">Vistoria</span>
+        </div>
+      </div>
+    </nav>
+
+    <header class="m-entry__intro">
+      <p class="m-entry__eyebrow">Recepção no pátio</p>
+      <h1 class="m-entry__title">Qual a placa?</h1>
+      <p class="m-entry__sub">Se o carro já passou pela oficina, o cliente aparece na hora.</p>
+    </header>
+
+    <div class="m-plate-card">
+      <div class="m-br-plate">
+        <div class="m-br-plate__stripe">
+          <span class="m-br-plate__br">BR</span>
+          <span class="m-br-plate__hint">MERCOSUL</span>
+        </div>
+        <label class="sr-only" for="m-plate">Placa do veículo</label>
+        <input
+          id="m-plate"
+          class="m-br-plate__input"
+          type="search"
+          name="plate"
+          placeholder="ABC1D23"
+          autocomplete="off"
+          autocapitalize="characters"
+          autofocus
+          inputmode="text"
+          maxlength="8"
+          hx-get="{% url 'mobile:entry_plate_lookup' %}"
+          hx-trigger="input changed delay:280ms"
+          hx-target="#m-plate-result"
+          hx-indicator="#m-plate-loading"
+        >
+      </div>
+      <p class="m-plate-card__help">
+        Antiga ABC1234 · Mercosul ABC1D23<br>
+        <strong>Dica:</strong> aproxime e enquadre <em>só a placa</em> — foto do carro inteiro erra a leitura.
+      </p>
+      <p class="m-plate-card__loading htmx-indicator" id="m-plate-loading">Buscando…</p>
+
+      <div class="m-plate-ocr">
+        <input
+          id="m-plate-camera"
+          class="sr-only"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          data-plate-ocr
+          data-plate-ocr-url="{% url 'mobile:entry_read_plate' %}"
+        >
+        <label for="m-plate-camera" class="m-plate-ocr__btn" id="m-plate-ocr-btn">
+          Fotografar placa
+        </label>
+        <p class="m-plate-ocr__status" id="m-plate-ocr-status" hidden></p>
+      </div>
+    </div>
+
+    <div id="m-plate-result" class="m-plate-result" aria-live="polite"></div>
+  </div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div><h1 class="page-title">{{ page_title }}</h1></div>
+  </div>
+
+  <form class="card form-narrow" method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--danger" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% include "components/_field.html" with field=form.name %}
+
+    <div class="field {% if form.phone.errors %}field--error{% endif %}">
+      <label class="field__label" for="{{ form.phone.id_for_label }}">
+        {{ form.phone.label }} <span class="field__required" aria-hidden="true">*</span>
+      </label>
+      {{ form.phone }}
+      {% for error in form.phone.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+      {% if is_create %}
+        <div hx-get="{% url 'customers:phone_lookup' %}"
+             hx-trigger="input changed delay:400ms from:#{{ form.phone.id_for_label }}"
+             hx-include="#{{ form.phone.id_for_label }}"
+             hx-target="this"
+             hx-swap="innerHTML"></div>
+      {% endif %}
+    </div>
+
+    <div class="form-grid">
+      {% include "components/_field.html" with field=form.phone_whatsapp %}
+      {% include "components/_field.html" with field=form.email %}
+      {% include "components/_field.html" with field=form.cpf_cnpj %}
+    </div>
+
+    {% include "components/_field.html" with field=form.notes %}
+
+    <div class="form-actions">
+      <button class="btn btn--primary btn--lg" type="submit">Salvar</button>
+      <a class="btn btn--ghost" href="{% url 'customers:list' %}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}

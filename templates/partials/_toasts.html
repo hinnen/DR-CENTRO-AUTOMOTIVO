@@ -1,0 +1,9 @@
+{# O container fica sempre no DOM: o Kanban injeta avisos aqui sem recarregar. #}
+<div class="toasts" id="toasts" role="status" aria-live="polite"{% if swap_oob %} hx-swap-oob="true"{% endif %}>
+  {% for message in messages %}
+    <div class="toast toast--{{ message.tags|default:'info' }}" data-toast>
+      <span class="toast__text">{{ message }}</span>
+      <button class="toast__close" type="button" aria-label="Fechar aviso" data-dismiss-toast>×</button>
+    </div>
+  {% endfor %}
+</div>

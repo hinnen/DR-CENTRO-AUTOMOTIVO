@@ -1,0 +1,73 @@
+﻿{% extends "base.html" %}
+
+{% block title %}{{ client.name }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ client.name }}</h1>
+      <p class="page-subtitle">{{ client.phone_display }}{% if client.email %} · {{ client.email }}{% endif %}</p>
+    </div>
+    <div class="page-header__actions">
+      {% if user.can_manage_customers %}
+        <a class="btn btn--secondary" href="{% url 'customers:update' client.uuid %}">Editar</a>
+      {% endif %}
+      {% if user.can_register_entry %}
+        <a class="btn btn--brand" href="{% url 'workorders:new_entry' %}">
+          <span aria-hidden="true">+</span> Nova entrada
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="summary" aria-label="Resumo do cliente">
+    <div class="stat"><span class="stat__value">{{ client.vehicles.count }}</span><span class="stat__label">Veículos</span></div>
+    <div class="stat"><span class="stat__value">{{ order_count }}</span><span class="stat__label">Atendimentos</span></div>
+    <div class="stat">
+      <span class="stat__value stat__value--sm">{{ last_visit|date:"d/m/Y"|default:"—" }}</span>
+      <span class="stat__label">Última visita</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Veículos deste cliente</h2>
+    {% if client.vehicles.all %}
+      <ul class="vehicle-list">
+        {% for vehicle in client.vehicles.all %}
+          <li class="vehicle-list__item">
+            <a class="plate" href="{% url 'vehicles:detail' vehicle.uuid %}">{{ vehicle.plate_display }}</a>
+            <span>{{ vehicle.description }}</span>
+            <span class="vehicle-list__color">{{ vehicle.color|default:"" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="field__help">Nenhum veículo cadastrado para este cliente.</p>
+    {% endif %}
+  </section>
+
+  {% if client.notes %}
+    <section class="card mt-4">
+      <h2 class="section-title">Observações</h2>
+      <p class="text-block">{{ client.notes|linebreaksbr }}</p>
+    </section>
+  {% endif %}
+
+  <section class="card mt-4">
+    <h2 class="section-title">Histórico de atendimentos</h2>
+    {% if orders %}
+      <ul class="mini-list">
+        {% for order in orders %}
+          <li>
+            <a href="{% url 'workorders:detail' order.uuid %}">{{ order.number_display }}</a>
+            <span class="plate">{{ order.vehicle.plate_display }}</span>
+            <span>{{ order.entry_at|date:"d/m/Y" }}</span>
+            {% include "components/_status_badge.html" with status_slug=order.status_slug status_label=order.get_status_display %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="field__help">Nenhum atendimento registrado.</p>
+    {% endif %}
+  </section>
+{% endblock %}

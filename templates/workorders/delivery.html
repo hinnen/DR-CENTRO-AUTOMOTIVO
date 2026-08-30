@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registrar saída {{ order.number_display }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Registrar saída</h1>
+      <p class="page-subtitle">
+        {{ order.number_display }} · {{ order.vehicle.plate_display }} · {{ order.client.name }}
+      </p>
+    </div>
+    <a class="btn btn--ghost" href="{{ order.get_absolute_url }}">Voltar para a OS</a>
+  </div>
+
+  {% if open_tasks %}
+    <div class="alert alert--warning" role="alert">
+      <strong>Ainda há {{ open_tasks|length }} serviço{{ open_tasks|length|pluralize }} em aberto.</strong>
+      <ul class="alert__list">
+        {% for task in open_tasks %}<li>{{ task.title }}</li>{% endfor %}
+      </ul>
+      A entrega pode ser registrada mesmo assim, mas confira antes com o mecânico.
+    </div>
+  {% endif %}
+
+  <form method="post" class="card">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--danger" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="form-grid">
+      {% include "components/_field.html" with field=form.delivered_at %}
+      {% include "components/_field.html" with field=form.exit_km %}
+    </div>
+
+    {% include "components/_field.html" with field=form.exit_notes %}
+    {% include "components/_field.html" with field=form.exit_km_justification %}
+
+    <fieldset class="fieldset">
+      <legend class="fieldset__legend">Quem retirou o veículo</legend>
+      <p class="fieldset__hint">
+        Tudo opcional. Preencha quando quem levar o carro não for o próprio
+        {{ order.client.name }} — filho, motorista, funcionário da empresa.
+      </p>
+
+      <div class="form-grid">
+        {% include "components/_field.html" with field=form.received_by_name %}
+        {% include "components/_field.html" with field=form.received_by_document %}
+      </div>
+
+      <div class="signature" data-signature>
+        <div class="signature__label">
+          <span class="field__label">Assinatura de quem retirou</span>
+          <button class="btn btn--ghost btn--sm" type="button" data-signature-clear>Limpar</button>
+        </div>
+        <canvas class="signature__pad" data-signature-pad height="180"
+                aria-label="Área para assinar com o dedo ou o mouse"></canvas>
+        <p class="field__help">Assine com o dedo na tela ou com o mouse. Pode deixar em branco.</p>
+        {% comment %}
+          O input é hidden, então o erro dele não sai em non_field_errors na
+          renderização manual. Sem isto, uma assinatura recusada sumiria calada.
+        {% endcomment %}
+        {% for error in form.signature.errors %}
+          <p class="field__error">{{ error }}</p>
+        {% endfor %}
+        {{ form.signature }}
+      </div>
+    </fieldset>
+
+    <div class="delivery-confirm">
+      <p class="field__help">
+        A entrega será registrada em nome de <strong>{{ user.display_name }}</strong>.
+        A OS passa para <strong>Entregue</strong> e o veículo sai do quadro, continuando
+        disponível na busca pela placa.
+      </p>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn--brand btn--lg" type="submit">Confirmar entrega</button>
+      <a class="btn btn--ghost" href="{{ order.get_absolute_url }}">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/signature.js' %}" defer></script>
+{% endblock %}

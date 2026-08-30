@@ -1,0 +1,19 @@
+{# Uma linha por OS no desktop; no celular o CSS transforma em card. #}
+<tr class="os-row {% if order.is_late %}os-row--late{% endif %}">
+  <td data-label="OS"><a href="{% url 'workorders:detail' order.uuid %}">{{ order.number_display }}</a></td>
+  <td data-label="Placa"><span class="plate">{{ order.vehicle.plate_display }}</span></td>
+  <td data-label="Veículo">{{ order.vehicle.description }}</td>
+  <td data-label="Cliente">{{ order.client.name }}</td>
+  <td data-label="Entrada">{{ order.entry_at|date:"d/m/Y H:i" }}</td>
+  <td data-label="Tempo">{{ order.time_in_workshop }}</td>
+  <td data-label="Mecânico">{{ order.mechanic.short_name|default:"—" }}</td>
+  <td data-label="Status">
+    {% include "components/_status_badge.html" with status_slug=order.status_slug status_label=order.get_status_display %}
+  </td>
+  <td data-label="Localização">{{ order.location.name|default:"—" }}</td>
+  <td data-label="Previsão">
+    {{ order.expected_delivery_display }}
+    {% if order.is_late %}<span class="tag tag--late">Atrasado</span>{% endif %}
+  </td>
+  <td data-label="Ações"><a class="btn btn--secondary btn--sm" href="{% url 'workorders:detail' order.uuid %}">Abrir</a></td>
+</tr>

@@ -1,0 +1,92 @@
+{% comment %}
+Card do Kanban. Placa nunca truncada.
+Recolhido: linha 1 = placa + seta; linha 2 = veículo + ícones de status.
+Expandido: tags de status no rodapé em linha própria, para caber 2+.
+{% endcomment %}
+<article class="card-os {% if order.is_late %}card-os--late{% endif %}"
+         data-order-uuid="{{ order.uuid }}"
+         data-order-status="{{ order.status }}"
+         data-move-url="{% url 'workorders:move' order.uuid %}">
+
+  <div class="card-os__summary">
+    <div class="card-os__head">
+      <a class="plate" href="{% url 'workorders:detail' order.uuid %}">{{ order.vehicle.plate_display }}</a>
+      <button class="card-os__toggle" type="button" data-card-toggle
+              aria-expanded="true" aria-label="Recolher card {{ order.vehicle.plate_display }}">
+        <span aria-hidden="true">▾</span>
+      </button>
+    </div>
+    <div class="card-os__subhead">
+      <p class="card-os__vehicle">{{ order.vehicle.description }}</p>
+      <span class="card-os__icons" aria-label="Alertas">
+        {% if order.priority == 'URGENTE' %}
+          <span class="card-os__icon card-os__icon--urgente" title="Urgente">!</span>
+        {% elif order.priority == 'ALTA' %}
+          <span class="card-os__icon card-os__icon--alta" title="Alta">▲</span>
+        {% endif %}
+        {% if order.is_late %}
+          <span class="card-os__icon card-os__icon--late" title="Atrasado {{ order.late_by }}">⏱</span>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  <div class="card-os__details">
+    <p class="card-os__client">{{ order.client.name }}</p>
+
+    <dl class="card-os__meta">
+      <div>
+        <dt class="sr-only">Mecânico</dt>
+        <dd><span aria-hidden="true">🔧</span> {{ order.mechanic.short_name|default:"—" }}</dd>
+      </div>
+      <div>
+        <dt class="sr-only">Localização</dt>
+        <dd><span aria-hidden="true">📍</span> {{ order.location.name|default:"—" }}</dd>
+      </div>
+      <div>
+        <dt class="sr-only">Tempo na oficina</dt>
+        <dd><span aria-hidden="true">⏱</span> {{ order.time_in_workshop }}</dd>
+      </div>
+      <div>
+        <dt class="sr-only">Previsão de entrega</dt>
+        <dd><span aria-hidden="true">📅</span> {{ order.expected_delivery_display }}</dd>
+      </div>
+    </dl>
+
+    <div class="card-os__extras">
+      {% with progress=order.task_progress %}
+        {% if progress.total %}
+          <p class="card-os__progress{% if progress.all_done %} card-os__progress--done{% endif %}">
+            <span aria-hidden="true">{% if progress.all_done %}✓{% else %}☰{% endif %}</span>
+            {{ progress.done }}/{{ progress.total }} serviços
+          </p>
+        {% else %}
+          <p class="card-os__progress card-os__progress--empty">&nbsp;</p>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <div class="card-os__foot">
+      <div class="card-os__foot-top">
+        <span class="card-os__number">{{ order.number_display }}</span>
+        {% if order.photo_total %}
+          <span class="card-os__photos" title="{{ order.photo_total }} foto{{ order.photo_total|pluralize }}">
+            <span aria-hidden="true">📷</span> {{ order.photo_total }}
+          </span>
+        {% endif %}
+      </div>
+      {% if order.priority != 'NORMAL' or order.is_late %}
+        <div class="card-os__flags">
+          {% if order.priority == 'URGENTE' %}
+            <span class="tag tag--urgente">Urgente</span>
+          {% elif order.priority == 'ALTA' %}
+            <span class="tag tag--alta">Alta</span>
+          {% endif %}
+          {% if order.is_late %}
+            <span class="tag tag--late" title="Atrasado {{ order.late_by }}">Atrasado</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</article>

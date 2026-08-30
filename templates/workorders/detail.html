@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}{{ order.number_display }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="os-header card">
+    <div class="os-header__main">
+      <div class="os-header__id">
+        <span class="os-header__number">{{ order.number_display }}</span>
+        {% include "components/_status_badge.html" with status_slug=order.status_slug status_label=order.get_status_display %}
+        {% if order.is_late %}<span class="tag tag--late">Atrasado {{ order.late_by }}</span>{% endif %}
+        {% if order.priority != 'NORMAL' %}
+          <span class="tag tag--{{ order.priority|lower }}">{{ order.get_priority_display }}</span>
+        {% endif %}
+      </div>
+
+      <a class="plate plate--lg" href="{% url 'vehicles:detail' order.vehicle.uuid %}">
+        {{ order.vehicle.plate_display }}
+      </a>
+      <p class="os-header__vehicle">{{ order.vehicle.description }}{% if order.vehicle.color %} · {{ order.vehicle.color }}{% endif %}</p>
+    </div>
+
+    <dl class="os-header__grid">
+      <div><dt>Cliente</dt><dd><a href="{% url 'customers:detail' order.client.uuid %}">{{ order.client.name }}</a></dd></div>
+      <div><dt>Telefone</dt><dd>{{ order.client.phone_display }}</dd></div>
+      <div><dt>Mecânico</dt><dd>{{ order.mechanic.display_name|default:"Sem responsável" }}</dd></div>
+      <div><dt>Localização</dt><dd>{{ order.location.name|default:"—" }}</dd></div>
+      <div><dt>Previsão</dt><dd>{{ order.expected_delivery_display }}</dd></div>
+      <div><dt>Na oficina</dt><dd>{{ order.time_in_workshop }}</dd></div>
+      <div><dt>Neste status</dt><dd>{{ order.time_in_status }}</dd></div>
+      <div><dt>KM de entrada</dt><dd>{{ order.entry_km }}</dd></div>
+    </dl>
+
+    {% if order.is_open %}
+      <div class="os-header__actions">
+        {% if order.status != 'FINALIZADO' %}
+          <form method="post" action="{% url 'workorders:finalize' order.uuid %}">
+            {% csrf_token %}
+            <button class="btn btn--success" type="submit"
+                    {% if not progress.all_done and progress.total %}onclick="return confirm('Ainda há serviços em aberto. Finalizar mesmo assim?');"{% endif %}>
+              Finalizar serviço
+            </button>
+          </form>
+        {% endif %}
+        {% if user.can_deliver_vehicle %}
+          <a class="btn btn--brand" href="{% url 'workorders:delivery' order.uuid %}">Registrar saída</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if order.status == 'CANCELADO' %}
+    <div class="alert alert--danger mt-4" role="alert">
+      <strong>OS cancelada</strong> em {{ order.cancelled_at|date:"d/m/Y H:i" }}
+      {% if order.cancelled_by %}por {{ order.cancelled_by.display_name }}{% endif %}.
+      <br>Motivo: {{ order.cancellation_reason }}
+    </div>
+  {% endif %}
+
+  <div class="os-body">
+    <div class="os-body__main">
+      {# Sem JavaScript as seções aparecem empilhadas; o script apenas as separa em abas. #}
+      <nav class="tabs" data-tabs aria-label="Seções da ordem de serviço">
+        <button class="tabs__btn" type="button" data-tab-target="resumo">Resumo</button>
+        <button class="tabs__btn" type="button" data-tab-target="servicos">
+          Serviços{% if progress.total %} <span class="tabs__count">{{ progress.done }}/{{ progress.total }}</span>{% endif %}
+        </button>
+        <button class="tabs__btn" type="button" data-tab-target="diagnostico">Diagnóstico</button>
+        <button class="tabs__btn" type="button" data-tab-target="vistoria">
+          Vistoria e fotos{% if photo_count %} <span class="tabs__count">{{ photo_count }}</span>{% endif %}
+        </button>
+        <button class="tabs__btn" type="button" data-tab-target="linha-do-tempo">Linha do tempo</button>
+        <button class="tabs__btn" type="button" data-tab-target="veiculo">Histórico do veículo</button>
+        <button class="tabs__btn" type="button" data-tab-target="saida">Saída</button>
+      </nav>
+
+      <section class="card tab-panel" id="resumo">
+        <h2 class="section-title">Reclamação do cliente</h2>
+        <p class="text-block">{{ order.customer_complaint|linebreaksbr }}</p>
+
+        {% if order.internal_notes %}
+          <h2 class="section-title mt-4">Observações internas</h2>
+          <p class="text-block">{{ order.internal_notes|linebreaksbr }}</p>
+        {% endif %}
+      </section>
+
+      <section class="card tab-panel mt-4" id="servicos">
+        <h2 class="section-title">Serviços</h2>
+        {% include "workorders/partials/_tasks.html" %}
+      </section>
+
+      <section class="card tab-panel mt-4" id="diagnostico">
+        <h2 class="section-title">Diagnóstico</h2>
+        {% if order.diagnosis_updated_at %}
+          <p class="field__help">
+            Atualizado em {{ order.diagnosis_updated_at|date:"d/m/Y H:i" }}
+            {% if order.diagnosis_updated_by %}por {{ order.diagnosis_updated_by.display_name }}{% endif %}.
+          </p>
+        {% endif %}
+
+        {% if order.is_open and user.can_update_diagnosis %}
+          <form method="post" action="{% url 'workorders:update_diagnosis' order.uuid %}">
+            {% csrf_token %}
+            {% include "components/_field.html" with field=diagnosis_form.diagnosis %}
+            <button class="btn btn--primary" type="submit">Salvar diagnóstico</button>
+          </form>
+        {% elif order.diagnosis %}
+          <p class="text-block">{{ order.diagnosis|linebreaksbr }}</p>
+        {% else %}
+          <p class="empty-state empty-state--inline">Nenhum diagnóstico registrado.</p>
+        {% endif %}
+      </section>
+
+      <section class="card tab-panel mt-4" id="vistoria">
+        <div class="section-head">
+          <h2 class="section-title">Vistoria de entrada</h2>
+          {% if order.is_open and user.can_perform_inspection %}
+            <div class="section-head__actions">
+              <a class="btn btn--ghost btn--sm" href="{% url 'mobile:inspection' order.uuid %}">
+                Continuar no celular
+              </a>
+              <a class="btn btn--secondary btn--sm" href="{% url 'workorders:inspection' order.uuid %}">
+                {% if inspection %}Editar vistoria{% else %}Fazer vistoria{% endif %}
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if inspection and inspection.performed_by %}
+          <p class="field__help">
+            Vistoriado em {{ inspection.performed_at|date:"d/m/Y H:i" }} por {{ inspection.performed_by.display_name }}
+            · Combustível: {{ inspection.get_fuel_level_display }}
+          </p>
+          <ul class="inspection-summary">
+            <li class="condition condition--ok">{{ inspection_summary.ok }} OK</li>
+            <li class="condition condition--atencao">{{ inspection_summary.attention }} atenção</li>
+            <li class="condition condition--avaria">{{ inspection_summary.damage }} avaria</li>
+            <li class="condition condition--nao-verificado">{{ inspection_summary.not_checked }} não verificado</li>
+          </ul>
+
+          <ul class="inspection-list">
+            {% for item in inspection.items.all %}
+              <li class="inspection-item">
+                <span class="inspection-item__label">{{ item.label }}</span>
+                <span class="condition condition--{{ item.condition_slug }}">{{ item.get_condition_display }}</span>
+                {% if item.note %}<span class="inspection-item__note">{{ item.note }}</span>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+
+          {% if inspection.notes %}
+            <p class="text-block mt-4">{{ inspection.notes|linebreaksbr }}</p>
+          {% endif %}
+        {% else %}
+          <p class="empty-state empty-state--inline">
+            Vistoria ainda não registrada para esta entrada.
+          </p>
+        {% endif %}
+
+        <h2 class="section-title mt-4" id="fotos">Fotos</h2>
+        {% include "workorders/partials/_photos.html" %}
+
+        {% if order.is_open and user.can_upload_photos %}
+          <form class="photo-form mt-4" method="post" enctype="multipart/form-data"
+                action="{% url 'workorders:upload_photos' order.uuid %}">
+            {% csrf_token %}
+            <div class="photo-form__row">
+              {% include "components/_field.html" with field=photo_form.category %}
+              {% include "components/_field.html" with field=photo_form.caption %}
+            </div>
+            {% include "components/_field.html" with field=photo_form.images %}
+            <p class="field__help">JPG, PNG ou WEBP. No celular o botão abre a câmera direto.</p>
+            <button class="btn btn--primary" type="submit">
+              <span aria-hidden="true">📷</span> Enviar fotos
+            </button>
+          </form>
+        {% endif %}
+      </section>
+
+      <section class="card tab-panel mt-4" id="linha-do-tempo">
+        <h2 class="section-title">Linha do tempo</h2>
+        <ol class="timeline">
+          {% for entry in activities %}
+            <li class="timeline__item">
+              <span class="timeline__icon" aria-hidden="true">{{ entry.icon }}</span>
+              <div class="timeline__body">
+                <p class="timeline__time">{{ entry.created_at|date:"d/m/Y H:i" }}</p>
+                <p class="timeline__text">{{ entry.description }}</p>
+                <p class="timeline__author">{{ entry.actor.display_name|default:"Sistema" }}</p>
+              </div>
+            </li>
+          {% empty %}
+            <li class="empty-state empty-state--inline">Nenhum registro ainda.</li>
+          {% endfor %}
+        </ol>
+      </section>
+
+      <section class="card tab-panel mt-4" id="veiculo">
+        <h2 class="section-title">Atendimentos anteriores deste veículo</h2>
+        {% if vehicle_orders %}
+          <ul class="mini-list">
+            {% for previous in vehicle_orders %}
+              <li>
+                <a href="{% url 'workorders:detail' previous.uuid %}">{{ previous.number_display }}</a>
+                <span>{{ previous.entry_at|date:"d/m/Y" }}</span>
+                <span>KM {{ previous.entry_km }}</span>
+                {% include "components/_status_badge.html" with status_slug=previous.status_slug status_label=previous.get_status_display %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty-state empty-state--inline">Primeira passagem deste veículo pela oficina.</p>
+        {% endif %}
+        <a class="btn btn--secondary btn--sm mt-4" href="{% url 'vehicles:detail' order.vehicle.uuid %}">
+          Ver histórico completo da placa
+        </a>
+      </section>
+
+      <section class="card tab-panel mt-4" id="saida">
+        <h2 class="section-title">Saída e entrega</h2>
+
+        {% if order.delivered_at %}
+          <dl class="data-list">
+            <div class="data-list__row"><dt>Entregue em</dt><dd>{{ order.delivered_at|date:"d/m/Y H:i" }}</dd></div>
+            <div class="data-list__row"><dt>Entregue por</dt><dd>{{ order.delivered_by.display_name|default:"—" }}</dd></div>
+            <div class="data-list__row"><dt>KM de entrada</dt><dd>{{ order.entry_km }}</dd></div>
+            <div class="data-list__row"><dt>KM de saída</dt><dd>{{ order.exit_km }}</dd></div>
+            <div class="data-list__row"><dt>Rodou</dt><dd>{{ order.km_driven }} km</dd></div>
+            {% if order.received_by_name %}
+              <div class="data-list__row">
+                <dt>Retirado por</dt>
+                <dd>
+                  {{ order.received_by_name }}
+                  {% if order.received_by_document %}<span class="text-muted">· {{ order.received_by_document }}</span>{% endif %}
+                </dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if order.delivery_signature %}
+            <h3 class="section-title mt-4">Assinatura da retirada</h3>
+            <figure class="signature-proof">
+              <img src="{{ order.delivery_signature.url }}"
+                   alt="Assinatura de {{ order.received_by_name|default:order.client.name }}">
+            </figure>
+          {% endif %}
+          {% if order.exit_km_justification %}
+            <div class="alert alert--warning mt-4" role="note">
+              <strong>Justificativa do KM:</strong> {{ order.exit_km_justification }}
+            </div>
+          {% endif %}
+          {% if order.exit_notes %}
+            <h3 class="section-title mt-4">Resumo entregue ao cliente</h3>
+            <p class="text-block">{{ order.exit_notes|linebreaksbr }}</p>
+          {% endif %}
+        {% elif order.is_open %}
+          <p class="text-block">
+            O veículo ainda está na oficina. Registre a saída quando o cliente retirar o carro.
+          </p>
+          {% if user.can_deliver_vehicle %}
+            <a class="btn btn--brand mt-4" href="{% url 'workorders:delivery' order.uuid %}">Registrar saída</a>
+          {% endif %}
+
+          {% if user.can_cancel_order %}
+            <h3 class="section-title mt-4">Cancelar ordem de serviço</h3>
+            <p class="field__help">
+              Uma OS nunca é apagada. Cancelar preserva todo o histórico e libera o veículo do quadro.
+            </p>
+            <form method="post" action="{% url 'workorders:cancel' order.uuid %}"
+                  onsubmit="return confirm('Cancelar {{ order.number_display }}? Esta ação fica registrada.');">
+              {% csrf_token %}
+              {% include "components/_field.html" with field=cancel_form.cancellation_reason %}
+              <button class="btn btn--danger" type="submit">Cancelar OS</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <p class="text-block">Esta OS está {{ order.get_status_display|lower }}.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <aside class="os-body__side">
+      <section class="card">
+        <h2 class="section-title">Ações rápidas</h2>
+
+        {% if order.is_open %}
+          <form method="post" action="{% url 'workorders:change_status' order.uuid %}" class="action-form">
+            {% csrf_token %}
+            {% include "components/_field.html" with field=status_form.status %}
+            {% include "components/_field.html" with field=status_form.note %}
+            <button class="btn btn--primary btn--block" type="submit">Alterar status</button>
+          </form>
+
+          <form method="post" action="{% url 'workorders:change_mechanic' order.uuid %}" class="action-form">
+            {% csrf_token %}
+            {% include "components/_field.html" with field=mechanic_form.mechanic %}
+            <button class="btn btn--secondary btn--block" type="submit">Alterar mecânico</button>
+          </form>
+
+          <form method="post" action="{% url 'workorders:change_location' order.uuid %}" class="action-form">
+            {% csrf_token %}
+            {% include "components/_field.html" with field=location_form.location %}
+            <button class="btn btn--secondary btn--block" type="submit">Alterar localização</button>
+          </form>
+
+          <form method="post" action="{% url 'workorders:change_delivery' order.uuid %}" class="action-form">
+            {% csrf_token %}
+            {% include "components/_field.html" with field=delivery_form.expected_delivery_at %}
+            <button class="btn btn--secondary btn--block" type="submit">Alterar previsão</button>
+          </form>
+        {% else %}
+          <p class="field__help">
+            Esta OS está {{ order.get_status_display|lower }} e não aceita mais alterações.
+          </p>
+        {% endif %}
+      </section>
+
+      <section class="card mt-4">
+        <h2 class="section-title">Registro</h2>
+        <dl class="data-list">
+          <div class="data-list__row"><dt>Entrada</dt><dd>{{ order.entry_at|date:"d/m/Y H:i" }}</dd></div>
+          <div class="data-list__row"><dt>Registrado por</dt><dd>{{ order.created_by.display_name|default:"—" }}</dd></div>
+          {% if order.finished_at %}
+            <div class="data-list__row"><dt>Finalizado</dt><dd>{{ order.finished_at|date:"d/m/Y H:i" }}</dd></div>
+          {% endif %}
+          {% if order.delivered_at %}
+            <div class="data-list__row"><dt>Entregue</dt><dd>{{ order.delivered_at|date:"d/m/Y H:i" }}</dd></div>
+            <div class="data-list__row"><dt>Entregue por</dt><dd>{{ order.delivered_by.display_name|default:"—" }}</dd></div>
+          {% endif %}
+        </dl>
+      </section>
+    </aside>
+  </div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "mobile/base_mobile.html" %}
+
+{% block main_class %}m-main--inspect{% endblock %}
+
+{% block content %}
+  <header class="m-os-head">
+    <a class="m-back" href="{% url 'mobile:home' %}">← Voltar</a>
+    <p class="m-os-head__plate">{{ order.vehicle.plate_display }}</p>
+    <p class="m-os-head__meta">
+      {{ order.number_display }} · {{ order.vehicle.brand }} {{ order.vehicle.model }}
+      {% if order.vehicle.color %} · {{ order.vehicle.color }}{% endif %}
+    </p>
+    <ul class="m-summary" aria-label="Resumo da vistoria">
+      <li class="m-summary__ok">{{ summary.ok }} OK</li>
+      <li class="m-summary__warn">{{ summary.attention }} atenção</li>
+      <li class="m-summary__danger">{{ summary.damage }} avaria</li>
+      <li class="m-summary__mute">{{ summary.not_checked }} —</li>
+    </ul>
+  </header>
+
+  <form method="post" class="m-inspect-form" id="m-inspect-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="m-alert" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    <p class="m-hint">
+      Toque a condição de cada item. Em atenção ou avaria, descreva o que viu.
+    </p>
+
+    <ul class="m-checklist">
+      {% for item, condition_field, note_field in form.item_rows %}
+        <li class="m-item" data-item-key="{{ item.key }}">
+          <p class="m-item__label" id="label-{{ item.key }}">{{ item.label }}</p>
+
+          <div class="m-conditions" role="radiogroup" aria-labelledby="label-{{ item.key }}">
+            {% for radio in condition_field %}
+              <label class="m-cond m-cond--{{ radio.data.value|lower }} {% if radio.data.selected %}is-selected{% endif %}">
+                {{ radio.tag }}
+                <span>
+                  {% if radio.data.value == "OK" %}OK
+                  {% elif radio.data.value == "ATENCAO" %}Atenção
+                  {% elif radio.data.value == "AVARIA" %}Avaria
+                  {% else %}—
+                  {% endif %}
+                </span>
+              </label>
+            {% endfor %}
+          </div>
+
+          <div class="m-item__note {% if item.condition != 'ATENCAO' and item.condition != 'AVARIA' %}is-collapsed{% endif %}"
+               data-note-for="{{ item.key }}">
+            <label class="sr-only" for="{{ note_field.id_for_label }}">{{ note_field.label }}</label>
+            {{ note_field }}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <section class="m-block">
+      <h2 class="m-block__title">Combustível</h2>
+      <div class="m-fuel" role="radiogroup" aria-label="Nível de combustível">
+        {% for radio in form.fuel_level %}
+          <label class="m-fuel__opt {% if radio.data.selected %}is-selected{% endif %}">
+            {{ radio.tag }}
+            <span>{{ radio.choice_label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="m-block">
+      <h2 class="m-block__title">Observações gerais</h2>
+      {{ form.notes }}
+    </section>
+  </form>
+
+  <section class="m-block" id="m-photos">
+    <div id="m-photo-gallery">
+      {% include "mobile/partials/_photos.html" %}
+    </div>
+  </section>
+
+  <div class="m-sticky-save" aria-hidden="false">
+    <button class="m-save" type="submit" form="m-inspect-form">Salvar vistoria</button>
+  </div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% load static %}
+<header class="app-header" role="banner">
+  <a class="app-header__brand" href="{% url 'dashboard:home' %}">
+    <img class="app-header__logo" src="{% static 'img/logo-dr-header.png' %}" alt="DR Centro Automotivo" width="110" height="48">
+    <span class="app-header__name">{{ workshop_name }}</span>
+  </a>
+
+  <nav class="app-header__nav" aria-label="Navegação principal">
+    <a class="app-header__link {% if request.resolver_match.namespace == 'dashboard' %}is-active{% endif %}"
+       href="{% url 'dashboard:home' %}">Dashboard</a>
+    <a class="app-header__link {% if request.resolver_match.url_name == 'workshop' %}is-active{% endif %}"
+       href="{% url 'workorders:workshop' %}">Oficina</a>
+    <a class="app-header__link {% if request.resolver_match.url_name == 'history' %}is-active{% endif %}"
+       href="{% url 'workorders:history' %}">Histórico</a>
+    <a class="app-header__link {% if request.resolver_match.namespace == 'customers' %}is-active{% endif %}"
+       href="{% url 'customers:list' %}">Clientes</a>
+    {% if user.can_perform_inspection %}
+      <a class="app-header__link {% if request.resolver_match.namespace == 'mobile' %}is-active{% endif %}"
+         href="{% url 'mobile:home' %}">Vistoria</a>
+    {% endif %}
+  </nav>
+
+  <form class="search app-header__search" role="search" action="{% url 'workorders:search' %}" method="get">
+    <label class="sr-only" for="busca-global">Buscar placa, OS, cliente, telefone ou modelo</label>
+    <span class="search__icon" aria-hidden="true">⌕</span>
+    <input class="search__input" id="busca-global" type="search" name="q"
+           value="{{ request.GET.q|default:'' }}"
+           placeholder="Placa, OS, cliente ou telefone…" autocomplete="off">
+    <kbd class="search__hint" aria-hidden="true">/</kbd>
+  </form>
+
+  <div class="app-header__actions">
+    {% if user.can_register_entry %}
+      <a class="btn btn--brand btn--sm app-header__cta" href="{% url 'workorders:new_entry' %}"
+         data-shortcut-new-entry>
+        <span aria-hidden="true">+</span> Nova entrada
+      </a>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+      <a class="app-header__user" href="{% url 'accounts:profile' %}" title="{{ user.display_name }}">
+        <span class="avatar" aria-hidden="true">{{ user.initials }}</span>
+        <span class="app-header__user-name">{{ user.short_name }}</span>
+      </a>
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button class="btn btn--ghost btn--sm" type="submit">Sair</button>
+      </form>
+    {% endif %}
+  </div>
+</header>

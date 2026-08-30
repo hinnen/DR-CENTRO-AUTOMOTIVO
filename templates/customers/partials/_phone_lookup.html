@@ -1,0 +1,17 @@
+{% if clients %}
+  <div class="alert alert--warning" role="alert">
+    <p><strong>Já existe um cliente com este telefone.</strong></p>
+    <ul class="dup-list">
+      {% for client in clients %}
+        <li>
+          <span>{{ client.name }} — {{ client.phone_display }}</span>
+          <a class="btn btn--secondary btn--sm"
+             href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}&client={{ client.uuid }}">
+            Usar este cliente
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="field__help">Ou continue preenchendo para criar um cadastro novo.</p>
+  </div>
+{% endif %}
