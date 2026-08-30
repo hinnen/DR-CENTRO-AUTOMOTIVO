@@ -265,7 +265,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 - **Fases 1–13:** concluídas (núcleo operacional utilizável)
 - **Testes:** suíte verde (~172)
 - **Dev:** `http://127.0.0.1:8010/` · Postgres local
-- **GitHub / Render:** prep deploy — `render.yaml` (web **starter** + DB **basic-256mb**) · `/healthz` · repo `hinnen/DR-CENTRO-AUTOMOTIVO` (push + create no Render conforme sessão 30/08 noite)
+- **GitHub:** https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO · branch `main` @ `4342599`
+- **Render:** Blueprint pronto — aplicar em https://dashboard.render.com/blueprint/new?repo=https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO (cria `dr-centro-automotivo` + `dr-centro-db`; **não** mexe SistVale/Agro)
+- **Custo estimado:** web Starter ~US$ 7 + Postgres Basic-256mb ~US$ 6 ≈ **US$ 13/mês** (no lugar do Food/Finanças)
+- **Atenção fotos:** P-002 — media no disco Render some no restart; OK pra smoke; produção com fotos → S3/R2
 
 ### WIP / recentes
 
