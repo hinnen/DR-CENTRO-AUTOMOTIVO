@@ -48,7 +48,6 @@ class VehicleLocation(TimeStampedModel):
     name = models.CharField("nome", max_length=60, unique=True)
     order = models.PositiveSmallIntegerField("ordem", default=0)
     is_active = models.BooleanField("ativa", default=True, db_index=True)
-    is_demo = models.BooleanField("dado de demonstração", default=False, db_index=True)
 
     class Meta:
         verbose_name = "localização"
@@ -94,7 +93,6 @@ class Vehicle(BaseModel):
     chassis = models.CharField("chassi", max_length=30, blank=True)
     notes = models.TextField("observações", blank=True)
     is_active = models.BooleanField("ativo", default=True, db_index=True)
-    is_demo = models.BooleanField("dado de demonstração", default=False, db_index=True)
 
     objects = VehicleQuerySet.as_manager()
 

@@ -33,12 +33,6 @@ class Client(BaseModel):
     cpf_cnpj = models.CharField("CPF/CNPJ", max_length=20, blank=True)
     notes = models.TextField("observações", blank=True)
     is_active = models.BooleanField("ativo", default=True, db_index=True)
-    is_demo = models.BooleanField(
-        "dado de demonstração",
-        default=False,
-        db_index=True,
-        help_text="Marcado pelo carregamento de exemplos; removido pelo botão na Configurações.",
-    )
 
     objects = ClientQuerySet.as_manager()
 

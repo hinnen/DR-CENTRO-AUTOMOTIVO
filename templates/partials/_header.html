@@ -18,10 +18,6 @@
       <a class="app-header__link {% if request.resolver_match.namespace == 'mobile' %}is-active{% endif %}"
          href="{% url 'mobile:home' %}">Vistoria</a>
     {% endif %}
-    {% if user.can_access_settings %}
-      <a class="app-header__link {% if request.resolver_match.namespace == 'core' %}is-active{% endif %}"
-         href="{% url 'core:settings_index' %}">Configurações</a>
-    {% endif %}
   </nav>
 
   {% if user.is_authenticated %}

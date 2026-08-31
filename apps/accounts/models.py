@@ -21,12 +21,6 @@ class User(UUIDModel, AbstractUser):
         db_index=True,
     )
     phone = models.CharField("telefone", max_length=20, blank=True)
-    is_demo = models.BooleanField(
-        "dado de demonstração",
-        default=False,
-        db_index=True,
-        help_text="Usuário criado pelo pacote de exemplos.",
-    )
 
     class Meta:
         verbose_name = "usuário"
@@ -79,22 +73,6 @@ class User(UUIDModel, AbstractUser):
     @property
     def can_manage_users(self) -> bool:
         return self.is_admin_role
-
-    @property
-    def can_create_mechanic(self) -> bool:
-        """Cadastro rápido / Configurações → Mecânicos."""
-        if self.can_manage_users:
-            return True
-        if self.is_reception:
-            from apps.core.services.settings import reception_can_create_mechanic
-
-            return reception_can_create_mechanic()
-        return False
-
-    @property
-    def can_access_settings(self) -> bool:
-        """Hub Configurações — somente administradores."""
-        return self.can_manage_users
 
     @property
     def can_register_entry(self) -> bool:

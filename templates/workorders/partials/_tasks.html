@@ -96,7 +96,7 @@ do banco quando duas pessoas mexem na mesma OS.
       <div class="task-form__row">
         {% include "components/_field.html" with field=task_form.title %}
         {% url 'workorders:quick_mechanic_panel' as mechanic_panel_url %}
-        {% include "components/_creatable_select.html" with field=task_form.mechanic target_id="creatable-mechanic-task" empty_label="Sem responsável" create_label="Cadastrar mecânico" can_create=user.can_create_mechanic panel_url=mechanic_panel_url %}
+        {% include "components/_creatable_select.html" with field=task_form.mechanic target_id="creatable-mechanic-task" empty_label="Sem responsável" create_label="Cadastrar mecânico" can_create=user.can_manage_users panel_url=mechanic_panel_url %}
       </div>
       {% include "components/_field.html" with field=task_form.requested_description %}
       <button class="btn btn--primary" type="submit">

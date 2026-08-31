@@ -7,22 +7,12 @@ class MobileConfig(AppConfig):
     verbose_name = "App de vistoria"
 
     def ready(self):
-        """Warmup do ONNX em background — nunca bloqueia o boot do Gunicorn.
-
-        No plano Starter do Render, carregar platerec no ready() sincronamente
-        estoura memória/timeout do health check → 502. Opt-in via PLATE_OCR_WARMUP=1.
-        """
+        """Warmup ONNX em background — default OFF (Starter Render → 502 se bloquear boot)."""
         import os
         import threading
 
-        from django.conf import settings
-
-        # Default OFF em produção (Starter). Liga só com PLATE_OCR_WARMUP=1.
-        default = "0"
-        if os.getenv("PLATE_OCR_WARMUP", default) != "1":
+        if os.getenv("PLATE_OCR_WARMUP", "0") != "1":
             return
-        if os.environ.get("RUN_MAIN") == "false":
-            return  # evita double-load no runserver reloader
 
         def _warmup():
             try:
