@@ -213,6 +213,10 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 WORKSHOP_NAME = os.getenv("WORKSHOP_NAME", "DR Centro Automotivo")
 
+# OCR de placa (platerec/ONNX). No Starter: ligado sob demanda, sem warmup no boot.
+ENABLE_PLATE_OCR = env_bool("ENABLE_PLATE_OCR", DEBUG)
+PLATE_OCR_WARMUP = env_bool("PLATE_OCR_WARMUP", False)
+
 
 LOGGING = {
     "version": 1,

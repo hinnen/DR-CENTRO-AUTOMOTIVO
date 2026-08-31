@@ -59,8 +59,20 @@ _CONF_EARLY_EXIT = 0.42
 _OCR_MAX_SIDE = 1280
 
 
+def _ocr_enabled() -> bool:
+    from django.conf import settings
+
+    return bool(getattr(settings, "ENABLE_PLATE_OCR", False))
+
+
 @lru_cache(maxsize=1)
 def _engine():
+    if not _ocr_enabled():
+        raise ValidationError(
+            "Leitura automática da placa está desligada neste ambiente.",
+            code="ocr_disabled",
+        )
+
     try:
         from platerec import Platerec
     except ImportError as exc:
@@ -72,8 +84,13 @@ def _engine():
     return Platerec(providers=["CPUExecutionProvider"])
 
 
+def release_engine() -> None:
+    """Libera o modelo ONNX da memória (Starter ~512 MB)."""
+    _engine.cache_clear()
+
+
 def warmup_engine() -> None:
-    """Carrega o modelo ONNX no boot (Render: evita 5–15s na 1ª foto)."""
+    """Carrega o modelo ONNX no boot (só se PLATE_OCR_WARMUP=1)."""
     _engine()
 
 
@@ -281,52 +298,58 @@ def read_plate_from_image(image: Image.Image) -> dict:
     image = _resize_for_ocr(image)
 
     try:
-        engine = _engine()
-    except Exception:
-        logger.exception("Falha ao iniciar platerec")
-        raise ValidationError("Não foi possível analisar a foto da placa.")
+        try:
+            engine = _engine()
+        except ValidationError:
+            raise
+        except Exception:
+            logger.exception("Falha ao iniciar platerec")
+            raise ValidationError("Não foi possível analisar a foto da placa.")
 
-    raw_words: list[str] = []
-    plate = ""
-    confidence = 0.0
+        raw_words: list[str] = []
+        plate = ""
+        confidence = 0.0
 
-    try:
-        for variant in _fast_variants(image):
-            plate, confidence, words = _try_image(engine, variant, thorough=False)
-            raw_words.extend(words)
-            if plate:
-                break
-
-        if not plate:
-            for variant in _slow_variants(image):
-                plate, confidence, words = _try_image(engine, variant, thorough=True)
+        try:
+            for variant in _fast_variants(image):
+                plate, confidence, words = _try_image(engine, variant, thorough=False)
                 raw_words.extend(words)
                 if plate:
                     break
-    except ValidationError:
-        raise
-    except Exception:
-        logger.exception("Falha ao rodar platerec")
-        raise ValidationError("Não foi possível analisar a foto da placa.")
 
-    if not plate:
-        raise ValidationError(
-            "Não deu para ler a placa. Aproxime a câmera e tente de novo, ou digite."
-        )
+            if not plate:
+                for variant in _slow_variants(image):
+                    plate, confidence, words = _try_image(engine, variant, thorough=True)
+                    raw_words.extend(words)
+                    if plate:
+                        break
+        except ValidationError:
+            raise
+        except Exception:
+            logger.exception("Falha ao rodar platerec")
+            raise ValidationError("Não foi possível analisar a foto da placa.")
 
-    # Dedup raw para debug leve
-    seen = set()
-    unique_raw = []
-    for word in raw_words:
-        if word and word not in seen:
-            seen.add(word)
-            unique_raw.append(word)
+        if not plate:
+            raise ValidationError(
+                "Não deu para ler a placa. Aproxime a câmera e tente de novo, ou digite."
+            )
 
-    return {
-        "plate": plate,
-        "confidence": round(confidence, 4),
-        "raw": unique_raw,
-    }
+        # Dedup raw para debug leve
+        seen = set()
+        unique_raw = []
+        for word in raw_words:
+            if word and word not in seen:
+                seen.add(word)
+                unique_raw.append(word)
+
+        return {
+            "plate": plate,
+            "confidence": round(confidence, 4),
+            "raw": unique_raw,
+        }
+    finally:
+        # Starter: não deixar ONNX residente entre fotos (evita 502 por memória).
+        release_engine()
 
 
 def read_plate_from_upload(upload) -> dict:

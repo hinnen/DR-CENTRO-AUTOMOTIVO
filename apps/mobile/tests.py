@@ -322,6 +322,16 @@ class PlateOcrUnitTests(TestCase):
 
         self.assertEqual(_score("ABC1234"), _score("ABC1D23"))
 
+    @override_settings(ENABLE_PLATE_OCR=False)
+    def test_ocr_disabled_returns_clear_error(self):
+        from django.core.exceptions import ValidationError
+
+        from apps.mobile.plate_ocr import read_plate_from_upload
+
+        with self.assertRaises(ValidationError) as ctx:
+            read_plate_from_upload(make_image("placa.jpg"))
+        self.assertIn("desligada", str(ctx.exception).lower())
+
     @patch("apps.mobile.plate_ocr._engine")
     def test_read_plate_from_upload_uses_platerec(self, mock_engine):
         from apps.mobile.plate_ocr import read_plate_from_upload

@@ -7,9 +7,9 @@ Pillow==10.4.0
 gunicorn==23.0.0
 openpyxl==3.1.5
 
-# OCR de placa (pesado p/ Starter — instalar só com ENABLE_PLATE_OCR=1 no build)
-# platerec==0.0.3
-# onnxruntime==1.29.0
+# OCR de placa — lazy load (sem warmup no boot). ENABLE_PLATE_OCR=1 em prod.
+platerec==0.0.3
+onnxruntime==1.29.0
 
 # Desenvolvimento e testes
 pytest==9.1.1

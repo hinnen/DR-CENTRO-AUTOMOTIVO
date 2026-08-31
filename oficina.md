@@ -208,7 +208,7 @@ Fluxo típico:
 - **Preferências:** recepção pode cadastrar mecânico; aviso WhatsApp ao mudar status (opcional)
 - **Dados de exemplo:** `demo_seed.py` / `demo_purge.py` · flag `is_demo` em User, Client, Vehicle, ServiceOrder
 - **Planilhas:** `apps/core/spreadsheet/` · `openpyxl` · import/export clientes, veículos, usuários, localizações
-- **Produção segura:** OCR placa **fora** do boot e do `requirements.txt` base; `/healthz` via `HealthCheckMiddleware`
+- **Produção segura:** OCR placa **fora do boot** (lazy); `/healthz` via `HealthCheckMiddleware`
 
 ### 4.13 Auditoria
 
@@ -247,7 +247,8 @@ python manage.py seed_demo --reset   # senha default oficina123
 
 - App: `apps/mobile/` · URLs sob `/m/` · CSS/JS `static/css/mobile.css`, `static/js/mobile.js`
 - Fluxo: entrada (placa → cliente/KM/queixa) → vistoria → fotos
-- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` (ONNX) no servidor; JS preenche `#m-plate` + HTMX lookup
+- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` (ONNX) **lazy** (sem warmup no boot); libera modelo após cada leitura (Starter); JS preenche `#m-plate` + HTMX lookup
+  - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` (não ligar warmup no Starter)
   - Mercosul **e** antiga: EXIF, limiar de detecção mais baixo, contraste, rotações; I/L/O → dígito na 5ª posição (ex. `JKK2I88` → `JKK2188`)
   - Auto-preenche cliente/veículo **só do banco local** (já veio → lookup). API externa de placa = depois (roadmap).
 - Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI só no mobile por enquanto
@@ -272,43 +273,24 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live:** https://dr-centro-automotivo.onrender.com/ · `main` @ **`e5ab9bd`** · deploy autorizado 31/08
+**Produção Live:** https://dr-centro-automotivo.onrender.com/ · deploy OCR autorizado 31/08 (`0d19e3b`)
 
-**Smoke pós-deploy (automático):** `/healthz` 200 · `/configuracoes/` 302 · `/conta/entrar/` 200 · **247 pytest** OK
+**Smoke:** `/healthz` · `/m/entrada` → Fotografar placa (1ª leitura pode demorar)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | ✅ **Enviado** | Prod 200 · `render.yaml` healthCheckPath `/healthz` |
-| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | ✅ **Enviado** | Prod 302 anon · migrações `is_demo` + `WorkshopSettings` |
-| **P0** | `openpyxl` no build · `platerec` comentado | ✅ **Enviado** | `requirements.txt` · import lazy nas views |
-| **P1** | Smoke manual: login admin → Configurações → exemplos → planilha | **Testar** | Renan no browser |
-| **P1** | Superuser produção (`createsuperuser` Shell Render) | **Testar** | Sem admin operacional ainda |
-| **P1** | Kanban + aviso WhatsApp opcional | **Testar** | `test_status_whatsapp` OK local |
-| **P2** | Media S3/R2 | **Pendente** | Disco Render = curto prazo |
-| **P2** | OCR placa Starter | **Pendente** | `ENABLE_PLATE_OCR=0` |
-| **P2** | Fotos guiadas 5 ângulos desktop | **Pendente** | Roteiro §8 |
-| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo §0 |
+| **P0** | Fix 502 — HealthCheck + OCR fora do boot | ✅ **Enviado** | Warmup off |
+| **P0** | Hub `/configuracoes/` | ✅ **Enviado** | exemplos + planilhas |
+| **P0** | `openpyxl` no build | ✅ **Enviado** | |
+| **P1** | OCR placa `/m/entrada` (lazy + libera memória) | ✅ **Enviado** | `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` |
+| **P1** | Smoke OCR no celular | **Testar** | Renan · enquadrar só a placa |
+| **P1** | Smoke Configurações / superuser | **Testar** | Renan |
+| **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
-### Pré-deploy (31/08 · padrão banana-roteiro)
+### Pacote OCR (`0d19e3b`)
 
-| Gate | Resultado |
-| ---- | --------- |
-| `pytest -q` (247) | ✅ |
-| `manage.py check` | ✅ |
-| Código = `origin/main` | ✅ `e5ab9bd` |
-| HealthCheckMiddleware + OCR off boot | ✅ |
-| Prod smoke HTTP | ✅ |
-
-### PACOTE ENVIADO (`97ff12d` + docs `ae2b0ac`/`e5ab9bd`)
-
-| Área | Arquivos-chave |
-| ---- | -------------- |
-| URLs | `config/urls.py` · `apps/core/urls.py` |
-| Views/forms | `settings_views.py` · `settings_forms.py` |
-| Demo | `demo_seed.py` · `demo_purge.py` |
-| Planilhas | `apps/core/spreadsheet/` · `openpyxl==3.1.5` |
-| WhatsApp status | `status_whatsapp.py` · `WorkshopSettings` |
-| Segurança prod | `middleware.py` · `mobile/apps.py` |
+`platerec`+`onnxruntime` · `plate_ocr.release_engine()` · `mobile/apps.py` sem warmup no Starter
 
 ---
 

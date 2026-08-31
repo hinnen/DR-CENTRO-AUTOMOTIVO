@@ -46,7 +46,7 @@ services:
       - key: PLATE_OCR_WARMUP
         value: "0"
       - key: ENABLE_PLATE_OCR
-        value: "0"
+        value: "1"
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: USE_X_FORWARDED_PROTO
