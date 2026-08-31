@@ -290,7 +290,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
-### Pacote deste push (`7b1652d`)
+### Pacote deste push (`5fe941b` + docs `0196914`)
 
 OCR: `KEEP_LOADED` · passe enxuto · resize 1024  
 Marca: favicon/PWA/`og-share.png`/`_brand_head.html`/`site.webmanifest`
