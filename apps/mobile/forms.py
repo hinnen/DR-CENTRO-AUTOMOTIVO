@@ -26,12 +26,11 @@ class MobileEntryForm(forms.Form):
         label="O que o cliente reclamou / pediu?",
         widget=forms.Textarea(
             attrs={
-                "rows": 4,
+                "rows": 5,
                 "placeholder": "Ex.: barulho na dianteira, luz acesa no painel, revisão…",
                 "class": "m-textarea",
             }
         ),
-        help_text="Anote com as palavras do cliente — a recepção detalha depois.",
     )
     priority = forms.ChoiceField(
         label="Prioridade",
@@ -48,12 +47,11 @@ class MobileEntryForm(forms.Form):
         max_length=150,
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Deixe em branco se for o próprio cliente",
+                "placeholder": "Nome de quem deixou o carro",
                 "class": "m-field-input",
                 "autocomplete": "name",
             }
         ),
-        help_text="Opcional — filho, motorista, funcionário, etc.",
     )
 
     def clean_customer_complaint(self):
@@ -87,15 +85,14 @@ class MobileClientFields(forms.Form):
                 "autocomplete": "tel",
             }
         ),
-        help_text="Principal canal de contato. Use o WhatsApp sempre que possível.",
     )
     phone_whatsapp = forms.CharField(
-        label="WhatsApp (se for outro número)",
+        label="WhatsApp (outro número)",
         required=False,
         max_length=20,
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Deixe em branco se for o mesmo",
+                "placeholder": "Só se for diferente",
                 "inputmode": "tel",
                 "class": "m-field-input",
             }
@@ -207,7 +204,6 @@ class MobileReturningEntryForm(MobileEntryForm):
         widget=forms.TextInput(
             attrs={"placeholder": "Nome completo", "class": "m-field-input", "autocomplete": "name"}
         ),
-        help_text="Confirme ou corrija o nome no cadastro.",
     )
     phone = forms.CharField(
         label="Telefone / WhatsApp",
@@ -215,7 +211,6 @@ class MobileReturningEntryForm(MobileEntryForm):
         widget=forms.TextInput(
             attrs={"placeholder": "(13) 99999-9999", "inputmode": "tel", "class": "m-field-input"}
         ),
-        help_text="Confirme ou atualize o telefone do cliente.",
     )
 
     def __init__(self, *args, client: Client | None = None, **kwargs):

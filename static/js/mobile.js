@@ -409,9 +409,185 @@
     });
   }
 
+  var WIZARD_REQUIRED = {
+    name: true,
+    phone: true,
+    customer_complaint: true,
+    entry_km: true,
+    plate: true,
+    brand: true,
+    model: true,
+  };
+
+  function wizardSetError(el, msg) {
+    var field = el.closest(".m-field");
+    if (!field) return;
+    field.classList.add("m-field--error");
+    var err = field.querySelector(".m-field-error--client");
+    if (!err) {
+      err = document.createElement("p");
+      err.className = "m-field-error m-field-error--client";
+      field.appendChild(err);
+    }
+    err.textContent = msg;
+  }
+
+  function wizardClearClientError(el) {
+    var field = el.closest(".m-field");
+    if (!field) return;
+    var err = field.querySelector(".m-field-error--client");
+    if (err) err.remove();
+    if (!field.querySelector(".m-field-error")) {
+      field.classList.remove("m-field--error");
+    }
+  }
+
+  function wizardValidateStep(step) {
+    var ok = true;
+    step.querySelectorAll("input, textarea, select").forEach(function (el) {
+      if (el.disabled || el.type === "hidden" || el.type === "radio" || el.type === "checkbox") {
+        return;
+      }
+      var name = el.name || "";
+      if (!WIZARD_REQUIRED[name]) return;
+
+      wizardClearClientError(el);
+      var value = (el.value || "").trim();
+      if (!value) {
+        wizardSetError(el, "Preencha este campo.");
+        ok = false;
+        return;
+      }
+      if (name === "phone") {
+        var digits = value.replace(/\D/g, "");
+        if (digits.length < 10) {
+          wizardSetError(el, "Informe DDD e número.");
+          ok = false;
+        }
+      }
+    });
+
+    var radios = step.querySelectorAll('input[type="radio"][name="priority"]');
+    if (radios.length) {
+      var anyChecked = Array.prototype.some.call(radios, function (r) {
+        return r.checked;
+      });
+      if (!anyChecked) radios[0].checked = true;
+    }
+    return ok;
+  }
+
+  function initEntryWizard() {
+    var form = document.getElementById("m-entry-form");
+    if (!form || !form.hasAttribute("data-m-wizard")) return;
+
+    var steps = Array.prototype.slice.call(form.querySelectorAll(".m-wizard-step"));
+    if (!steps.length) return;
+
+    var dots = Array.prototype.slice.call(
+      document.querySelectorAll("#m-wizard-dots .m-wizard-dot")
+    );
+    var caption = document.getElementById("m-wizard-caption");
+    var btnNext = document.getElementById("m-wizard-next");
+    var btnBack = document.getElementById("m-wizard-back");
+    var btnSubmit = document.getElementById("m-wizard-submit");
+    var current = 0;
+
+    for (var i = 0; i < steps.length; i++) {
+      if (steps[i].querySelector(".m-field--error")) {
+        current = i;
+        break;
+      }
+    }
+
+    function showStep(index) {
+      current = Math.max(0, Math.min(index, steps.length - 1));
+      steps.forEach(function (step, idx) {
+        var active = idx === current;
+        step.classList.toggle("is-active", active);
+        step.hidden = !active;
+      });
+      dots.forEach(function (dot, idx) {
+        var isCurrent = idx === current;
+        dot.classList.toggle("is-current", isCurrent);
+        dot.classList.toggle("is-done", idx < current);
+        if (isCurrent) dot.setAttribute("aria-current", "step");
+        else dot.removeAttribute("aria-current");
+      });
+      if (caption) {
+        caption.textContent = steps[current].getAttribute("data-title") || "";
+      }
+      var isLast = current === steps.length - 1;
+      if (btnBack) btnBack.hidden = current === 0;
+      if (btnNext) btnNext.hidden = isLast;
+      if (btnSubmit) btnSubmit.hidden = !isLast;
+
+      window.requestAnimationFrame(function () {
+        var focusEl =
+          steps[current].querySelector(".m-field--error input, .m-field--error textarea") ||
+          steps[current].querySelector("input:not([type='hidden']):not([type='radio']), textarea");
+        if (focusEl) {
+          try {
+            focusEl.focus({ preventScroll: true });
+          } catch (err) {
+            focusEl.focus();
+          }
+        }
+      });
+    }
+
+    if (btnNext) {
+      btnNext.addEventListener("click", function () {
+        if (!wizardValidateStep(steps[current])) {
+          var bad = steps[current].querySelector(
+            ".m-field--error input, .m-field--error textarea"
+          );
+          if (bad) bad.focus();
+          return;
+        }
+        showStep(current + 1);
+      });
+    }
+
+    if (btnBack) {
+      btnBack.addEventListener("click", function () {
+        showStep(current - 1);
+      });
+    }
+
+    dots.forEach(function (dot) {
+      dot.addEventListener("click", function () {
+        var goto = parseInt(dot.getAttribute("data-goto"), 10);
+        if (isNaN(goto) || goto === current) return;
+        if (goto < current) {
+          showStep(goto);
+          return;
+        }
+        for (var s = current; s < goto; s++) {
+          if (!wizardValidateStep(steps[s])) {
+            showStep(s);
+            return;
+          }
+        }
+        showStep(goto);
+      });
+    });
+
+    form.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Enter") return;
+      if (ev.target && ev.target.tagName === "TEXTAREA") return;
+      if (current >= steps.length - 1) return;
+      ev.preventDefault();
+      if (btnNext) btnNext.click();
+    });
+
+    showStep(current);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initChecklist();
     initPriority();
+    initEntryWizard();
     initPhotoAutoSubmit();
     initPlateOcr();
     initToasts();

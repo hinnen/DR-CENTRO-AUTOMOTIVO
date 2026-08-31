@@ -2,11 +2,12 @@
 
 {% block title %}Confirmar entrada — DR Vistoria{% endblock %}
 {% block main_class %}m-main--inspect{% endblock %}
+{% block body_class %}m-app--wizard{% endblock %}
 
 {% block content %}
-  <a class="m-back" href="{% url 'mobile:entry_start' %}">← Trocar veículo</a>
+  <a class="m-back" href="{% url 'mobile:entry_start' %}" id="m-wizard-exit">← Trocar veículo</a>
 
-  <header class="m-os-head">
+  <header class="m-os-head m-os-head--compact">
     <p class="m-os-head__plate">{{ vehicle.plate_display }}</p>
     <p class="m-os-head__meta">
       {{ vehicle.brand }} {{ vehicle.model }}
@@ -14,7 +15,16 @@
     </p>
   </header>
 
-  <form method="post" class="m-entry-form" id="m-entry-form" novalidate>
+  <section class="m-hero m-hero--compact">
+    <p class="m-hero__sub" id="m-wizard-caption">Confirmar cliente</p>
+  </section>
+
+  <nav class="m-wizard-dots" aria-label="Etapas" id="m-wizard-dots">
+    <button type="button" class="m-wizard-dot is-current" data-goto="0" aria-label="Cliente" aria-current="step">1</button>
+    <button type="button" class="m-wizard-dot" data-goto="1" aria-label="Queixa">2</button>
+  </nav>
+
+  <form method="post" class="m-entry-form m-wizard" id="m-entry-form" data-m-wizard novalidate>
     {% csrf_token %}
 
     {% if form.non_field_errors %}
@@ -23,24 +33,25 @@
       </div>
     {% endif %}
 
-    <section class="m-block">
-      <h2 class="m-block__title">1 · Cliente</h2>
-      <p class="m-block__hint">Confirme nome e telefone — é o contato da oficina com o cliente.</p>
+    <section class="m-wizard-step is-active" data-step="0" data-title="Confirmar cliente">
       {% include "mobile/partials/_field.html" with field=form.name %}
       {% include "mobile/partials/_field.html" with field=form.phone %}
     </section>
 
-    <section class="m-block m-block--focus">
-      <h2 class="m-block__title">2 · Queixa e entrada</h2>
-      <p class="m-block__hint">O que o cliente reclamou / pediu nesta visita.</p>
+    <section class="m-wizard-step" data-step="1" data-title="Queixa e KM" hidden>
       {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
       {% include "mobile/partials/_field.html" with field=form.entry_km %}
       {% include "mobile/partials/_priority.html" with field=form.priority %}
-      {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
+      <details class="m-more" {% if form.brought_by_name.value or form.brought_by_name.errors %}open{% endif %}>
+        <summary>Quem trouxe não é o cliente?</summary>
+        {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
+      </details>
     </section>
   </form>
 
-  <div class="m-sticky-save">
-    <button class="m-save" type="submit" form="m-entry-form">Abrir OS e ir à vistoria</button>
+  <div class="m-sticky-save m-wizard-actions">
+    <button type="button" class="m-save m-save--ghost" id="m-wizard-back" hidden>Voltar</button>
+    <button type="button" class="m-save" id="m-wizard-next">Continuar</button>
+    <button type="submit" class="m-save" id="m-wizard-submit" form="m-entry-form" hidden>Abrir OS e ir à vistoria</button>
   </div>
 {% endblock %}

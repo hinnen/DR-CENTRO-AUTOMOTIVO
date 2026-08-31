@@ -2,16 +2,23 @@
 
 {% block title %}Cadastrar entrada — DR Vistoria{% endblock %}
 {% block main_class %}m-main--inspect{% endblock %}
+{% block body_class %}m-app--wizard{% endblock %}
 
 {% block content %}
-  <a class="m-back" href="{% url 'mobile:entry_start' %}">← Voltar</a>
+  <a class="m-back" href="{% url 'mobile:entry_start' %}" id="m-wizard-exit">← Voltar</a>
 
-  <section class="m-hero">
+  <section class="m-hero m-hero--compact">
     <h1 class="m-hero__title">Primeiro contato</h1>
-    <p class="m-hero__sub">No pátio: quem é, o que pediu e qual o carro. O restante a recepção completa no notebook.</p>
+    <p class="m-hero__sub" id="m-wizard-caption">Dados do cliente</p>
   </section>
 
-  <form method="post" class="m-entry-form" id="m-entry-form" novalidate>
+  <nav class="m-wizard-dots" aria-label="Etapas" id="m-wizard-dots">
+    <button type="button" class="m-wizard-dot is-current" data-goto="0" aria-label="Cliente" aria-current="step">1</button>
+    <button type="button" class="m-wizard-dot" data-goto="1" aria-label="Queixa">2</button>
+    <button type="button" class="m-wizard-dot" data-goto="2" aria-label="Veículo">3</button>
+  </nav>
+
+  <form method="post" class="m-entry-form m-wizard" id="m-entry-form" data-m-wizard novalidate>
     {% csrf_token %}
 
     {% if form.non_field_errors %}
@@ -20,37 +27,42 @@
       </div>
     {% endif %}
 
-    <section class="m-block">
-      <h2 class="m-block__title">1 · Cliente</h2>
-      <p class="m-block__hint">Nome e um telefone que atenda — de preferência WhatsApp.</p>
+    <section class="m-wizard-step is-active" data-step="0" data-title="Dados do cliente">
       {% include "mobile/partials/_field.html" with field=form.name %}
       {% include "mobile/partials/_field.html" with field=form.phone %}
-      {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
+      <details class="m-more" {% if form.phone_whatsapp.value or form.phone_whatsapp.errors %}open{% endif %}>
+        <summary>WhatsApp diferente do telefone?</summary>
+        {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
+      </details>
     </section>
 
-    <section class="m-block m-block--focus">
-      <h2 class="m-block__title">2 · Queixa e entrada</h2>
-      <p class="m-block__hint">O mais importante do pátio: o que o cliente disse e o KM do painel.</p>
+    <section class="m-wizard-step" data-step="1" data-title="Queixa e KM" hidden>
       {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
       {% include "mobile/partials/_field.html" with field=form.entry_km %}
       {% include "mobile/partials/_priority.html" with field=form.priority %}
-      {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
+      <details class="m-more" {% if form.brought_by_name.value or form.brought_by_name.errors %}open{% endif %}>
+        <summary>Quem trouxe não é o cliente?</summary>
+        {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
+      </details>
     </section>
 
-    <section class="m-block">
-      <h2 class="m-block__title">3 · Veículo</h2>
-      <p class="m-block__hint">Placa, marca e modelo bastam. Cor e ano são opcionais.</p>
+    <section class="m-wizard-step" data-step="2" data-title="Dados do veículo" hidden>
       {% include "mobile/partials/_field.html" with field=form.plate %}
       {% include "mobile/partials/_field.html" with field=form.brand %}
       {% include "mobile/partials/_field.html" with field=form.model %}
-      <div class="m-field-row">
-        {% include "mobile/partials/_field.html" with field=form.color %}
-        {% include "mobile/partials/_field.html" with field=form.model_year %}
-      </div>
+      <details class="m-more" {% if form.color.value or form.model_year.value or form.color.errors or form.model_year.errors %}open{% endif %}>
+        <summary>Cor e ano (opcional)</summary>
+        <div class="m-field-row">
+          {% include "mobile/partials/_field.html" with field=form.color %}
+          {% include "mobile/partials/_field.html" with field=form.model_year %}
+        </div>
+      </details>
     </section>
   </form>
 
-  <div class="m-sticky-save">
-    <button class="m-save" type="submit" form="m-entry-form">Abrir OS e ir à vistoria</button>
+  <div class="m-sticky-save m-wizard-actions">
+    <button type="button" class="m-save m-save--ghost" id="m-wizard-back" hidden>Voltar</button>
+    <button type="button" class="m-save" id="m-wizard-next">Continuar</button>
+    <button type="submit" class="m-save" id="m-wizard-submit" form="m-entry-form" hidden>Abrir OS e ir à vistoria</button>
   </div>
 {% endblock %}

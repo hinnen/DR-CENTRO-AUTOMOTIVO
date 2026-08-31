@@ -271,6 +271,23 @@ class MobileEntryTests(TestCase):
         self.assertContains(response, "Quem trouxe o carro")
         self.assertContains(response, "Urgente")
         self.assertContains(response, 'name="name"')
+        self.assertContains(response, 'data-m-wizard')
+        self.assertContains(response, 'id="m-wizard-next"')
+        self.assertContains(response, 'data-step="0"')
+        self.assertContains(response, 'data-step="1"')
+        self.assertNotContains(response, 'data-step="2"')
+
+    def test_new_entry_form_shows_three_wizard_steps(self):
+        response = self.client.get(reverse("mobile:entry_new") + "?plate=ZZZ9Z99")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-m-wizard')
+        self.assertContains(response, 'data-step="0"')
+        self.assertContains(response, 'data-step="1"')
+        self.assertContains(response, 'data-step="2"')
+        self.assertContains(response, 'id="m-wizard-next"')
+        self.assertContains(response, 'id="m-wizard-submit"')
+        self.assertContains(response, "m-app--wizard")
+        self.assertContains(response, "Cor e ano")
 
     def test_open_order_redirects_to_inspection_instead_of_duplicating(self):
         order = create_service_order(

@@ -252,8 +252,10 @@ python manage.py seed_demo --reset   # senha default oficina123
 - **Link WhatsApp / instalar:** `https://drcentroautomotivo.com/m/instalar/` (público) — card central estilo Agro Ajuste; Chrome → Instalar; iOS → Compartilhar → Tela de Início
 - **Sistema no PC:** `https://drcentroautomotivo.com/` (Kanban / OS)
 - **App no celular:** `/m/` (login) após instalar ou “Continuar no navegador”
-- Fluxo: entrada (placa → **cliente → queixa/KM/prioridade → veículo**) → vistoria → fotos
-  - Cadastro novo e retorno: nome + telefone obrigatórios; queixa em destaque; quem trouxe (opcional); Normal/Urgente
+- Fluxo: entrada (placa → **wizard**: cliente → queixa/KM → veículo) → vistoria → fotos
+  - Cadastro novo: 3 telas; retorno (placa conhecida): 2 telas — campos maiores; opcionais em “mais opções”
+  - Continuar / Voltar + Enter avança; no fim “Abrir OS e ir à vistoria”
+  - Nome + telefone obrigatórios; queixa em destaque; quem trouxe (opcional); Normal/Urgente
   - Campo OS: `brought_by_name` (quem deixou o carro no pátio)
 - OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize **800**
   - Ao abrir `/m/entrada/`: `POST /m/entrada/aquecer-ocr/` pré-carrega o modelo (não no boot — evita 502)
@@ -289,9 +291,12 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | 2aafdb0 · pytest **33** · I≠1 · UI Confirmar/Corrigir |
+| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | 2aafdb0 · I≠1 · UI Confirmar/Corrigir |
+| **P1** | Entrada `/m/`: wizard cliente→queixa→veículo | **Pronto para envio** | `?v=15` · 3/2 etapas · pytest **34** · Continuar/Voltar |
 
-**Inclui:** prioriza letra na 5ª (Mercosul); auto-preenche só ~99% sem ambiguidade; senão pede confirmação.
+**Inclui OCR:** 5ª letra Mercosul; auto-preenche só ~99% sem ambiguidade; senão Confirmar/Corrigir.
+
+**Inclui wizard:** telas separadas, campos maiores; opcionais em detalhes; Enter avança.
 
 | P | Item | Status |
 | - | ---- | ------ |
