@@ -282,28 +282,24 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live:** `main` @ **`25137d0`** (OCR warm + 800px) · https://drcentroautomotivo.com/
+**Produção Live (autorizado 31/08 · senha):** `main` @ **`e66b1cb`** (primeiro contato `/m/`) · https://drcentroautomotivo.com/
 
-### PACOTE PRONTO (falta subir · senha 99738595)
+**Rollback (só frase+senha):** `rollback/pre-first-contact-20260831` @ `25137d0` · `main-backup-pre-first-contact-20260831` · `docs/ROLLBACK-FIRST-CONTACT-20260831.md`
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | **Pronto para envio** | `e66b1cb` · migração `0006` · pytest **101** |
-
-**Inclui:** forms reordenados (cliente → queixa/KM → veículo); nome editável no retorno; chips Normal/Urgente; `brought_by_name`; queixa na vistoria + resumo OS.
-
-| P | Item | Status |
-| - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa entrada · OCR-fast | ✅ **Enviado** |
-| **P2** | Media S3/R2 · fotos desktop | **Pendente** |
-| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
+| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa · OCR-fast | ✅ **Enviado** | |
+| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | ✅ **Enviado** | `e66b1cb` · `live/first-contact-20260831` · migração `0006` |
+| **P2** | Media S3/R2 · fotos desktop | **Pendente** | |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | |
 
 ### Checkpoint Live
 
 | | |
 | - | - |
-| Live | `25137d0` · `live/ocr-fast-20260831` |
-| Rollback OCR-fast | `735c962` · `rollback/pre-ocr-fast-20260831` |
+| Live | `e66b1cb` · `live/first-contact-20260831` |
+| Reverter para | `25137d0` · `rollback/pre-first-contact-20260831` |
+| Doc | `docs/ROLLBACK-FIRST-CONTACT-20260831.md` |
 
 ---
 
