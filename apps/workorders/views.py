@@ -61,12 +61,30 @@ from .services import (
     start_service_task,
     transition_service_order_status,
     update_diagnosis,
+    workshop_whatsapp_contacts,
 )
 
 
 # --------------------------------------------------------------------------
 # Nova entrada
 # --------------------------------------------------------------------------
+
+
+@login_required
+def whatsapp_picker(request):
+    """Painel do header: veículos na oficina para abrir conversa no WhatsApp."""
+    query = request.GET.get("q", "")
+    focus = request.GET.get("focus") or ""
+    contacts = workshop_whatsapp_contacts(query=query, focus_uuid=focus or None)
+    return render(
+        request,
+        "partials/_whatsapp_picker_results.html",
+        {
+            "contacts": contacts,
+            "query": query.strip(),
+            "focus": focus,
+        },
+    )
 
 
 @login_required
@@ -331,6 +349,7 @@ class ServiceOrderDetailView(LoginRequiredMixin, DetailView):
         inspection = getattr(order, "inspection", None)
 
         context["page_title"] = order.number_display
+        context["whatsapp_focus_uuid"] = str(order.uuid)
         context["activities"] = order.activities.select_related("actor").all()
         context["status_form"] = StatusChangeForm(initial={"status": order.status})
         context["mechanic_form"] = MechanicChangeForm(initial={"mechanic": order.mechanic})
@@ -341,12 +360,20 @@ class ServiceOrderDetailView(LoginRequiredMixin, DetailView):
         context["diagnosis_form"] = DiagnosisForm(initial={"diagnosis": order.diagnosis})
         context["task_form"] = ServiceTaskForm()
         context["photo_form"] = PhotoUploadForm(initial={"category": _suggested_photo_category(order)})
+        context["diagnosis_photo_form"] = PhotoUploadForm(
+            initial={"category": PhotoCategory.DIAGNOSIS}
+        )
         context["exit_form"] = DeliveryForm(entry_km=order.entry_km)
         context["cancel_form"] = CancelOrderForm()
 
         context["tasks"] = order.tasks.all()
         context["progress"] = order.task_progress
         context["photos"] = _grouped_photos(order)
+        context["diagnosis_photos"] = [
+            photo
+            for photo in order.photos.visible().select_related("uploaded_by").order_by("created_at", "id")
+            if photo.category == PhotoCategory.DIAGNOSIS
+        ]
         context["photo_count"] = sum(len(group["photos"]) for group in context["photos"])
         context["inspection"] = inspection
         context["inspection_summary"] = inspection.summary if inspection else None
@@ -631,7 +658,7 @@ def upload_photos_view(request, uuid):
         for error in form.errors.get("images", []) or ["Não foi possível enviar as fotos."]:
             messages.error(request, error)
 
-    return redirect(order.get_absolute_url() + "#fotos")
+    return redirect(order.get_absolute_url() + "#" + _photo_anchor(request))
 
 
 @login_required
@@ -647,7 +674,15 @@ def remove_photo_view(request, uuid, photo_id):
     else:
         messages.success(request, "Foto removida do registro.")
 
-    return redirect(order.get_absolute_url() + "#fotos")
+    return redirect(order.get_absolute_url() + "#" + _photo_anchor(request))
+
+
+def _photo_anchor(request) -> str:
+    """Volta para a aba de onde a foto foi enviada/removida."""
+    anchor = (request.POST.get("next_anchor") or "fotos").strip()
+    if anchor not in {"fotos", "diagnostico", "vistoria"}:
+        return "fotos"
+    return anchor
 
 
 # --------------------------------------------------------------------------

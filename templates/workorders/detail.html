@@ -65,7 +65,9 @@
         <button class="tabs__btn" type="button" data-tab-target="servicos">
           Serviços{% if progress.total %} <span class="tabs__count">{{ progress.done }}/{{ progress.total }}</span>{% endif %}
         </button>
-        <button class="tabs__btn" type="button" data-tab-target="diagnostico">Diagnóstico</button>
+        <button class="tabs__btn" type="button" data-tab-target="diagnostico">
+          Diagnóstico{% if diagnosis_photos %} <span class="tabs__count">{{ diagnosis_photos|length }}</span>{% endif %}
+        </button>
         <button class="tabs__btn" type="button" data-tab-target="vistoria">
           Vistoria e fotos{% if photo_count %} <span class="tabs__count">{{ photo_count }}</span>{% endif %}
         </button>
@@ -108,6 +110,28 @@
           <p class="text-block">{{ order.diagnosis|linebreaksbr }}</p>
         {% else %}
           <p class="empty-state empty-state--inline">Nenhum diagnóstico registrado.</p>
+        {% endif %}
+
+        <h2 class="section-title mt-4">Fotos do diagnóstico</h2>
+        <p class="field__help">
+          Registre o que foi identificado: peça danificada, vazamento, código no scanner, etc.
+        </p>
+        {% include "workorders/partials/_photo_list.html" with photo_list=diagnosis_photos photo_label="Diagnóstico" next_anchor="diagnostico" empty_message="Nenhuma foto de diagnóstico ainda." %}
+
+        {% if order.is_open and user.can_upload_photos %}
+          <form class="photo-form mt-4" method="post" enctype="multipart/form-data"
+                action="{% url 'workorders:upload_photos' order.uuid %}">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="DIAGNOSTICO">
+            <input type="hidden" name="angle" value="EXTRA">
+            <input type="hidden" name="next_anchor" value="diagnostico">
+            {% include "components/_field.html" with field=diagnosis_photo_form.caption %}
+            {% include "components/_field.html" with field=diagnosis_photo_form.images %}
+            <p class="field__help">JPG, PNG ou WEBP. No celular o botão abre a câmera direto.</p>
+            <button class="btn btn--primary" type="submit">
+              <span aria-hidden="true">📷</span> Enviar fotos do diagnóstico
+            </button>
+          </form>
         {% endif %}
       </section>
 
@@ -164,6 +188,7 @@
           <form class="photo-form mt-4" method="post" enctype="multipart/form-data"
                 action="{% url 'workorders:upload_photos' order.uuid %}">
             {% csrf_token %}
+            <input type="hidden" name="next_anchor" value="fotos">
             <div class="photo-form__row">
               {% include "components/_field.html" with field=photo_form.category %}
               {% include "components/_field.html" with field=photo_form.caption %}

@@ -779,3 +779,64 @@ def cancel_service_order(order: ServiceOrder, *, user, reason: str) -> ServiceOr
     for field in ("status", "cancellation_reason", "cancelled_at", "cancelled_by"):
         setattr(order, field, getattr(locked, field))
     return order
+
+
+def workshop_whatsapp_contacts(*, query: str = "", focus_uuid=None) -> list[dict]:
+    """Contatos WhatsApp dos veículos na oficina (atalho wa.me, sem API).
+
+    Se ``focus_uuid`` for a OS da página aberta, esse cliente vem primeiro.
+    """
+    queryset = ServiceOrder.objects.with_related().in_workshop().order_by("entry_at")
+    term = (query or "").strip()
+    if term:
+        queryset = queryset.search(term)
+
+    orders = list(queryset[:80])
+    focus_order = None
+    if focus_uuid:
+        focus_order = next((order for order in orders if str(order.uuid) == str(focus_uuid)), None)
+        if focus_order is None:
+            focus_order = (
+                ServiceOrder.objects.with_related()
+                .in_workshop()
+                .filter(uuid=focus_uuid)
+                .first()
+            )
+            if focus_order is not None and term:
+                # Com busca ativa, só promove o foco se ele também bater no termo.
+                focused_match = list(
+                    ServiceOrder.objects.with_related()
+                    .in_workshop()
+                    .filter(uuid=focus_uuid)
+                    .search(term)[:1]
+                )
+                focus_order = focused_match[0] if focused_match else None
+
+    def row(order: ServiceOrder, *, pinned: bool = False) -> dict:
+        client = order.client
+        return {
+            "order": order,
+            "client_name": client.name,
+            "phone_display": client.whatsapp_display,
+            "wa_url": client.whatsapp_url,
+            "plate": order.vehicle.plate_display,
+            "vehicle": order.vehicle.description,
+            "number": order.number_display,
+            "status": order.get_status_display(),
+            "pinned": pinned,
+            "has_whatsapp": bool(client.whatsapp_url),
+        }
+
+    contacts: list[dict] = []
+    seen = set()
+    if focus_order is not None:
+        contacts.append(row(focus_order, pinned=True))
+        seen.add(focus_order.pk)
+
+    for order in orders:
+        if order.pk in seen:
+            continue
+        contacts.append(row(order))
+        seen.add(order.pk)
+
+    return contacts

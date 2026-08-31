@@ -20,6 +20,10 @@
     {% endif %}
   </nav>
 
+  {% if user.is_authenticated %}
+    {% include "partials/_whatsapp_picker.html" %}
+  {% endif %}
+
   <form class="search app-header__search" role="search" action="{% url 'workorders:search' %}" method="get">
     <label class="sr-only" for="busca-global">Buscar placa, OS, cliente, telefone ou modelo</label>
     <span class="search__icon" aria-hidden="true">⌕</span>

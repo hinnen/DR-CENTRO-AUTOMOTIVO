@@ -1,0 +1,41 @@
+{% comment %}
+Grade plana de fotos. Usada na galeria geral (por grupo) e na aba Diagnóstico.
+{% endcomment %}
+{% if photo_list %}
+  <ul class="photo-grid">
+    {% for photo in photo_list %}
+      <li class="photo">
+        <a class="photo__link" href="{{ photo.image.url }}" target="_blank" rel="noopener"
+           title="Abrir imagem em tamanho real">
+          <img class="photo__img" src="{{ photo.image.url }}" loading="lazy"
+               alt="{{ photo.caption|default:photo_label|default:'Foto' }} — {{ order.vehicle.plate_display }}">
+        </a>
+
+        <div class="photo__meta">
+          {% if photo.caption %}<p class="photo__caption">{{ photo.caption }}</p>{% endif %}
+          <p class="photo__author">
+            {{ photo.created_at|date:"d/m H:i" }}
+            {% if photo.uploaded_by %}· {{ photo.uploaded_by.short_name }}{% endif %}
+          </p>
+        </div>
+
+        {% if order.is_open and user.can_delete_photos %}
+          <form class="photo__remove" method="post"
+                action="{% url 'workorders:remove_photo' order.uuid photo.id %}"
+                onsubmit="return confirm('Remover esta foto do registro? A ação fica registrada na auditoria.');">
+            {% csrf_token %}
+            {% if next_anchor %}
+              <input type="hidden" name="next_anchor" value="{{ next_anchor }}">
+            {% endif %}
+            <button class="btn btn--icon btn--sm" type="submit"
+                    aria-label="Remover foto">✕</button>
+          </form>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty-state empty-state--inline">
+    {{ empty_message|default:"Nenhuma foto anexada." }}
+  </p>
+{% endif %}

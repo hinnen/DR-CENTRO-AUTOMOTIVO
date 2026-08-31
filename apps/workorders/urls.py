@@ -11,6 +11,7 @@ urlpatterns = [
     path("oficina/", views.WorkshopListView.as_view(), name="workshop"),
     path("historico/", views.HistoryListView.as_view(), name="history"),
     path("buscar/", views.global_search, name="search"),
+    path("whatsapp/oficina/", views.whatsapp_picker, name="whatsapp_picker"),
     path("os/<uuid:uuid>/", views.ServiceOrderDetailView.as_view(), name="detail"),
     path("os/<uuid:uuid>/status/", views.change_status, name="change_status"),
     path("os/<uuid:uuid>/mover/", views.change_status_from_board, name="move"),

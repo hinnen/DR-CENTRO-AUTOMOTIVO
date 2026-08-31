@@ -224,6 +224,26 @@ class PhotoTests(OperationsMixin, TestCase):
         )
         self.assertEqual(self.order.photos.visible().count(), 2)
 
+    def test_diagnosis_tab_upload_returns_to_diagnosis_anchor(self):
+        self.client.force_login(self.reception)
+        response = self.client.post(
+            reverse("workorders:upload_photos", args=[self.order.uuid]),
+            {
+                "images": [make_image("diag.jpg")],
+                "category": PhotoCategory.DIAGNOSIS,
+                "caption": "Pivô gasto",
+                "next_anchor": "diagnostico",
+            },
+        )
+        self.assertRedirects(
+            response,
+            self.order.get_absolute_url() + "#diagnostico",
+            fetch_redirect_response=False,
+        )
+        photo = self.order.photos.visible().get()
+        self.assertEqual(photo.category, PhotoCategory.DIAGNOSIS)
+        self.assertEqual(photo.caption, "Pivô gasto")
+
 
 # ---------------------------------------------------------------------------
 # Vistoria
@@ -593,6 +613,45 @@ class ActivityLogTests(OperationsMixin, TestCase):
         order = self.make_order()
         for entry in ActivityLog.objects.filter(service_order=order):
             self.assertNotIn("password", str(entry.metadata).lower())
+
+
+# ---------------------------------------------------------------------------
+# Atalho WhatsApp (wa.me)
+# ---------------------------------------------------------------------------
+
+
+class WhatsAppPickerTests(OperationsMixin, TestCase):
+    def setUp(self):
+        self.build_environment()
+        self.order = self.make_order()
+
+    def test_picker_lists_workshop_clients(self):
+        self.client.force_login(self.reception)
+        response = self.client.get(reverse("workorders:whatsapp_picker"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.owner.name)
+        self.assertContains(response, "wa.me/55")
+
+    def test_focused_order_is_listed_first(self):
+        from apps.vehicles.models import Vehicle
+        from .services import workshop_whatsapp_contacts
+
+        other_vehicle = Vehicle.objects.create(
+            client=self.owner, plate="ZZZ1A23", brand="Ford", model="Ka", model_year=2018
+        )
+        other = self.make_order(vehicle=other_vehicle, entry_km=1000)
+        contacts = workshop_whatsapp_contacts(focus_uuid=other.uuid)
+        self.assertTrue(contacts[0]["pinned"])
+        self.assertEqual(contacts[0]["order"].pk, other.pk)
+
+    def test_search_filters_by_plate(self):
+        self.client.force_login(self.reception)
+        response = self.client.get(
+            reverse("workorders:whatsapp_picker"), {"q": self.vehicle.plate}
+        )
+        self.assertContains(response, self.owner.name)
+        response_miss = self.client.get(reverse("workorders:whatsapp_picker"), {"q": "XYZ9999"})
+        self.assertContains(response_miss, "Nenhum veículo")
 
 
 # ---------------------------------------------------------------------------

@@ -135,11 +135,11 @@ USE_THOUSAND_SEPARATOR = True
 
 # Arquivos estáticos e mídia
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", BASE_DIR / "media"))
 
 # O manifesto com hash só existe depois do collectstatic, por isso é

@@ -157,4 +157,69 @@
       }
     }
   });
+
+  // ---------- WhatsApp (atalho wa.me no header) ----------
+
+  function initWhatsAppPicker() {
+    const root = document.querySelector("[data-wa-picker]");
+    if (!root || root.dataset.waReady === "1") return;
+    root.dataset.waReady = "1";
+
+    const toggle = root.querySelector("[data-wa-toggle]");
+    const panel = root.querySelector("[data-wa-panel]");
+    const results = root.querySelector("[data-wa-results]");
+    const search = root.querySelector("[data-wa-search]");
+    const focusInput = root.querySelector("[data-wa-focus-input]");
+    if (!toggle || !panel || !results) return;
+
+    const url = search && search.getAttribute("hx-get");
+
+    function close() {
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      root.classList.remove("is-open");
+    }
+
+    function open() {
+      panel.hidden = false;
+      toggle.setAttribute("aria-expanded", "true");
+      root.classList.add("is-open");
+      if (search) {
+        search.focus();
+        if (window.htmx && url) {
+          const focus = focusInput ? focusInput.value : "";
+          const qs = new URLSearchParams();
+          if (search.value) qs.set("q", search.value);
+          if (focus) qs.set("focus", focus);
+          window.htmx.ajax("GET", url + (qs.toString() ? "?" + qs.toString() : ""), {
+            target: "#wa-picker-results",
+            swap: "innerHTML",
+          });
+        }
+      }
+    }
+
+    toggle.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (panel.hidden) open();
+      else close();
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!root.contains(event.target)) close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !panel.hidden) {
+        close();
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initWhatsAppPicker);
+  } else {
+    initWhatsAppPicker();
+  }
 })();

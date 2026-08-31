@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 
 from apps.core.models import BaseModel
-from apps.core.utils import format_cpf_cnpj, format_phone, normalize_phone
+from apps.core.utils import format_cpf_cnpj, format_phone, normalize_phone, whatsapp_url
 
 
 class ClientQuerySet(models.QuerySet):
@@ -62,6 +62,11 @@ class Client(BaseModel):
     @property
     def whatsapp_display(self) -> str:
         return format_phone(self.phone_whatsapp or self.phone)
+
+    @property
+    def whatsapp_url(self) -> str:
+        """Abre a conversa no WhatsApp (número do Zap, senão o telefone)."""
+        return whatsapp_url(self.phone_whatsapp or self.phone)
 
     @property
     def cpf_cnpj_display(self) -> str:

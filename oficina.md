@@ -145,7 +145,7 @@ Fluxo típico:
 - Template com abas (progressive enhancement): Resumo, Serviços, Diagnóstico, Vistoria/fotos, Timeline, Histórico veículo, Saída
 - Status do quadro: Aguardando avaliação → Em avaliação → Aguardando aprovação → Aguardando peça → Em manutenção → Finalizado
 - Fechados: Entregue, Cancelado
-
+- **Diagnóstico:** texto + fotos da categoria `DIAGNOSTICO` (galeria e upload na própria aba)
 ### 4.4 Serviços (ServiceTask)
 
 - Status: PENDING / RUNNING / DONE / CANCELLED
@@ -209,6 +209,7 @@ Fluxo típico:
 - Tokens CSS: `--c-brand-red`, `--c-brand-navy`
 - Navy = navegação/ações comuns; vermelho = atenção (Nova entrada, atraso, erro)
 - **Nav superior** (`templates/partials/_header.html`) — sem sidebar; libera largura do Kanban
+- **Atalho WhatsApp** no header (ícone): lista OS na oficina → `wa.me` (telefone/Zap do cliente). Busca por placa/nome/OS. Na página da OS, o cliente atual vem primeiro. *Não* é integração CRM/API.
 - **Mobile:** barra inferior (`_mobile_nav.html`); header compacto (marca + avatar + sair)
 - Mobile: Kanban por abas de coluna; OS por abas de seção
 - Comentários Django multilinha: usar `{% comment %}` — `{# #}` em várias linhas **vaza** texto na UI
@@ -228,7 +229,7 @@ python manage.py seed_demo --reset   # senha default oficina123
 
 - Settings: `config/settings.py` + `.env` (`python-dotenv`, `dj-database-url`)
 - Postgres local portátil: `scripts/pg-start.ps1` / `pg-stop.ps1`
-- Produção: Gunicorn `0.0.0.0:$PORT`, `DEBUG=False`, media **externa** (disco Render é efêmero)
+- Produção: Gunicorn `0.0.0.0:$PORT`, `DEBUG=False`, media em disco Render (`MEDIA_ROOT=/var/data/media`) via view autenticada `apps/core/media.py` (não depende de `static()` do DEBUG)
 - Checklist: `check --deploy`, `collectstatic`, `migrate`
 
 ### 4.17 App mobile `/m/` (PWA)
@@ -290,14 +291,16 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | 30/08 | Fix SVG laterais quebrados (byte Latin-1 `à` no comentário) | `lateral_esq/dir.svg` · `mobile.css?v=9` |
 | 30/08 | Redesign exemplos fotos guiadas (silhuetas limpas, sem placa fake) | `static/mobile/shots/*.svg` · `?v=2` · `mobile.css?v=11` |
 | 30/08 | OCR: reforço placa antiga (EXIF, limiar ↓, contraste, rotações) | `plate_ocr.py` · Mercosul + antiga |
-| 30/08 | Correção lote revisão (alta→baixa): OS duplicada, cancel task, OS fechada, admin, nav celular, Kanban poll, tempos, títulos, seed… | P-004…P-012 fechadas · testes verdes |
+| 30/08 | Header: atalho WhatsApp (wa.me) — lista oficina + busca + prioridade da OS aberta | não é CRM/API · `whatsapp_picker` |
+| 30/08 | Aba Diagnóstico: upload e galeria de fotos (categoria DIAGNOSTICO) | `detail.html` · `_photo_list.html` · âncora `#diagnostico` |
+| 30/08 | Fix: fotos `/media/` 404 com DEBUG=False — view autenticada + disco Render | `apps/core/media.py` · `render.yaml` disk |
 
 ### Pendências conhecidas
 
 | ID | Item | Prioridade |
 | -- | ---- | ---------- |
 | P-001 | Conferir visual dos cards no monitor do Renan (altura 248/72 + ícones) | Baixa — ajustar se pedir |
-| P-002 | Media storage externo antes de produção com fotos | Alta — disco Render some no restart |
+| P-002 | Media storage S3/R2 (disco Render cobre o curto prazo) | Média quando volume crescer |
 | P-003 | Auto-start do Postgres no Windows (hoje manual) | Baixa — Renan inicia com script |
 
 ### Instruções ao assistente (vivo)

@@ -1,0 +1,42 @@
+{% if contacts %}
+  <ul class="wa-picker__list" role="listbox" aria-label="Clientes na oficina">
+    {% for item in contacts %}
+      <li class="wa-picker__item {% if item.pinned %}wa-picker__item--pinned{% endif %}" role="option">
+        {% if item.has_whatsapp %}
+          <a class="wa-picker__link" href="{{ item.wa_url }}" target="_blank" rel="noopener"
+             data-wa-open>
+            {% if item.pinned %}
+              <span class="wa-picker__badge">Este veículo</span>
+            {% endif %}
+            <span class="wa-picker__name">{{ item.client_name }}</span>
+            <span class="wa-picker__meta">
+              <span class="plate plate--sm">{{ item.plate }}</span>
+              {{ item.number }} · {{ item.vehicle }}
+            </span>
+            <span class="wa-picker__phone">{{ item.phone_display }}</span>
+          </a>
+        {% else %}
+          <div class="wa-picker__link wa-picker__link--disabled" title="Cliente sem telefone">
+            {% if item.pinned %}
+              <span class="wa-picker__badge">Este veículo</span>
+            {% endif %}
+            <span class="wa-picker__name">{{ item.client_name }}</span>
+            <span class="wa-picker__meta">
+              <span class="plate plate--sm">{{ item.plate }}</span>
+              {{ item.number }} · {{ item.vehicle }}
+            </span>
+            <span class="wa-picker__phone">Sem telefone cadastrado</span>
+          </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="wa-picker__empty">
+    {% if query %}
+      Nenhum veículo na oficina com “{{ query }}”.
+    {% else %}
+      Nenhum veículo na oficina agora.
+    {% endif %}
+  </p>
+{% endif %}

@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from apps.accounts.models import Role
 from apps.accounts.tests import make_user
-from apps.core.utils import format_phone, normalize_phone
+from apps.core.utils import format_phone, normalize_phone, whatsapp_url
 
 from .forms import ClientForm
 from .models import Client
@@ -27,6 +27,10 @@ class PhoneNormalizationTests(TestCase):
     def test_display_format_mobile_and_landline(self):
         self.assertEqual(format_phone("13991234567"), "(13) 99123-4567")
         self.assertEqual(format_phone("1332215588"), "(13) 3221-5588")
+
+    def test_whatsapp_url_adds_brazil_country_code(self):
+        self.assertEqual(whatsapp_url("(13) 99785-1403"), "https://wa.me/5513997851403")
+        self.assertEqual(whatsapp_url(""), "")
 
 
 class ClientModelTests(TestCase):

@@ -18,6 +18,10 @@ services:
     preDeployCommand: python manage.py migrate --noinput
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 180
     healthCheckPath: /healthz
+    disk:
+      name: dr-centro-media
+      mountPath: /var/data/media
+      sizeGB: 5
     envVars:
       - key: PYTHON_VERSION
         value: "3.13.4"
@@ -37,6 +41,8 @@ services:
         value: "DR Centro Automotivo"
       - key: USE_MANIFEST_STATIC
         value: "False"
+      - key: MEDIA_ROOT
+        value: /var/data/media
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: USE_X_FORWARDED_PROTO

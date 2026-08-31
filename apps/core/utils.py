@@ -33,6 +33,14 @@ def format_phone(value: str | None) -> str:
     return digits
 
 
+def whatsapp_url(value: str | None) -> str:
+    """Link ``wa.me`` com DDI 55. Vazio se não houver telefone utilizável."""
+    digits = normalize_phone(value)
+    if len(digits) < 10:
+        return ""
+    return f"https://wa.me/55{digits}"
+
+
 def format_cpf_cnpj(value: str | None) -> str:
     digits = only_digits(value)
     if len(digits) == 11:

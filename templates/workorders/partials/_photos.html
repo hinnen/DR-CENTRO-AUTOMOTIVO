@@ -1,7 +1,5 @@
 {% comment %}
 Galeria da OS, agrupada pelo momento em que a foto foi tirada.
-A miniatura abre a imagem original em nova aba: é o visualizador que já existe
-no celular e no desktop, com zoom e rotação, sem escrever um lightbox próprio.
 {% endcomment %}
 {% if photos %}
   {% for group in photos %}
@@ -10,36 +8,7 @@ no celular e no desktop, com zoom e rotação, sem escrever um lightbox próprio
         {{ group.label }}
         <span class="photo-group__count">{{ group.photos|length }}</span>
       </h3>
-
-      <ul class="photo-grid">
-        {% for photo in group.photos %}
-          <li class="photo">
-            <a class="photo__link" href="{{ photo.image.url }}" target="_blank" rel="noopener"
-               title="Abrir imagem em tamanho real">
-              <img class="photo__img" src="{{ photo.image.url }}" loading="lazy"
-                   alt="{{ photo.caption|default:group.label }} — {{ order.vehicle.plate_display }}">
-            </a>
-
-            <div class="photo__meta">
-              {% if photo.caption %}<p class="photo__caption">{{ photo.caption }}</p>{% endif %}
-              <p class="photo__author">
-                {{ photo.created_at|date:"d/m H:i" }}
-                {% if photo.uploaded_by %}· {{ photo.uploaded_by.short_name }}{% endif %}
-              </p>
-            </div>
-
-            {% if order.is_open and user.can_delete_photos %}
-              <form class="photo__remove" method="post"
-                    action="{% url 'workorders:remove_photo' order.uuid photo.id %}"
-                    onsubmit="return confirm('Remover esta foto do registro? A ação fica registrada na auditoria.');">
-                {% csrf_token %}
-                <button class="btn btn--icon btn--sm" type="submit"
-                        aria-label="Remover foto de {{ group.label|lower }}">✕</button>
-              </form>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
+      {% include "workorders/partials/_photo_list.html" with photo_list=group.photos photo_label=group.label next_anchor="fotos" %}
     </div>
   {% endfor %}
 {% else %}

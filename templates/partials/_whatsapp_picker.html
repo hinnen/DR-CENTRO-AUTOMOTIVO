@@ -1,0 +1,36 @@
+{% comment %}
+Botão WhatsApp no header: lista veículos na oficina e abre wa.me.
+Não é integração CRM — só atalho para a conversa no aplicativo.
+{% endcomment %}
+<div class="wa-picker" data-wa-picker data-wa-focus="{{ whatsapp_focus_uuid|default:'' }}">
+  <button class="wa-picker__toggle" type="button" data-wa-toggle
+          aria-expanded="false" aria-controls="wa-picker-panel"
+          title="WhatsApp — clientes na oficina">
+    <svg class="wa-picker__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M17.47 14.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.22 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z"/>
+      <path fill="currentColor" d="M12.04 2C6.58 2 2.15 6.43 2.15 11.89c0 1.95.57 3.76 1.56 5.3L2 22l4.95-1.63a9.84 9.84 0 0 0 5.09 1.4h.01c5.46 0 9.89-4.43 9.89-9.89C21.94 6.43 17.5 2 12.04 2zm0 18.06h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.12 1.03 1.05-3.04-.2-.31a8.18 8.18 0 0 1-1.26-4.37c0-4.53 3.69-8.21 8.22-8.21 4.53 0 8.21 3.68 8.21 8.21 0 4.53-3.68 8.22-8.21 8.22z"/>
+    </svg>
+    <span class="sr-only">WhatsApp — clientes na oficina</span>
+  </button>
+
+  <div class="wa-picker__panel" id="wa-picker-panel" hidden data-wa-panel>
+    <div class="wa-picker__head">
+      <p class="wa-picker__title">WhatsApp — na oficina</p>
+      <label class="sr-only" for="wa-picker-search">Buscar cliente, placa ou OS</label>
+      <input class="wa-picker__search" id="wa-picker-search" type="search" name="q"
+             placeholder="Placa, cliente, OS, telefone…"
+             autocomplete="off"
+             data-wa-search
+             hx-get="{% url 'workorders:whatsapp_picker' %}"
+             hx-trigger="input changed delay:200ms, search"
+             hx-target="#wa-picker-results"
+             hx-include="[data-wa-focus-input]"
+             hx-swap="innerHTML">
+      <input type="hidden" name="focus" value="{{ whatsapp_focus_uuid|default:'' }}" data-wa-focus-input>
+    </div>
+    <div class="wa-picker__results" id="wa-picker-results" data-wa-results>
+      {% comment %}Carregado ao abrir o painel.{% endcomment %}
+      <p class="wa-picker__empty">Abrindo lista…</p>
+    </div>
+  </div>
+</div>

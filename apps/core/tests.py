@@ -64,6 +64,54 @@ class ErrorPageTests(TestCase):
         self.assertContains(response, "Página não encontrada", status_code=404)
 
 
+class MediaServeTests(TestCase):
+    """Fotos precisam abrir mesmo com DEBUG=False (sem static() do Django)."""
+
+    def setUp(self):
+        from django.core.files.base import ContentFile
+
+        from apps.customers.models import Client
+        from apps.vehicles.models import Vehicle
+        from apps.workorders.models import PhotoCategory, ServiceOrderPhoto
+        from apps.workorders.services import create_service_order
+
+        self.user = User.objects.create_user(username="recep", password="x", role=Role.RECEPTION)
+        client = Client.objects.create(name="Cliente", phone="11999990000")
+        vehicle = Vehicle.objects.create(
+            client=client, plate="MED1A23", brand="Fiat", model="Uno", model_year=2010
+        )
+        order = create_service_order(
+            client=client,
+            vehicle=vehicle,
+            entry_km=1000,
+            customer_complaint="Teste foto",
+            user=self.user,
+        )
+        # PNG mínimo 1x1
+        png = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+            b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00"
+            b"\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82"
+        )
+        self.photo = ServiceOrderPhoto(
+            service_order=order,
+            vehicle=vehicle,
+            category=PhotoCategory.INSPECTION,
+            uploaded_by=self.user,
+        )
+        self.photo.image.save("t.png", ContentFile(png), save=True)
+
+    def test_anonymous_cannot_fetch_media(self):
+        response = self.client.get(self.photo.image.url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_logged_in_user_can_fetch_media(self):
+        self.client.force_login(self.user)
+        response = self.client.get(self.photo.image.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(response["Content-Type"], ("image/png", "application/octet-stream"))
+
+
 class TemplateHygieneTests(TestCase):
     """Guardas contra erros de template que só apareceriam na tela do usuário."""
 
