@@ -232,4 +232,5 @@ Campo: `ServiceOrderPhoto.angle` · migração `workorders.0004_photo_angle`
 ### Manutenção
 
 - Ao fechar entrega → atualizar **só** a tabela em `oficina.md` (substituir linhas obsoletas; não acumular WIP antigo).
+- Após deploy produção → marcar P0 como **✅ Enviado** e limpar badges «Pronto para envio» (padrão `banana-roteiro.md` §0.2).
 - Assistente: antes de push produção → grep `Pronto para envio` + confirmar testes.

@@ -272,40 +272,43 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção hoje:** https://dr-centro-automotivo.onrender.com/ · Live `ae2b0ac` · `/healthz` 200 · `/configuracoes/` 302 (login)
+**Produção Live:** https://dr-centro-automotivo.onrender.com/ · `main` @ **`e5ab9bd`** · deploy autorizado 31/08
+
+**Smoke pós-deploy (automático):** `/healthz` 200 · `/configuracoes/` 302 · `/conta/entrar/` 200 · **247 pytest** OK
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | **No ar** | `/healthz` → 200 |
-| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | **No ar** | 302 anon · 247 pytest local · migrações OK |
-| **P0** | `openpyxl` no build · `platerec` comentado no `requirements.txt` | **No ar** | Build Render OK |
-| **P1** | Smoke pós-deploy: login admin → `/configuracoes/` → exemplos → planilha | **Testar** | Renan no browser |
-| **P1** | Superuser produção (`createsuperuser` no Shell Render) | **Testar** | Sem admin ainda no ar |
-| **P1** | Kanban + aviso WhatsApp opcional (preferência) | **Testar** | `test_status_whatsapp` OK local |
-| **P2** | Media S3/R2 (fotos persistem após restart) | **Pendente** | Disco Render = curto prazo |
-| **P2** | OCR placa no Starter (`platerec` + plano maior) | **Pendente** | `ENABLE_PLATE_OCR=0` em prod |
-| **P2** | Fotos guiadas 5 ângulos no desktop | **Pendente** | Roteiro §8 |
-| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora do escopo §0 |
+| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | ✅ **Enviado** | Prod 200 · `render.yaml` healthCheckPath `/healthz` |
+| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | ✅ **Enviado** | Prod 302 anon · migrações `is_demo` + `WorkshopSettings` |
+| **P0** | `openpyxl` no build · `platerec` comentado | ✅ **Enviado** | `requirements.txt` · import lazy nas views |
+| **P1** | Smoke manual: login admin → Configurações → exemplos → planilha | **Testar** | Renan no browser |
+| **P1** | Superuser produção (`createsuperuser` Shell Render) | **Testar** | Sem admin operacional ainda |
+| **P1** | Kanban + aviso WhatsApp opcional | **Testar** | `test_status_whatsapp` OK local |
+| **P2** | Media S3/R2 | **Pendente** | Disco Render = curto prazo |
+| **P2** | OCR placa Starter | **Pendente** | `ENABLE_PLATE_OCR=0` |
+| **P2** | Fotos guiadas 5 ângulos desktop | **Pendente** | Roteiro §8 |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo §0 |
 
-### PACOTE PRONTO (commit `97ff12d`)
+### Pré-deploy (31/08 · padrão banana-roteiro)
+
+| Gate | Resultado |
+| ---- | --------- |
+| `pytest -q` (247) | ✅ |
+| `manage.py check` | ✅ |
+| Código = `origin/main` | ✅ `e5ab9bd` |
+| HealthCheckMiddleware + OCR off boot | ✅ |
+| Prod smoke HTTP | ✅ |
+
+### PACOTE ENVIADO (`97ff12d` + docs `ae2b0ac`/`e5ab9bd`)
 
 | Área | Arquivos-chave |
 | ---- | -------------- |
-| URLs | `config/urls.py` → `configuracoes/` · `apps/core/urls.py` |
+| URLs | `config/urls.py` · `apps/core/urls.py` |
 | Views/forms | `settings_views.py` · `settings_forms.py` |
-| Demo | `demo_seed.py` · `demo_purge.py` · flag `is_demo` nos models |
+| Demo | `demo_seed.py` · `demo_purge.py` |
 | Planilhas | `apps/core/spreadsheet/` · `openpyxl==3.1.5` |
-| WhatsApp status | `status_whatsapp.py` · toggle em `WorkshopSettings` |
-| UI | `templates/settings/*` · link no `_header.html` |
-| Segurança prod | `middleware.py` · `mobile/apps.py` (sem warmup) |
-
-**Dev:** `runserver 8010` · seed local `admin` / `oficina123` (bloqueado em prod DEBUG=False)
-
-### Instruções ao assistente
-
-- Novo chat → `oficina-roteiro.md` → grep `CHECKLIST ÚNICO`
-- Ao fechar entrega → atualizar **esta tabela** (não inflar histórico)
-- Deploy produção → frase explícita + senha `99738595` (roteiro §0.3)
+| WhatsApp status | `status_whatsapp.py` · `WorkshopSettings` |
+| Segurança prod | `middleware.py` · `mobile/apps.py` |
 
 ---
 
