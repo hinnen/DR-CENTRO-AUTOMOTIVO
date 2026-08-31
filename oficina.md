@@ -331,7 +331,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | 31/08 | WhatsApp status automático (wa.me): toggle em Preferências + abre ao mudar status | `status_whatsapp.py` · `WorkshopSettings` |
 | 31/08 | Dados de exemplo + planilhas Excel (import/export cadastros) | `is_demo` · `/configuracoes/exemplos/` · `/configuracoes/planilhas/` · `openpyxl` · testes `test_demo_spreadsheet.py` |
 
-**Rollback (31/08):** reverter commit desta entrega na `main` se demo/planilhas causarem problema — migrations `0002_is_demo` (accounts), `0003_is_demo` (customers/vehicles), `0005_is_demo` (workorders).
+**Rollback (31/08):** reverter commit `aa343f0` na `main` se demo/planilhas causarem problema — migrations `0002_is_demo` (accounts), `0003_is_demo` (customers/vehicles), `0005_is_demo` (workorders).
 
 ### Pendências conhecidas
 
