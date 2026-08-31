@@ -179,7 +179,7 @@
 
       setPlateStatus("Lendo placa…");
 
-      resizePlatePhoto(file, 1280)
+      resizePlatePhoto(file, 1024)
         .then(function (uploadFile) {
           var body = new FormData();
           body.append("image", uploadFile, uploadFile.name || "placa.jpg");

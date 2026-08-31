@@ -47,6 +47,8 @@ services:
         value: "0"
       - key: ENABLE_PLATE_OCR
         value: "1"
+      - key: PLATE_OCR_KEEP_LOADED
+        value: "1"
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: USE_X_FORWARDED_PROTO

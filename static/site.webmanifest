@@ -1,13 +1,12 @@
 {
-  "name": "DR Vistoria",
-  "short_name": "Vistoria",
-  "description": "Vistoria de entrada — DR Centro Automotivo",
-  "start_url": "/m/",
-  "scope": "/m/",
+  "name": "DR Centro Automotivo",
+  "short_name": "DR Oficina",
+  "description": "Gestão operacional da oficina — DR Centro Automotivo",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#0b1838",
-  "theme_color": "#0b1838",
+  "background_color": "#ffffff",
+  "theme_color": "#152e69",
   "lang": "pt-BR",
   "icons": [
     {

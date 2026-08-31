@@ -1,0 +1,21 @@
+{% load static %}
+{# Favicon, PWA e preview WhatsApp/redes — logo DR #}
+<link rel="icon" href="{% static 'img/favicon.ico' %}?v=2" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}?v=2">
+<link rel="icon" type="image/png" sizes="48x48" href="{% static 'img/favicon-48.png' %}?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/apple-touch-icon.png' %}?v=2">
+<link rel="manifest" href="{% static 'site.webmanifest' %}">
+<meta name="application-name" content="{{ workshop_name }}">
+<meta name="apple-mobile-web-app-title" content="{{ workshop_name }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ workshop_name }}">
+<meta property="og:title" content="{{ workshop_name }}">
+<meta property="og:description" content="Gestão operacional da oficina — entrada, vistoria e ordem de serviço.">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-share.png' %}?v=2">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ workshop_name }}">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-share.png' %}?v=2">

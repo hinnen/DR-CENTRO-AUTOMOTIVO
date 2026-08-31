@@ -247,8 +247,8 @@ python manage.py seed_demo --reset   # senha default oficina123
 
 - App: `apps/mobile/` · URLs sob `/m/` · CSS/JS `static/css/mobile.css`, `static/js/mobile.js`
 - Fluxo: entrada (placa → cliente/KM/queixa) → vistoria → fotos
-- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` (ONNX) **lazy** (sem warmup no boot); libera modelo após cada leitura (Starter); JS preenche `#m-plate` + HTMX lookup
-  - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` (não ligar warmup no Starter)
+- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize 1024
+  - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1`
   - Mercosul **e** antiga: EXIF, limiar de detecção mais baixo, contraste, rotações; I/L/O → dígito na 5ª posição (ex. `JKK2I88` → `JKK2188`)
   - Auto-preenche cliente/veículo **só do banco local** (já veio → lookup). API externa de placa = depois (roadmap).
 - Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI só no mobile por enquanto
@@ -283,7 +283,9 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | **P0** | Hub `/configuracoes/` | ✅ **Enviado** | exemplos + planilhas |
 | **P0** | `openpyxl` no build | ✅ **Enviado** | |
 | **P1** | OCR placa `/m/entrada` (lazy + libera memória) | ✅ **Enviado** | `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` |
-| **P1** | Smoke OCR no celular | **Testar** | Renan · enquadrar só a placa |
+| **P1** | OCR mais rápido (manter modelo + passe enxuto) | ✅ **Enviado** | `PLATE_OCR_KEEP_LOADED=1` · max 1024 · 9 testes OK |
+| **P1** | Logo DR: favicon + PWA + preview WhatsApp (og:image) | ✅ **Enviado** | assets + login HTML com og:image/favicon |
+| **P1** | Smoke: Ctrl+F5 · 2ª foto OCR · link no Zap | **Testar** | Zap pode cachear preview |
 | **P1** | Smoke Configurações / superuser | **Testar** | Renan |
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |

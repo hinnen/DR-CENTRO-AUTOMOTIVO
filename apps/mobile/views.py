@@ -565,16 +565,28 @@ def manifest(request):
         "lang": "pt-BR",
         "icons": [
             {
-                "src": icon_192,
+                "src": f"{icon_192}?v=2",
                 "sizes": "192x192",
                 "type": "image/png",
-                "purpose": "any maskable",
+                "purpose": "any",
             },
             {
-                "src": icon_512,
+                "src": f"{icon_512}?v=2",
                 "sizes": "512x512",
                 "type": "image/png",
-                "purpose": "any maskable",
+                "purpose": "any",
+            },
+            {
+                "src": f"{icon_192}?v=2",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "maskable",
+            },
+            {
+                "src": f"{icon_512}?v=2",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable",
             },
         ],
     }

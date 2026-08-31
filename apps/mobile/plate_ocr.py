@@ -56,13 +56,21 @@ _LETTER_FROM_DIGIT = str.maketrans(
 _DETECT_THRESHOLDS = (0.4, 0.25, 0.15)
 # Para na primeira deteccao com confianca alta (evita 2º/3º limiar).
 _CONF_EARLY_EXIT = 0.42
-_OCR_MAX_SIDE = 1280
+# 1024 cobre placa enquadrada; 1280 era mais lento no CPU do Starter.
+_OCR_MAX_SIDE = 1024
 
 
 def _ocr_enabled() -> bool:
     from django.conf import settings
 
     return bool(getattr(settings, "ENABLE_PLATE_OCR", False))
+
+
+def _keep_engine_loaded() -> bool:
+    """Mantém ONNX em memória após a 1ª foto (leituras seguintes bem mais rápidas)."""
+    from django.conf import settings
+
+    return bool(getattr(settings, "PLATE_OCR_KEEP_LOADED", True))
 
 
 @lru_cache(maxsize=1)
@@ -85,7 +93,7 @@ def _engine():
 
 
 def release_engine() -> None:
-    """Libera o modelo ONNX da memória (Starter ~512 MB)."""
+    """Libera o modelo ONNX da memória (escape hatch / PLATE_OCR_KEEP_LOADED=0)."""
     _engine.cache_clear()
 
 
@@ -233,7 +241,8 @@ def _detect_read(engine, image: Image.Image, conf_threshold: float) -> dict:
 def _try_image(engine, image: Image.Image, *, thorough: bool = False) -> tuple[str, float, list[str]]:
     all_words: list[str] = []
     all_confs: list[float] = []
-    thresholds = _DETECT_THRESHOLDS if thorough else _DETECT_THRESHOLDS[:2]
+    # Passe rápido: um limiar. Thorough: os três + leitura direta.
+    thresholds = _DETECT_THRESHOLDS if thorough else _DETECT_THRESHOLDS[:1]
 
     for threshold in thresholds:
         result = _detect_read(engine, image, threshold)
@@ -263,9 +272,13 @@ def _try_image(engine, image: Image.Image, *, thorough: bool = False) -> tuple[s
 
 
 def _fast_variants(image: Image.Image) -> list[Image.Image]:
-    """Original + contraste — cobre a maioria das fotos bem enquadradas."""
-    contrast = ImageEnhance.Contrast(image).enhance(1.6)
-    return [image, contrast]
+    """Original primeiro; contraste só se a 1ª falhar (ver loop em read_plate)."""
+    return [image]
+
+
+def _fast_variants_retry(image: Image.Image) -> list[Image.Image]:
+    """2º passe rápido: contraste reforçado."""
+    return [ImageEnhance.Contrast(image).enhance(1.6)]
 
 
 def _slow_variants(image: Image.Image) -> list[Image.Image]:
@@ -286,7 +299,7 @@ def _slow_variants(image: Image.Image) -> list[Image.Image]:
 
 def _image_variants(image: Image.Image) -> list[Image.Image]:
     """Mantido para testes; producao usa fast + slow em sequencia."""
-    return _fast_variants(image) + _slow_variants(image)
+    return _fast_variants(image) + _fast_variants_retry(image) + _slow_variants(image)
 
 
 def read_plate_from_image(image: Image.Image) -> dict:
@@ -298,59 +311,65 @@ def read_plate_from_image(image: Image.Image) -> dict:
     image = _resize_for_ocr(image)
 
     try:
-        try:
-            engine = _engine()
-        except ValidationError:
-            raise
-        except Exception:
-            logger.exception("Falha ao iniciar platerec")
-            raise ValidationError("Não foi possível analisar a foto da placa.")
+        engine = _engine()
+    except ValidationError:
+        raise
+    except Exception:
+        logger.exception("Falha ao iniciar platerec")
+        raise ValidationError("Não foi possível analisar a foto da placa.")
 
-        raw_words: list[str] = []
-        plate = ""
-        confidence = 0.0
+    raw_words: list[str] = []
+    plate = ""
+    confidence = 0.0
 
-        try:
-            for variant in _fast_variants(image):
+    try:
+        for variant in _fast_variants(image):
+            plate, confidence, words = _try_image(engine, variant, thorough=False)
+            raw_words.extend(words)
+            if plate:
+                break
+
+        if not plate:
+            for variant in _fast_variants_retry(image):
                 plate, confidence, words = _try_image(engine, variant, thorough=False)
                 raw_words.extend(words)
                 if plate:
                     break
 
-            if not plate:
-                for variant in _slow_variants(image):
-                    plate, confidence, words = _try_image(engine, variant, thorough=True)
-                    raw_words.extend(words)
-                    if plate:
-                        break
-        except ValidationError:
-            raise
-        except Exception:
-            logger.exception("Falha ao rodar platerec")
-            raise ValidationError("Não foi possível analisar a foto da placa.")
-
         if not plate:
-            raise ValidationError(
-                "Não deu para ler a placa. Aproxime a câmera e tente de novo, ou digite."
-            )
-
-        # Dedup raw para debug leve
-        seen = set()
-        unique_raw = []
-        for word in raw_words:
-            if word and word not in seen:
-                seen.add(word)
-                unique_raw.append(word)
-
-        return {
-            "plate": plate,
-            "confidence": round(confidence, 4),
-            "raw": unique_raw,
-        }
+            for variant in _slow_variants(image):
+                plate, confidence, words = _try_image(engine, variant, thorough=True)
+                raw_words.extend(words)
+                if plate:
+                    break
+    except ValidationError:
+        raise
+    except Exception:
+        logger.exception("Falha ao rodar platerec")
+        raise ValidationError("Não foi possível analisar a foto da placa.")
     finally:
-        # Starter: não deixar ONNX residente entre fotos (evita 502 por memória).
-        release_engine()
+        # Por padrão mantém o modelo (2ª+ foto rápida). Escape: PLATE_OCR_KEEP_LOADED=0.
+        if not _keep_engine_loaded():
+            release_engine()
 
+    if not plate:
+        raise ValidationError(
+            "Não deu para ler a placa. Aproxime a câmera e tente de novo, ou digite."
+        )
+
+    # Dedup raw para debug leve
+    seen = set()
+    unique_raw = []
+    for word in raw_words:
+        if word and word not in seen:
+            seen.add(word)
+            unique_raw.append(word)
+
+    return {
+        "plate": plate,
+        "confidence": round(confidence, 4),
+        "raw": unique_raw,
+    }
 
 def read_plate_from_upload(upload) -> dict:
     """Le placa a partir de um UploadedFile do Django."""
