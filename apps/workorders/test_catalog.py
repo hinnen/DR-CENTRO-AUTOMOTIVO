@@ -8,14 +8,24 @@ from django.urls import reverse
 from apps.accounts.models import Role
 from apps.accounts.services import create_mechanic_user
 from apps.accounts.tests import make_user
+from apps.core.models import WorkshopSettings
+from apps.core.services.settings import invalidate_workshop_settings_cache
 from apps.customers.models import Client
 from apps.vehicles.models import Vehicle, VehicleLocation
 from apps.vehicles.services import create_location
 from apps.workorders.forms import mechanic_queryset
 
 
+def _reset_workshop_settings():
+    obj = WorkshopSettings.load()
+    obj.reception_can_create_mechanic = False
+    obj.save()
+    invalidate_workshop_settings_cache()
+
+
 class CreateMechanicServiceTests(TestCase):
     def setUp(self):
+        _reset_workshop_settings()
         self.admin = make_user("admin_cat", Role.ADMIN)
         self.reception = make_user("recep_cat", Role.RECEPTION)
 
@@ -75,6 +85,7 @@ class CreateLocationServiceTests(TestCase):
 
 class QuickCatalogViewTests(TestCase):
     def setUp(self):
+        _reset_workshop_settings()
         self.admin = make_user("admin_view", Role.ADMIN, first_name="Admin")
         self.reception = make_user("recep_view", Role.RECEPTION, first_name="Ana")
         self.client_obj = Client.objects.create(name="Cliente Cat", phone="11999990001")

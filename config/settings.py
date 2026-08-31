@@ -81,6 +81,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.workshop",
+                "apps.core.context_processors.whatsapp_auto_open",
             ],
         },
     },

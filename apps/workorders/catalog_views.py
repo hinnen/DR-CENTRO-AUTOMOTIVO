@@ -75,7 +75,7 @@ def _apply_service_errors(form, error: ValidationError):
 def _creatable_mechanic_context(request, *, selected=None):
     ctx = _catalog_context(request, kind="mechanic")
     ctx["field"] = mechanic_select_field(selected=selected, empty_label=ctx["empty_label"])
-    ctx["can_create"] = request.user.can_manage_users
+    ctx["can_create"] = request.user.can_create_mechanic
     ctx["create_label"] = "Cadastrar mecânico"
     return ctx
 
@@ -91,7 +91,7 @@ def _creatable_location_context(request, *, selected=None):
 @login_required
 @require_GET
 def quick_mechanic_panel(request):
-    if not request.user.can_manage_users:
+    if not request.user.can_create_mechanic:
         return HttpResponseForbidden("Seu perfil não pode cadastrar mecânicos.")
 
     ctx = _catalog_context(request, kind="mechanic")
@@ -102,7 +102,7 @@ def quick_mechanic_panel(request):
 @login_required
 @require_POST
 def quick_mechanic_create(request):
-    if not request.user.can_manage_users:
+    if not request.user.can_create_mechanic:
         return HttpResponseForbidden("Seu perfil não pode cadastrar mecânicos.")
 
     ctx_base = _catalog_context(request, kind="mechanic")

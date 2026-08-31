@@ -9,7 +9,7 @@
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="{% block body_class %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'{% if auto_open_whatsapp_url %} data-open-whatsapp="{{ auto_open_whatsapp_url }}"{% endif %}>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
 
   {% block layout %}

@@ -319,7 +319,7 @@
           <form method="post" action="{% url 'workorders:change_mechanic' order.uuid %}" class="action-form">
             {% csrf_token %}
             {% url 'workorders:quick_mechanic_panel' as mechanic_panel_url %}
-            {% include "components/_creatable_select.html" with field=mechanic_form.mechanic target_id="creatable-mechanic-detail" empty_label="Sem responsável" create_label="Cadastrar mecânico" can_create=user.can_manage_users panel_url=mechanic_panel_url %}
+            {% include "components/_creatable_select.html" with field=mechanic_form.mechanic target_id="creatable-mechanic-detail" empty_label="Sem responsável" create_label="Cadastrar mecânico" can_create=user.can_create_mechanic panel_url=mechanic_panel_url %}
             <button class="btn btn--secondary btn--block" type="submit">Alterar mecânico</button>
           </form>
 

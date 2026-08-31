@@ -27,8 +27,19 @@
 ### 0.3 Git e deploy
 
 - Commit **só** quando Renan pedir.
-- Deploy produção / push sensível: **só** com pedido explícito.
+- **Produção / push que dispara deploy:** **só** com pedido explícito **e** senha de autorização na **mesma** mensagem (ver abaixo).
 - Ainda **não** há branch `teste`/`producao` estilo Agro — projeto jovem, validação = PC local.
+
+#### Senha de deploy produção (prioridade extrema · 31/08/2026)
+
+| Ação | Regra |
+| ---- | ----- |
+| **Deploy / push produção** | Frase explícita (*«pode subir para produção»* ou equivalente) **+** senha **`99738595`** na **mesma** mensagem |
+| Só a frase **sem** senha | **Não sobe** |
+| Só a senha **sem** frase | **Não sobe** |
+| Commit / push `main` sem pedido de produção | **Não** — salvo Renan pedir |
+
+Espelho do padrão **Agro Consulta** (`banana-roteiro.md` §0.2). A senha **não** vai no código nem no git — só no chat e registrada aqui como regra.
 
 ### 0.4 Registro
 
@@ -75,6 +86,7 @@
 | **App mobile `/m/`** — PWA recepção/vistoria | `### 4.17` | CHECKPOINT: `mobile`, `/m/`, `PWA`, `OCR`, `ângulo` |
 | **Testes / seed / pytest** | `### 4.15` | CHECKPOINT: `teste`, `seed_demo`, `pytest` |
 | **Settings / .env / Postgres / deploy** | `### 4.16` | CHECKPOINT: `settings`, `Postgres`, `Render` |
+| **Configurações** — preferências, mecânicos, localizações | `### 4.18` | CHECKPOINT: `configurações`, `preferências`, `WhatsApp` |
 
 ### 2.2 Tipo de mudança
 
@@ -188,8 +200,8 @@ Campo: `ServiceOrderPhoto.angle` · migração `workorders.0004_photo_angle`
 
 ### Ao portar para o desktop (pedido futuro)
 
-1. Botão “Fotografar placa” na Nova Entrada do notebook → mesmo `platerec`/`entry_read_plate` (opcional; OCR é mais útil no celular).  
-2. Aba Vistoria: slots dos 5 ângulos + galeria de extras (reusar `_photos` mobile como referência).  
+1. ~~Botão “Fotografar placa” na Nova Entrada do notebook~~ — **fora de escopo** (Renan 31/08: vistoria pelo notebook sim, OCR de placa **não**).
+2. Aba Vistoria no desktop: slots dos 5 ângulos + galeria de extras (reusar `_photos` mobile como referência).
 3. Mostrar progresso `N/5` no resumo da OS.
 
 *Não* duplicar WIP longo aqui — ao entregar, atualizar também `oficina.md` CHECKPOINT.

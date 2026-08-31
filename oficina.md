@@ -200,6 +200,15 @@ Fluxo típico:
 - `Role`: ADMINISTRADOR, RECEPCAO, MECANICO
 - Capabilities: `can_register_entry`, `can_deliver_vehicle`, `can_cancel_order`, `can_delete_photos`, etc.
 - **Cadastro rápido mecânico** (forms da OS): admin → nome + usuário + PIN 4 dígitos + telefone opcional (`apps/accounts/services.py`)
+- **Hub Configurações** (`/configuracoes/`) — só admin: preferências (`WorkshopSettings`), usuários/PINs, localizações, dados de exemplo, planilhas Excel
+
+### 4.18 Configurações / exemplos / planilhas
+
+- URLs: `apps/core/urls.py` · views `settings_views.py` · forms `settings_forms.py`
+- **Preferências:** recepção pode cadastrar mecânico; aviso WhatsApp ao mudar status (opcional)
+- **Dados de exemplo:** `demo_seed.py` / `demo_purge.py` · flag `is_demo` em User, Client, Vehicle, ServiceOrder
+- **Planilhas:** `apps/core/spreadsheet/` · `openpyxl` · import/export clientes, veículos, usuários, localizações
+- **Produção segura:** OCR placa **fora** do boot e do `requirements.txt` base; `/healthz` via `HealthCheckMiddleware`
 
 ### 4.13 Auditoria
 
@@ -280,7 +289,8 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | Data | O quê | Notas |
 | ---- | ----- | ----- |
-| 31/08 | **Prod 502** — live preso em `341e099`; deploys `1bbc93b` falharam ~16 min (health check) | `HealthCheckMiddleware` + sem OCR no boot + hosts `.com.br` |
+| 31/08 | **Config + demo + planilhas reintegrados** (mantendo fix 502) | `HealthCheckMiddleware` · OCR off boot · `openpyxl` · 29 testes feature OK |
+| 31/08 | **Prod 502 resolvido** — `/healthz` `ok` (`02ff94c`) | Live. OCR placa desligado no Starter |
 | 30/08 | Fix deploy: Pillow **10.4.0** (exigência `platerec`) | Build Render |
 | 30/08 | `render.yaml` + `runtime.txt` + `/healthz` | Blueprint Oregon · não misturar SistVale |
 | 30/08 | Docs `oficina.md` + `oficina-roteiro.md` + rule Cursor | Espelho do padrão banana do Agro |

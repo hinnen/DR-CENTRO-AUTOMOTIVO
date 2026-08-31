@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}Planilhas — {{ workshop_name }}{% endblock %}
+
+
+
+{% block content %}
+
+  <div class="page-header">
+
+    <div>
+
+      <p class="page-kicker"><a href="{% url 'core:settings_index' %}">Configurações</a></p>
+
+      <h1 class="page-title">Planilhas de cadastro</h1>
+
+      <p class="page-subtitle">
+
+        Importe e exporte localizações, clientes, veículos e usuários via Excel (.xlsx).
+
+      </p>
+
+    </div>
+
+  </div>
+
+
+
+  <section class="card mb-4">
+
+    <h2 class="section-title">1. Baixar planilha</h2>
+
+    <p class="text-muted mb-3">
+
+      O arquivo tem quatro abas. Use o <strong>modelo</strong> para cadastros novos ou baixe os
+
+      <strong>cadastros atuais</strong> para editar e reenviar (mantenha a coluna ID para atualizar).
+
+    </p>
+
+    <div class="form-actions">
+
+      <a class="btn btn--secondary" href="{% url 'core:settings_spreadsheet_download' %}?mode=template">
+
+        Baixar modelo vazio
+
+      </a>
+
+      <a class="btn btn--primary" href="{% url 'core:settings_spreadsheet_download' %}?mode=export">
+
+        Baixar cadastros atuais
+
+      </a>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="card mb-4">
+
+    <h2 class="section-title">2. Enviar planilha preenchida</h2>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+
+      {% csrf_token %}
+
+      {% include "components/_field.html" with field=upload_form.arquivo %}
+
+      <div class="form-actions">
+
+        <button class="btn btn--primary" type="submit">Importar planilha</button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+
+  {% if last_summary %}
+
+    <section class="card">
+
+      <h2 class="section-title">Resultado da importação</h2>
+
+      <table class="table">
+
+        <thead>
+
+          <tr>
+
+            <th>Aba</th>
+
+            <th>Criados</th>
+
+            <th>Atualizados</th>
+
+            <th>Ignorados</th>
+
+            <th>Erros</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {% for label, result in last_summary.display_rows %}
+
+            <tr>
+
+              <td data-label="Aba">{{ label }}</td>
+
+              <td data-label="Criados">{{ result.created }}</td>
+
+              <td data-label="Atualizados">{{ result.updated }}</td>
+
+              <td data-label="Ignorados">{{ result.skipped }}</td>
+
+              <td data-label="Erros">{{ result.errors|length }}</td>
+
+            </tr>
+
+          {% endfor %}
+
+        </tbody>
+
+      </table>
+
+      {% for label, result in last_summary.display_rows %}
+
+        {% if result.errors %}
+
+          <div class="alert alert--warning mt-3" role="alert">
+
+            <strong>{{ label }}</strong>
+
+            <ul>
+
+              {% for error in result.errors %}
+
+                <li>{{ error }}</li>
+
+              {% endfor %}
+
+            </ul>
+
+          </div>
+
+        {% endif %}
+
+      {% endfor %}
+
+    </section>
+
+  {% endif %}
+
+{% endblock %}
+

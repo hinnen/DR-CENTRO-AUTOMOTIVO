@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Preferências — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="page-kicker"><a href="{% url 'core:settings_index' %}">Configurações</a></p>
+      <h1 class="page-title">Preferências</h1>
+      <p class="page-subtitle">Regras operacionais da oficina.</p>
+    </div>
+  </div>
+
+  <section class="card form-narrow">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="field field--checkbox">
+        <label class="field__checkbox" for="{{ form.reception_can_create_mechanic.id_for_label }}">
+          {{ form.reception_can_create_mechanic }}
+          <span>{{ form.reception_can_create_mechanic.label }}</span>
+        </label>
+        {% if form.reception_can_create_mechanic.help_text %}
+          <p class="field__hint">{{ form.reception_can_create_mechanic.help_text }}</p>
+        {% endif %}
+        {% for error in form.reception_can_create_mechanic.errors %}
+          <p class="field__error">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="field field--checkbox">
+        <label class="field__checkbox" for="{{ form.auto_whatsapp_status_notify.id_for_label }}">
+          {{ form.auto_whatsapp_status_notify }}
+          <span>{{ form.auto_whatsapp_status_notify.label }}</span>
+        </label>
+        {% if form.auto_whatsapp_status_notify.help_text %}
+          <p class="field__hint">{{ form.auto_whatsapp_status_notify.help_text }}</p>
+        {% endif %}
+        {% for error in form.auto_whatsapp_status_notify.errors %}
+          <p class="field__error">{{ error }}</p>
+        {% endfor %}
+      </div>
+      <div class="form-actions">
+        <button class="btn btn--primary" type="submit">Salvar preferências</button>
+        <a class="btn btn--ghost" href="{% url 'core:settings_index' %}">Voltar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

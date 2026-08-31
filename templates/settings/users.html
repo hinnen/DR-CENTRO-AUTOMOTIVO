@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Usuários e PINs — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="page-kicker"><a href="{% url 'core:settings_index' %}">Configurações</a></p>
+      <h1 class="page-title">Usuários e PINs</h1>
+      <p class="page-subtitle">Cadastre a equipe e redefina o PIN de login (4 dígitos).</p>
+    </div>
+  </div>
+
+  <div class="settings-split">
+    <section class="card form-narrow">
+      <h2 class="section-title">Novo usuário</h2>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "components/_field.html" with field=form.name %}
+        {% include "components/_field.html" with field=form.username %}
+        {% include "components/_field.html" with field=form.role %}
+        {% include "components/_field.html" with field=form.pin %}
+        {% include "components/_field.html" with field=form.phone %}
+        {% if form.non_field_errors %}
+          <div class="alert alert--danger" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">Cadastrar usuário</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card table-card">
+      <h2 class="section-title">Equipe cadastrada</h2>
+      {% if users %}
+        <div class="table-scroll">
+          <table class="table table--compact">
+            <thead>
+              <tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Status</th><th>Novo PIN</th></tr>
+            </thead>
+            <tbody>
+              {% for member in users %}
+                <tr>
+                  <td data-label="Nome">{{ member.display_name }}</td>
+                  <td data-label="Usuário"><code>{{ member.username }}</code></td>
+                  <td data-label="Perfil">{{ member.get_role_display }}</td>
+                  <td data-label="Status">
+                    {% if member.is_active %}
+                      <span class="badge badge--success">Ativo</span>
+                    {% else %}
+                      <span class="badge">Inativo</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Novo PIN">
+                    <form class="pin-inline-form" method="post"
+                          action="{% url 'core:settings_user_pin' member.uuid %}">
+                      {% csrf_token %}
+                      <input class="pin-inline-form__input" type="password" name="pin"
+                             inputmode="numeric" pattern="[0-9]{4}" maxlength="4"
+                             minlength="4" placeholder="••••" autocomplete="new-password"
+                             aria-label="Novo PIN para {{ member.username }}">
+                      <button class="btn btn--ghost btn--sm" type="submit">Salvar</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="empty-state">Nenhum usuário cadastrado ainda.</p>
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}
