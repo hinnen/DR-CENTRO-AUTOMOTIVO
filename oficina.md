@@ -273,27 +273,29 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live:** https://dr-centro-automotivo.onrender.com/ · deploy OCR autorizado 31/08 (`0d19e3b`)
+**Produção Live (autorizado 31/08 · senha):** `main` @ **`5fe941b`** (+ docs)  
+https://dr-centro-automotivo.onrender.com/ · `/healthz` ok · favicon/og **200**
 
-**Smoke:** `/healthz` · `/m/entrada` → Fotografar placa (1ª leitura pode demorar)
+**Rollback (só frase+senha):** tag `rollback/pre-ocr-logo-20260831` @ `a887ab1` · branch `main-backup-pre-ocr-logo-20260831` · `docs/ROLLBACK-OCR-LOGO-20260831.md`
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
 | **P0** | Fix 502 — HealthCheck + OCR fora do boot | ✅ **Enviado** | Warmup off |
-| **P0** | Hub `/configuracoes/` | ✅ **Enviado** | exemplos + planilhas |
-| **P0** | `openpyxl` no build | ✅ **Enviado** | |
-| **P1** | OCR placa `/m/entrada` (lazy + libera memória) | ✅ **Enviado** | `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` |
-| **P1** | OCR mais rápido (manter modelo + passe enxuto) | ✅ **Enviado** | `PLATE_OCR_KEEP_LOADED=1` · max 1024 · 9 testes OK |
-| **P1** | Logo DR: favicon + PWA + preview WhatsApp (og:image) | ✅ **Enviado** | assets + login HTML com og:image/favicon |
-| **P1** | Smoke: Ctrl+F5 · 2ª foto OCR · link no Zap | **Testar** | Zap pode cachear preview |
-| **P1** | Smoke Configurações / superuser | **Testar** | Renan |
+| **P0** | Hub `/configuracoes/` | ✅ **Enviado** | |
+| **P1** | OCR placa lazy | ✅ **Enviado** | `a887ab1` |
+| **P1** | OCR mais rápido (KEEP_LOADED + 1024) | ✅ **Enviado** | Live `5fe941b` · tag `live/ocr-logo-20260831` |
+| **P1** | Logo DR favicon + PWA + WhatsApp | ✅ **Enviado** | favicon/og 200 em prod |
+| **P1** | Smoke: Ctrl+F5 · 2ª foto OCR · link Zap | **Testar** | Renan · Zap cacheia preview |
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
-### Pacote deste push (`5fe941b` + docs `0196914`)
+### Pacote Live + checkpoint
 
-OCR: `KEEP_LOADED` · passe enxuto · resize 1024  
-Marca: favicon/PWA/`og-share.png`/`_brand_head.html`/`site.webmanifest`
+| | |
+| - | - |
+| Live | `5fe941b` · tag `live/ocr-logo-20260831` |
+| Reverter para | `a887ab1` · tag `rollback/pre-ocr-logo-20260831` |
+| Doc | `docs/ROLLBACK-OCR-LOGO-20260831.md` |
 
 ---
 
