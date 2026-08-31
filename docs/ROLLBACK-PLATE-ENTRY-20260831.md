@@ -11,7 +11,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-plate-entry-20260831` | `a6c21cf` (Live anterior: OG + /m/instalar) |
 | Branch backup | `main-backup-pre-plate-entry-20260831` | `a6c21cf` |
-| Tag live | `live/plate-entry-20260831` | (commit do feat após push) |
+| Tag live | `live/plate-entry-20260831` | `0660bfe` |
 
 ## Quando reverter
 

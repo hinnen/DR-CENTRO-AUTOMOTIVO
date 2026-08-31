@@ -279,7 +279,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **plate-entry** (fonte placa + ignora traço)  
+**Produção Live (autorizado 31/08 · senha):** `main` @ **`0660bfe`** (fonte placa + ignora traço)  
 https://drcentroautomotivo.com/ · `/entrada/nova/`
 
 **Rollback deste pacote (só frase+senha):** tag `rollback/pre-plate-entry-20260831` @ `a6c21cf` · branch `main-backup-pre-plate-entry-20260831` · `docs/ROLLBACK-PLATE-ENTRY-20260831.md`  
@@ -302,7 +302,7 @@ https://drcentroautomotivo.com/ · `/entrada/nova/`
 
 | | |
 | - | - |
-| Live | (após push) tag `live/plate-entry-20260831` |
+| Live | `0660bfe` · tag `live/plate-entry-20260831` |
 | Reverter para | `a6c21cf` · tag `rollback/pre-plate-entry-20260831` |
 | Doc | `docs/ROLLBACK-PLATE-ENTRY-20260831.md` |
 | Pytest | vehicles+workorders+mobile **97** passed |
