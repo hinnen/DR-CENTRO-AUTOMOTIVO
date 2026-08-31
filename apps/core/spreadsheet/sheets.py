@@ -148,7 +148,7 @@ def export_locations() -> list[dict[str, Any]]:
     for location in VehicleLocation.objects.order_by("order", "name"):
         rows.append(
             {
-                COL_ID: str(location.pk),
+                COL_ID: str(location.uuid),
                 COL_NAME: location.name,
                 COL_ORDER: location.order,
                 COL_ACTIVE: "Sim" if location.is_active else "Não",
@@ -322,9 +322,9 @@ def _import_locations(raw_rows: list[dict[str, Any]], result: SheetResult) -> No
 
 
 def _resolve_location(row: dict[str, Any]) -> VehicleLocation | None:
-    pk = _parse_int(row.get(COL_ID))
-    if pk:
-        return VehicleLocation.objects.filter(pk=pk).first()
+    item_id = parse_uuid(row.get(COL_ID))
+    if item_id:
+        return VehicleLocation.objects.filter(uuid=item_id).first()
     name = cell_str(row.get(COL_NAME))
     if name:
         return VehicleLocation.objects.filter(name__iexact=name).first()
