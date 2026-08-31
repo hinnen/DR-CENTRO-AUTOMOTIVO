@@ -128,6 +128,15 @@ class SpreadsheetTests(TestCase):
         self.assertEqual(summary.users.created, 1)
         self.assertEqual(authenticate(username="mec_plan", password="5566").role, Role.MECHANIC)
 
+    def test_export_locations_uses_pk_not_uuid(self):
+        VehicleLocation.objects.create(name="Box Export", order=1)
+        blob = build_export_workbook(mode="export", actor=self.admin)
+        workbook = load_workbook(BytesIO(blob), read_only=True)
+        sheet = workbook[SHEET_LOCATIONS]
+        rows = list(sheet.iter_rows(min_row=2, values_only=True))
+        workbook.close()
+        self.assertTrue(any(row[1] == "Box Export" for row in rows if row))
+
     def test_spreadsheet_download_requires_admin(self):
         reception = make_user("recep_sheet", Role.RECEPTION)
         self.client.force_login(reception)
