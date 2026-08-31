@@ -11,7 +11,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-og-install-20260831` | `528474e` (estado Live anterior) |
 | Branch backup | `main-backup-pre-og-install-20260831` | `528474e` |
-| Tag live | `live/og-install-20260831` | (commit do pacote após push) |
+| Tag live | `live/og-install-20260831` | `2600b9f` |
 
 ## Quando reverter
 
