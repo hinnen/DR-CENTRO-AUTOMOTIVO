@@ -10,7 +10,7 @@ puxa o roteiro automaticamente.
 | Você quer… | Faça |
 | ---------- | ---- |
 | Retomar trabalho / novo chat | `@oficina-roteiro` (ou só descrever a tarefa) |
-| Detalhe fino / histórico / WIP | `@oficina` + grep CHECKPOINT |
+| Detalhe fino / histórico / WIP | `@oficina` + grep `CHECKLIST ÚNICO` |
 | Registrar onde paramos | Automático no fim da entrega; ou *"atualize a oficina"* |
 | README humano (instalação) | `README.md` |
 
@@ -34,7 +34,7 @@ aqui **sem pedir** quando entregar código ou decisão permanente.
 | **Regra de ouro** | Em segundos: onde está o carro, quem mexeu, há quanto tempo, o que falta |
 | **UX** | Poucos cliques · desktop + mobile · marca vermelho/azul-escuro · nav superior |
 | **Fora de escopo agora** | Financeiro, estoque, CRM, WhatsApp, agendamento, fiscal |
-| **Testes** | `pytest` · suíte verde (30/08/2026) |
+| **Testes** | `pytest` · **247 OK** (31/08/2026) |
 | **Fases 1–13** | Concluídas (núcleo operacional) |
 
 ---
@@ -270,62 +270,43 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ---
 
-## CHECKPOINT
+## CHECKLIST ÚNICO · 31/08/2026
 
-### Versão / estado · 30/08/2026
+**Produção hoje:** https://dr-centro-automotivo.onrender.com/ · Live `02ff94c` · `/healthz` 200  
+**Próximo push:** `97ff12d` — Configurações + exemplos + planilhas (mantém fix 502)
 
-- **Fases 1–13:** concluídas (núcleo operacional utilizável)
-- **Testes:** suíte verde
-- **Dev:** `http://127.0.0.1:8010/` · Postgres local
-- **Revisão 30/08:** bugs alta→baixa corrigidos (P-004…P-012)
-- **GitHub:** https://github.com/hinnen/DR-CENTRO-AUTOMOTIVO · branch `main`
-- **Render:** ✅ **Live** · https://dr-centro-automotivo.onrender.com/ · `/healthz` ok (30/08 noite)
-- **Custo estimado:** web Starter ~US$ 7 + Postgres Basic-256mb ~US$ 6 ≈ **US$ 13/mês**
-- **Login demo:** só no **PC local** após `seed_demo` — user `admin` / senha `oficina123` (seed **bloqueado** em produção DEBUG=False)
-- **Atenção fotos:** P-002 — media no disco Render some no restart; OK pra smoke; produção com fotos → S3/R2
-- **Produção:** ainda **sem** superuser até criar no Shell Render (`createsuperuser`)
+| P | Item | Status | Verificação |
+| - | ---- | ------ | ----------- |
+| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | **Pronto para envio** · no ar | `/healthz` → 200 em prod |
+| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | **Pronto para envio** | Commit `97ff12d` · 247 pytest · migrações `is_demo` + `WorkshopSettings` |
+| **P0** | `openpyxl` no build · `platerec` comentado no `requirements.txt` | **Pronto para envio** | Import lazy nas views de planilha |
+| **P1** | Smoke pós-deploy: login admin → `/configuracoes/` → carregar exemplos → download planilha | **Testar** | Prod ainda 404 em `/configuracoes/` até push |
+| **P1** | Superuser produção (`createsuperuser` no Shell Render) | **Testar** | Sem admin ainda no ar |
+| **P1** | Kanban + aviso WhatsApp opcional (preferência) | **Testar** | `test_status_whatsapp` OK local |
+| **P2** | Media S3/R2 (fotos persistem após restart) | **Pendente** | Disco Render = curto prazo |
+| **P2** | OCR placa no Starter (`platerec` + plano maior) | **Pendente** | `ENABLE_PLATE_OCR=0` em prod |
+| **P2** | Fotos guiadas 5 ângulos no desktop | **Pendente** | Roteiro §8 |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora do escopo §0 |
 
-### WIP / recentes
+### PACOTE PRONTO (commit `97ff12d`)
 
-| Data | O quê | Notas |
-| ---- | ----- | ----- |
-| 31/08 | **Config + demo + planilhas reintegrados** (mantendo fix 502) | `HealthCheckMiddleware` · OCR off boot · `openpyxl` · 29 testes feature OK |
-| 31/08 | **Prod 502 resolvido** — `/healthz` `ok` (`02ff94c`) | Live. OCR placa desligado no Starter |
-| 30/08 | Fix deploy: Pillow **10.4.0** (exigência `platerec`) | Build Render |
-| 30/08 | `render.yaml` + `runtime.txt` + `/healthz` | Blueprint Oregon · não misturar SistVale |
-| 30/08 | Docs `oficina.md` + `oficina-roteiro.md` + rule Cursor | Espelho do padrão banana do Agro |
-| 30/08 | Dashboard: removeu “Painel operacional” + Nova entrada duplicada; Recolher cards nos filtros | menos desperdício de tela |
-| 30/08 | Entrega: quem retirou + documento + assinatura canvas (opcionais) | migração `0003` · `signature.js` · testes `RetrievedByTests` |
-| 30/08 | Marca vermelho/azul-escuro | CSS variables |
-| 30/08 | Bug: comentário `{# #}` multilinha no `_order_card.html` vazava no Kanban | trocado por `{% comment %}` |
-| 30/08 | PWA `/m/`: recepção + vistoria + perfil | `apps/mobile` · interligado à OS |
-| 30/08 | OCR placa (Tesseract.js) + fotos guiadas 5 ângulos | `PhotoAngle` · migração `0004` · roteiro §8 |
-| 30/08 | OCR placa migrado p/ servidor (`platerec` + onnxruntime) | `plate_ocr.py` · `entry_read_plate` · sem Tesseract.js |
-| 30/08 | Fix SVG laterais quebrados (byte Latin-1 `à` no comentário) | `lateral_esq/dir.svg` · `mobile.css?v=9` |
-| 30/08 | Redesign exemplos fotos guiadas (silhuetas limpas, sem placa fake) | `static/mobile/shots/*.svg` · `?v=2` · `mobile.css?v=11` |
-| 30/08 | OCR: reforço placa antiga (EXIF, limiar ↓, contraste, rotações) | `plate_ocr.py` · Mercosul + antiga |
-| 30/08 | Header: atalho WhatsApp (wa.me) — lista oficina + busca + prioridade da OS aberta | não é CRM/API · `whatsapp_picker` |
-| 30/08 | Aba Diagnóstico: upload e galeria de fotos (categoria DIAGNOSTICO) | `detail.html` · `_photo_list.html` · âncora `#diagnostico` |
-| 30/08 | Fix: fotos `/media/` 404 com DEBUG=False — view autenticada + disco Render | `apps/core/media.py` · `render.yaml` disk |
-| 31/08 | Select + cadastrar: mecânico (admin, PIN 4) e localização (recepção/admin) nos forms da OS | `catalog_views.py` · `_creatable_select.html` |
-| 31/08 | WhatsApp inline: botão wa.me na lista de clientes e no card expandido do Kanban | `_whatsapp_button.html` |
-| 31/08 | Busca por placa: consulta só com 7 chars + menos queries no resumo | `build_plate_lookup_context` |
-| 31/08 | OCR placa: resize no celular, passe rápido/lento no platerec, warmup no boot | `plate_ocr.py` · `mobile.js?v=9` |
+| Área | Arquivos-chave |
+| ---- | -------------- |
+| URLs | `config/urls.py` → `configuracoes/` · `apps/core/urls.py` |
+| Views/forms | `settings_views.py` · `settings_forms.py` |
+| Demo | `demo_seed.py` · `demo_purge.py` · flag `is_demo` nos models |
+| Planilhas | `apps/core/spreadsheet/` · `openpyxl==3.1.5` |
+| WhatsApp status | `status_whatsapp.py` · toggle em `WorkshopSettings` |
+| UI | `templates/settings/*` · link no `_header.html` |
+| Segurança prod | `middleware.py` · `mobile/apps.py` (sem warmup) |
 
-### Pendências conhecidas
+**Dev:** `runserver 8010` · seed local `admin` / `oficina123` (bloqueado em prod DEBUG=False)
 
-| ID | Item | Prioridade |
-| -- | ---- | ---------- |
-| P-001 | Conferir visual dos cards no monitor do Renan (altura 248/72 + ícones) | Baixa — ajustar se pedir |
-| P-002 | Media storage S3/R2 (disco Render cobre o curto prazo) | Média quando volume crescer |
-| P-003 | Auto-start do Postgres no Windows (hoje manual) | Baixa — Renan inicia com script |
+### Instruções ao assistente
 
-### Instruções ao assistente (vivo)
-
-- Novo chat → seguir `oficina-roteiro.md`
-- Ao fechar entrega → atualizar este CHECKPOINT (o quê, arquivos-chave, teste OK?)
-- Modelo de IA: Auto/Intelligence no dia a dia; Opus só em módulo novo, migração arriscada ou bug teimoso
-- Não inventar módulo fora do escopo §0 do roteiro sem perguntar
+- Novo chat → `oficina-roteiro.md` → grep `CHECKLIST ÚNICO`
+- Ao fechar entrega → atualizar **esta tabela** (não inflar histórico)
+- Deploy produção → frase explícita + senha `99738595` (roteiro §0.3)
 
 ---
 

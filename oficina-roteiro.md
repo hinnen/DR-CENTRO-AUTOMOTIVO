@@ -53,7 +53,7 @@ Espelho do padrão **Agro Consulta** (`banana-roteiro.md` §0.2). A senha **não
 ```
 1. Ler ESTE arquivo inteiro (oficina-roteiro.md)
 2. Ler oficina.md §0 TL;DR
-3. CHECKPOINT: grep em oficina.md pela palavra-chave do módulo (tabela §3)
+3. CHECKLIST: grep em `oficina.md` por `CHECKLIST ÚNICO` ou palavra-chave §3
    → ler só os blocos ### que baterem
 4. Seguir fluxograma §2 conforme a tarefa
 5. Se §2 não cobrir → escada §4
@@ -145,7 +145,7 @@ Ler no máximo **5** subseções `###` que baterem.
 | Novo módulo grande no §4 | Linha na tabela §2.1 deste roteiro |
 | Nova palavra CHECKPOINT recorrente | §3 |
 | Mudança na regra de leitura | Este arquivo + `.cursor/rules/dr-centro-automotivo.mdc` |
-| WIP / entrega / decisão | `oficina.md` CHECKPOINT (como no Agro) |
+| WIP / entrega / decisão | `oficina.md` **CHECKLIST ÚNICO** (como no Agro) |
 | Bug corrigido com decisão permanente | `oficina.md` §3 ou § do módulo |
 
 *Não* duplicar WIP aqui — só o **mapa de leitura**.
@@ -205,3 +205,31 @@ Campo: `ServiceOrderPhoto.angle` · migração `workorders.0004_photo_angle`
 3. Mostrar progresso `N/5` no resumo da OS.
 
 *Não* duplicar WIP longo aqui — ao entregar, atualizar também `oficina.md` CHECKPOINT.
+
+---
+
+## 9. Checklist de entrega (status + prioridade)
+
+**Fonte viva:** `oficina.md` → `## CHECKLIST ÚNICO` (sem histórico longo).
+
+### Status
+
+| Status | Significado | Quando usar |
+| ------ | ----------- | ----------- |
+| **Pronto para envio** | Código mergeado ou commit local; testes OK; pode `push`/deploy | Pacote fechado, aguardando produção |
+| **Testar** | No ar ou exige validação manual pós-deploy / no PC | Smoke, superuser, tela no monitor |
+| **Pendente** | Não iniciado, bloqueado ou fora do escopo atual | Backlog, dependência externa |
+
+### Prioridades
+
+| P | Foco |
+| - | ---- |
+| **P0** | Deploy, produção fora do ar, regressão crítica |
+| **P1** | Validar logo após subir (smoke, login, fluxo principal) |
+| **P2** | Melhoria operacional (média — quando estabilizar) |
+| **P3** | Backlog / módulo futuro (financeiro, estoque…) |
+
+### Manutenção
+
+- Ao fechar entrega → atualizar **só** a tabela em `oficina.md` (substituir linhas obsoletas; não acumular WIP antigo).
+- Assistente: antes de push produção → grep `Pronto para envio` + confirmar testes.
