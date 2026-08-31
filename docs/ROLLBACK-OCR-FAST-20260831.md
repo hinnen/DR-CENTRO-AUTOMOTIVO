@@ -11,7 +11,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-ocr-fast-20260831` | `735c962` (Live anterior: placa Nova entrada) |
 | Branch backup | `main-backup-pre-ocr-fast-20260831` | `735c962` |
-| Tag live | `live/ocr-fast-20260831` | (commit do feat após push) |
+| Tag live | `live/ocr-fast-20260831` | `25137d0` |
 
 ## Quando reverter
 

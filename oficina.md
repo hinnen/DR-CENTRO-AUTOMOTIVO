@@ -280,7 +280,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **OCR-fast** (warm na tela + 800px)  
+**Produção Live (autorizado 31/08 · senha):** `main` @ **`25137d0`** (OCR warm tela + 800px)  
 https://drcentroautomotivo.com/ · `/m/entrada/`
 
 **Rollback deste pacote (só frase+senha):** tag `rollback/pre-ocr-fast-20260831` @ `735c962` · branch `main-backup-pre-ocr-fast-20260831` · `docs/ROLLBACK-OCR-FAST-20260831.md`  
@@ -304,7 +304,7 @@ https://drcentroautomotivo.com/ · `/m/entrada/`
 
 | | |
 | - | - |
-| Live | (após push) tag `live/ocr-fast-20260831` |
+| Live | `25137d0` · tag `live/ocr-fast-20260831` |
 | Reverter para | `735c962` · tag `rollback/pre-ocr-fast-20260831` |
 | Doc | `docs/ROLLBACK-OCR-FAST-20260831.md` |
 | Pytest | mobile+healthz+social **32** passed |
