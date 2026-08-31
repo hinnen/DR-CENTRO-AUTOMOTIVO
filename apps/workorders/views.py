@@ -434,29 +434,17 @@ def change_status(request, uuid):
 
     if request.headers.get("HX-Request"):
         response = _card_response(request, order)
-        wa_url = getattr(order, "status_whatsapp_notify_url", "") or ""
-        response["HX-Trigger"] = _toast_trigger(
-            f"Veículo movido para {label}", whatsapp_url=wa_url
-        )
+        response["HX-Trigger"] = _toast_trigger(f"Veículo movido para {label}")
         return response
 
     messages.success(request, f"Veículo movido para {label}.")
     return redirect(order.get_absolute_url())
 
 
-def _toast_trigger(message: str, *, whatsapp_url: str = "") -> str:
+def _toast_trigger(message: str) -> str:
     import json
 
-    payload: dict = {"showToast": {"message": message, "level": "success"}}
-    if whatsapp_url:
-        payload["openWhatsApp"] = {"url": whatsapp_url}
-    return json.dumps(payload)
-
-
-def _stash_whatsapp_open(request, order) -> None:
-    url = getattr(order, "status_whatsapp_notify_url", "") or ""
-    if url:
-        request.session["open_whatsapp_url"] = url
+    return json.dumps({"showToast": {"message": message, "level": "success"}})
 
 
 @login_required
@@ -482,7 +470,6 @@ def change_status_from_board(request, uuid):
             "ok": True,
             "status": order.status,
             "message": f"Veículo movido para {order.get_status_display()}",
-            "whatsapp_notify_url": getattr(order, "status_whatsapp_notify_url", "") or "",
         }
     )
 
@@ -789,7 +776,6 @@ def delivery_view(request, uuid):
                 messages.error(request, _first_message(error))
                 return redirect(order.get_absolute_url())
             else:
-                _stash_whatsapp_open(request, order)
                 messages.success(
                     request, f"{order.vehicle.plate_display} entregue. {order.number_display} encerrada."
                 )

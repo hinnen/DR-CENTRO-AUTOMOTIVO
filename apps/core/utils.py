@@ -33,18 +33,12 @@ def format_phone(value: str | None) -> str:
     return digits
 
 
-def whatsapp_url(value: str | None, *, text: str = "") -> str:
-    """Link ``wa.me`` com DDI 55. ``text`` pré-preenche a mensagem (opcional)."""
-    from urllib.parse import quote
-
+def whatsapp_url(value: str | None) -> str:
+    """Link ``wa.me`` com DDI 55. Vazio se não houver telefone utilizável."""
     digits = normalize_phone(value)
     if len(digits) < 10:
         return ""
-    url = f"https://wa.me/55{digits}"
-    cleaned = (text or "").strip()
-    if cleaned:
-        url += "?text=" + quote(cleaned, safe="")
-    return url
+    return f"https://wa.me/55{digits}"
 
 
 def format_cpf_cnpj(value: str | None) -> str:

@@ -44,24 +44,6 @@
     scheduleDismiss(toast);
   });
 
-  function openWhatsAppUrl(url) {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  document.body.addEventListener("openWhatsApp", (event) => {
-    const url = event.detail && event.detail.url;
-    openWhatsAppUrl(url);
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const url = document.body.dataset.openWhatsapp;
-    if (url) {
-      openWhatsAppUrl(url);
-      document.body.removeAttribute("data-open-whatsapp");
-    }
-  });
-
   // ---------- Abas ----------
 
   // As seções da OS chegam do servidor todas visíveis. Só depois que este
