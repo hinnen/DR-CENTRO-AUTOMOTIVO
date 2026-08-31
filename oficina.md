@@ -289,7 +289,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | (hash) · pytest **33** · I≠1 · UI Confirmar/Corrigir |
+| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | 2aafdb0 · pytest **33** · I≠1 · UI Confirmar/Corrigir |
 
 **Inclui:** prioriza letra na 5ª (Mercosul); auto-preenche só ~99% sem ambiguidade; senão pede confirmação.
 
