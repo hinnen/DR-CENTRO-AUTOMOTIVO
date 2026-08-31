@@ -290,9 +290,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
-### Pacote OCR (`0d19e3b`)
+### Pacote deste push (`7b1652d`)
 
-`platerec`+`onnxruntime` · `plate_ocr.release_engine()` · `mobile/apps.py` sem warmup no Starter
+OCR: `KEEP_LOADED` · passe enxuto · resize 1024  
+Marca: favicon/PWA/`og-share.png`/`_brand_head.html`/`site.webmanifest`
 
 ---
 
