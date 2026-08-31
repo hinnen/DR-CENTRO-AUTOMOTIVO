@@ -277,7 +277,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** pacote OG WhatsApp + `/m/instalar/` (ver tabela)  
+**Produção Live (autorizado 31/08 · senha):** `main` @ **`2600b9f`** (OG WhatsApp + /m/instalar)  
 https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
 
 **Rollback deste pacote (só frase+senha):** tag `rollback/pre-og-install-20260831` @ `528474e` · branch `main-backup-pre-og-install-20260831` · `docs/ROLLBACK-OG-INSTALL-20260831.md`  
