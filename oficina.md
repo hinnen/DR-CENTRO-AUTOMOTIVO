@@ -252,7 +252,9 @@ python manage.py seed_demo --reset   # senha default oficina123
 - **Link WhatsApp / instalar:** `https://drcentroautomotivo.com/m/instalar/` (público) — card central estilo Agro Ajuste; Chrome → Instalar; iOS → Compartilhar → Tela de Início
 - **Sistema no PC:** `https://drcentroautomotivo.com/` (Kanban / OS)
 - **App no celular:** `/m/` (login) após instalar ou “Continuar no navegador”
-- Fluxo: entrada (placa → cliente/KM/queixa) → vistoria → fotos
+- Fluxo: entrada (placa → **cliente → queixa/KM/prioridade → veículo**) → vistoria → fotos
+  - Cadastro novo e retorno: nome + telefone obrigatórios; queixa em destaque; quem trouxe (opcional); Normal/Urgente
+  - Campo OS: `brought_by_name` (quem deixou o carro no pátio)
 - OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize **800**
   - Ao abrir `/m/entrada/`: `POST /m/entrada/aquecer-ocr/` pré-carrega o modelo (não no boot — evita 502)
   - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1` · `PLATE_OCR_MAX_SIDE=800` · `PLATE_OCR_THREADS=2`
@@ -280,34 +282,28 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **`25137d0`** (OCR warm tela + 800px)  
-https://drcentroautomotivo.com/ · `/m/entrada/`
+**Produção Live:** `main` @ **`25137d0`** (OCR warm + 800px) · https://drcentroautomotivo.com/
 
-**Rollback deste pacote (só frase+senha):** tag `rollback/pre-ocr-fast-20260831` @ `735c962` · branch `main-backup-pre-ocr-fast-20260831` · `docs/ROLLBACK-OCR-FAST-20260831.md`  
-(Anteriores: `rollback/pre-plate-entry-20260831` · `rollback/pre-og-install-20260831`)
+### PACOTE PRONTO (falta subir · senha 99738595)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P0** | Fix 502 — HealthCheck + OCR fora do boot | ✅ **Enviado** | Warmup off |
-| **P0** | Hub `/configuracoes/` | ✅ **Enviado** | |
-| **P1** | OCR placa lazy | ✅ **Enviado** | `a887ab1` |
-| **P1** | OCR mais rápido (KEEP_LOADED + 1024) | ✅ **Enviado** | Live `5fe941b` · tag `live/ocr-logo-20260831` |
-| **P1** | Logo DR favicon + PWA + WhatsApp | ✅ **Enviado** | favicon/og 200 em prod |
-| **P1** | Página `/m/instalar/` — prompt instalar PWA (estilo Ajuste) | ✅ **Enviado** | `/m/instalar/` público |
-| **P1** | WhatsApp: ícone no domínio `.com` (bot preview + PUBLIC_BASE_URL) | ✅ **Enviado** | SocialPreviewMiddleware · og v=3 |
-| **P1** | Nova entrada: fonte/placa + busca ignora traço | ✅ **Enviado** | tag `live/plate-entry-20260831` |
-| **P1** | OCR mais rápido (warm na tela + 800px) | ✅ **Enviado** | tag `live/ocr-fast-20260831` |
-| **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
-| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
+| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | **Pronto para envio** | migração `0006` · pytest **101** · `/m/entrada/` |
 
-### Pacote Live + checkpoint
+**Inclui:** forms reordenados (cliente → queixa/KM → veículo); nome editável no retorno; chips Normal/Urgente; `brought_by_name`; queixa na vistoria + resumo OS.
+
+| P | Item | Status |
+| - | ---- | ------ |
+| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa entrada · OCR-fast | ✅ **Enviado** |
+| **P2** | Media S3/R2 · fotos desktop | **Pendente** |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
+
+### Checkpoint Live
 
 | | |
 | - | - |
-| Live | `25137d0` · tag `live/ocr-fast-20260831` |
-| Reverter para | `735c962` · tag `rollback/pre-ocr-fast-20260831` |
-| Doc | `docs/ROLLBACK-OCR-FAST-20260831.md` |
-| Pytest | mobile+healthz+social **32** passed |
+| Live | `25137d0` · `live/ocr-fast-20260831` |
+| Rollback OCR-fast | `735c962` · `rollback/pre-ocr-fast-20260831` |
 
 ---
 

@@ -1,0 +1,16 @@
+{# Chips Normal / Urgente — prioridade do primeiro contato no pátio #}
+<div class="m-field {% if field.errors %}is-error{% endif %}">
+  <span class="m-field__label" id="{{ field.id_for_label }}-label">{{ field.label }}</span>
+  {% if field.help_text %}<p class="m-field__help">{{ field.help_text }}</p>{% endif %}
+  <div class="m-priority" role="radiogroup" aria-labelledby="{{ field.id_for_label }}-label">
+    {% for radio in field %}
+      <label class="m-priority__opt {% if radio.data.value == 'URGENTE' %}m-priority__opt--urgent{% endif %}">
+        {{ radio.tag }}
+        <span>{{ radio.choice_label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+  {% for error in field.errors %}
+    <p class="m-field__error">{{ error }}</p>
+  {% endfor %}
+</div>

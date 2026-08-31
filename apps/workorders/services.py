@@ -84,6 +84,7 @@ def create_service_order(
     location=None,
     priority=None,
     internal_notes: str = "",
+    brought_by_name: str = "",
 ) -> ServiceOrder:
     if not user.can_register_entry:
         raise PermissionDenied("Seu perfil não pode registrar entradas.")
@@ -112,6 +113,7 @@ def create_service_order(
         entry_km=entry_km,
         entry_at=entry_at or timezone.now(),
         customer_complaint=customer_complaint.strip(),
+        brought_by_name=" ".join(str(brought_by_name or "").split()),
         mechanic=mechanic,
         expected_delivery_at=expected_delivery_at,
         location=location,

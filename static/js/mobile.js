@@ -342,8 +342,25 @@
     }, 1200);
   }
 
+  function syncPrioritySelection(group) {
+    group.querySelectorAll(".m-priority__opt").forEach(function (label) {
+      var input = label.querySelector('input[type="radio"]');
+      label.classList.toggle("is-selected", !!(input && input.checked));
+    });
+  }
+
+  function initPriority() {
+    document.querySelectorAll(".m-priority").forEach(function (group) {
+      syncPrioritySelection(group);
+      group.addEventListener("change", function () {
+        syncPrioritySelection(group);
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initChecklist();
+    initPriority();
     initPhotoAutoSubmit();
     initPlateOcr();
     initToasts();

@@ -7,8 +7,8 @@
   <a class="m-back" href="{% url 'mobile:entry_start' %}">← Voltar</a>
 
   <section class="m-hero">
-    <h1 class="m-hero__title">Cadastro rápido</h1>
-    <p class="m-hero__sub">Só o essencial no pátio. Mecânico, local e o resto vão no notebook.</p>
+    <h1 class="m-hero__title">Primeiro contato</h1>
+    <p class="m-hero__sub">No pátio: quem é, o que pediu e qual o carro. O restante a recepção completa no notebook.</p>
   </section>
 
   <form method="post" class="m-entry-form" id="m-entry-form" novalidate>
@@ -21,14 +21,25 @@
     {% endif %}
 
     <section class="m-block">
-      <h2 class="m-block__title">Cliente</h2>
+      <h2 class="m-block__title">1 · Cliente</h2>
+      <p class="m-block__hint">Nome e um telefone que atenda — de preferência WhatsApp.</p>
       {% include "mobile/partials/_field.html" with field=form.name %}
       {% include "mobile/partials/_field.html" with field=form.phone %}
       {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
     </section>
 
+    <section class="m-block m-block--focus">
+      <h2 class="m-block__title">2 · Queixa e entrada</h2>
+      <p class="m-block__hint">O mais importante do pátio: o que o cliente disse e o KM do painel.</p>
+      {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
+      {% include "mobile/partials/_field.html" with field=form.entry_km %}
+      {% include "mobile/partials/_priority.html" with field=form.priority %}
+      {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
+    </section>
+
     <section class="m-block">
-      <h2 class="m-block__title">Veículo</h2>
+      <h2 class="m-block__title">3 · Veículo</h2>
+      <p class="m-block__hint">Placa, marca e modelo bastam. Cor e ano são opcionais.</p>
       {% include "mobile/partials/_field.html" with field=form.plate %}
       {% include "mobile/partials/_field.html" with field=form.brand %}
       {% include "mobile/partials/_field.html" with field=form.model %}
@@ -36,12 +47,6 @@
         {% include "mobile/partials/_field.html" with field=form.color %}
         {% include "mobile/partials/_field.html" with field=form.model_year %}
       </div>
-    </section>
-
-    <section class="m-block">
-      <h2 class="m-block__title">Entrada</h2>
-      {% include "mobile/partials/_field.html" with field=form.entry_km %}
-      {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
     </section>
   </form>
 

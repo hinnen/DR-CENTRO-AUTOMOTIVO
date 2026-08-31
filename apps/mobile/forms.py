@@ -5,10 +5,11 @@ from django import forms
 from apps.core.utils import normalize_phone
 from apps.customers.models import Client
 from apps.vehicles.models import Vehicle, normalize_plate, validate_plate
+from apps.workorders.models import Priority
 
 
 class MobileEntryForm(forms.Form):
-    """KM e queixa: o mínimo para abrir a OS no pátio."""
+    """KM, queixa e prioridade: o mínimo para abrir a OS no pátio."""
 
     entry_km = forms.IntegerField(
         label="KM do painel",
@@ -22,21 +23,47 @@ class MobileEntryForm(forms.Form):
         ),
     )
     customer_complaint = forms.CharField(
-        label="Queixa / motivo da visita",
+        label="O que o cliente reclamou / pediu?",
         widget=forms.Textarea(
             attrs={
-                "rows": 3,
-                "placeholder": "O que o cliente relatou?",
+                "rows": 4,
+                "placeholder": "Ex.: barulho na dianteira, luz acesa no painel, revisão…",
                 "class": "m-textarea",
             }
         ),
+        help_text="Anote com as palavras do cliente — a recepção detalha depois.",
+    )
+    priority = forms.ChoiceField(
+        label="Prioridade",
+        choices=(
+            (Priority.NORMAL, "Normal"),
+            (Priority.URGENT, "Urgente"),
+        ),
+        initial=Priority.NORMAL,
+        widget=forms.RadioSelect(attrs={"class": "m-priority-input"}),
+    )
+    brought_by_name = forms.CharField(
+        label="Quem trouxe o carro",
+        required=False,
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Deixe em branco se for o próprio cliente",
+                "class": "m-field-input",
+                "autocomplete": "name",
+            }
+        ),
+        help_text="Opcional — filho, motorista, funcionário, etc.",
     )
 
     def clean_customer_complaint(self):
         value = (self.cleaned_data.get("customer_complaint") or "").strip()
         if not value:
-            raise forms.ValidationError("Descreva o que o cliente relatou.")
+            raise forms.ValidationError("Descreva o que o cliente reclamou ou pediu.")
         return value
+
+    def clean_brought_by_name(self):
+        return " ".join((self.cleaned_data.get("brought_by_name") or "").split())
 
 
 class MobileClientFields(forms.Form):
@@ -74,6 +101,9 @@ class MobileClientFields(forms.Form):
             }
         ),
     )
+
+    def clean_name(self):
+        return " ".join((self.cleaned_data.get("name") or "").split())
 
     def clean_phone(self):
         digits = normalize_phone(self.cleaned_data.get("phone"))
@@ -140,8 +170,8 @@ class MobileVehicleFields(forms.Form):
         return plate
 
 
-class MobileNewEntryForm(MobileClientFields, MobileVehicleFields, MobileEntryForm):
-    """Cadastro completo de primeiro contato: cliente + carro + entrada."""
+class MobileNewEntryForm(MobileClientFields, MobileEntryForm, MobileVehicleFields):
+    """Cadastro completo de primeiro contato: cliente → queixa → veículo."""
 
     def __init__(self, *args, initial_plate="", **kwargs):
         super().__init__(*args, **kwargs)
@@ -149,11 +179,36 @@ class MobileNewEntryForm(MobileClientFields, MobileVehicleFields, MobileEntryFor
             self.fields["plate"].initial = initial_plate
         for name in ("name", "phone", "plate", "brand", "model", "entry_km", "customer_complaint"):
             self.fields[name].widget.attrs.setdefault("required", True)
+        # Ordem mental do pátio: quem é → o que pediu → qual carro.
+        self.order_fields(
+            [
+                "name",
+                "phone",
+                "phone_whatsapp",
+                "customer_complaint",
+                "entry_km",
+                "priority",
+                "brought_by_name",
+                "plate",
+                "brand",
+                "model",
+                "color",
+                "model_year",
+            ]
+        )
 
 
 class MobileReturningEntryForm(MobileEntryForm):
-    """Cliente já cadastrado: só KM, queixa e confirmação de telefone."""
+    """Cliente já cadastrado: confirma nome/telefone + KM, queixa e prioridade."""
 
+    name = forms.CharField(
+        label="Nome do cliente",
+        max_length=150,
+        widget=forms.TextInput(
+            attrs={"placeholder": "Nome completo", "class": "m-field-input", "autocomplete": "name"}
+        ),
+        help_text="Confirme ou corrija o nome no cadastro.",
+    )
     phone = forms.CharField(
         label="Telefone / WhatsApp",
         max_length=20,
@@ -166,7 +221,24 @@ class MobileReturningEntryForm(MobileEntryForm):
     def __init__(self, *args, client: Client | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         if client and not self.is_bound:
+            self.fields["name"].initial = client.name
             self.fields["phone"].initial = client.phone_whatsapp or client.phone
+        self.order_fields(
+            [
+                "name",
+                "phone",
+                "customer_complaint",
+                "entry_km",
+                "priority",
+                "brought_by_name",
+            ]
+        )
+
+    def clean_name(self):
+        value = " ".join((self.cleaned_data.get("name") or "").split())
+        if not value:
+            raise forms.ValidationError("Informe o nome do cliente.")
+        return value
 
     def clean_phone(self):
         digits = normalize_phone(self.cleaned_data.get("phone"))

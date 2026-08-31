@@ -274,15 +274,24 @@ def entry_existing(request, uuid):
         if form.is_valid():
             try:
                 with transaction.atomic():
+                    name = form.cleaned_data["name"]
                     phone = form.cleaned_data["phone"]
+                    updates = []
+                    if name != client.name:
+                        client.name = name
+                        updates.append("name")
                     if phone != client.phone:
                         client.phone = phone
-                        client.save(update_fields=["phone", "updated_at"])
+                        updates.append("phone")
+                    if updates:
+                        client.save(update_fields=[*updates, "updated_at"])
                     order = create_service_order(
                         client=client,
                         vehicle=vehicle,
                         entry_km=form.cleaned_data["entry_km"],
                         customer_complaint=form.cleaned_data["customer_complaint"],
+                        priority=form.cleaned_data.get("priority"),
+                        brought_by_name=form.cleaned_data.get("brought_by_name") or "",
                         user=request.user,
                     )
             except (ValidationError, PermissionDenied) as error:
@@ -356,6 +365,8 @@ def entry_new(request):
                         vehicle=vehicle,
                         entry_km=data["entry_km"],
                         customer_complaint=data["customer_complaint"],
+                        priority=data.get("priority"),
+                        brought_by_name=data.get("brought_by_name") or "",
                         user=request.user,
                     )
             except (ValidationError, PermissionDenied) as error:

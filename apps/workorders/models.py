@@ -154,6 +154,8 @@ class ServiceOrder(BaseModel):
     entry_km = models.PositiveIntegerField("KM de entrada")
     entry_at = models.DateTimeField("data/hora de entrada", db_index=True)
     customer_complaint = models.TextField("reclamação do cliente")
+    # Quem deixou o carro no pátio (pode ser diferente do titular do cadastro).
+    brought_by_name = models.CharField("quem trouxe o veículo", max_length=150, blank=True)
 
     diagnosis = models.TextField("diagnóstico", blank=True)
     diagnosis_updated_at = models.DateTimeField("diagnóstico atualizado em", null=True, blank=True)

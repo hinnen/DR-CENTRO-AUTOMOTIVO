@@ -11,7 +11,6 @@
     <p class="m-os-head__meta">
       {{ vehicle.brand }} {{ vehicle.model }}
       {% if vehicle.color %} · {{ vehicle.color }}{% endif %}
-      · {{ client.name }}
     </p>
   </header>
 
@@ -25,14 +24,19 @@
     {% endif %}
 
     <section class="m-block">
-      <h2 class="m-block__title">Contato</h2>
+      <h2 class="m-block__title">1 · Cliente</h2>
+      <p class="m-block__hint">Confirme nome e telefone — é o contato da oficina com o cliente.</p>
+      {% include "mobile/partials/_field.html" with field=form.name %}
       {% include "mobile/partials/_field.html" with field=form.phone %}
     </section>
 
-    <section class="m-block">
-      <h2 class="m-block__title">Entrada</h2>
-      {% include "mobile/partials/_field.html" with field=form.entry_km %}
+    <section class="m-block m-block--focus">
+      <h2 class="m-block__title">2 · Queixa e entrada</h2>
+      <p class="m-block__hint">O que o cliente reclamou / pediu nesta visita.</p>
       {% include "mobile/partials/_field.html" with field=form.customer_complaint %}
+      {% include "mobile/partials/_field.html" with field=form.entry_km %}
+      {% include "mobile/partials/_priority.html" with field=form.priority %}
+      {% include "mobile/partials/_field.html" with field=form.brought_by_name %}
     </section>
   </form>
 

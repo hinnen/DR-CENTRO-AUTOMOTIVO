@@ -80,6 +80,17 @@
         <h2 class="section-title">Reclamação do cliente</h2>
         <p class="text-block">{{ order.customer_complaint|linebreaksbr }}</p>
 
+        {% if order.brought_by_name or order.priority == "URGENTE" %}
+          <dl class="lookup__grid mt-3">
+            {% if order.priority == "URGENTE" %}
+              <div><dt>Prioridade</dt><dd><span class="badge badge--danger">Urgente</span></dd></div>
+            {% endif %}
+            {% if order.brought_by_name %}
+              <div><dt>Quem trouxe</dt><dd>{{ order.brought_by_name }}</dd></div>
+            {% endif %}
+          </dl>
+        {% endif %}
+
         {% if order.internal_notes %}
           <h2 class="section-title mt-4">Observações internas</h2>
           <p class="text-block">{{ order.internal_notes|linebreaksbr }}</p>

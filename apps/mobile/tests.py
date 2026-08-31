@@ -227,9 +227,12 @@ class MobileEntryTests(TestCase):
         response = self.client.post(
             reverse("mobile:entry_existing", kwargs={"uuid": self.vehicle.uuid}),
             {
+                "name": "Marcos Ferreira",
                 "phone": "13991234567",
                 "entry_km": 45000,
                 "customer_complaint": "Barulho na suspensão",
+                "priority": "URGENTE",
+                "brought_by_name": "Filho do Marcos",
             },
         )
         from apps.workorders.models import ServiceOrder
@@ -241,6 +244,33 @@ class MobileEntryTests(TestCase):
         )
         self.assertEqual(order.entry_km, 45000)
         self.assertEqual(order.customer_complaint, "Barulho na suspensão")
+        self.assertEqual(order.priority, "URGENTE")
+        self.assertEqual(order.brought_by_name, "Filho do Marcos")
+
+    def test_existing_entry_updates_client_name(self):
+        response = self.client.post(
+            reverse("mobile:entry_existing", kwargs={"uuid": self.vehicle.uuid}),
+            {
+                "name": "Marcos F. Atualizado",
+                "phone": "13991234567",
+                "entry_km": 45100,
+                "customer_complaint": "Revisão",
+                "priority": "NORMAL",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.owner.refresh_from_db()
+        self.assertEqual(self.owner.name, "Marcos F. Atualizado")
+
+    def test_existing_entry_form_shows_first_contact_sections(self):
+        response = self.client.get(
+            reverse("mobile:entry_existing", kwargs={"uuid": self.vehicle.uuid})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "O que o cliente reclamou")
+        self.assertContains(response, "Quem trouxe o carro")
+        self.assertContains(response, "Urgente")
+        self.assertContains(response, 'name="name"')
 
     def test_open_order_redirects_to_inspection_instead_of_duplicating(self):
         order = create_service_order(
@@ -272,6 +302,8 @@ class MobileEntryTests(TestCase):
                 "model_year": 2022,
                 "entry_km": 12000,
                 "customer_complaint": "Revisão dos 10 mil",
+                "priority": "NORMAL",
+                "brought_by_name": "",
             },
         )
         vehicle = Vehicle.objects.get(plate="QWE1R23")

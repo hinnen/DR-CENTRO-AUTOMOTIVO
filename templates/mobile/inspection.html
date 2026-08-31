@@ -7,9 +7,17 @@
     <a class="m-back" href="{% url 'mobile:home' %}">← Voltar</a>
     <p class="m-os-head__plate">{{ order.vehicle.plate_display }}</p>
     <p class="m-os-head__meta">
-      {{ order.number_display }} · {{ order.vehicle.brand }} {{ order.vehicle.model }}
-      {% if order.vehicle.color %} · {{ order.vehicle.color }}{% endif %}
+      {{ order.number_display }} · {{ order.client.name }}
+      {% if order.priority == "URGENTE" %} · <span class="m-os-head__urgent">Urgente</span>{% endif %}
     </p>
+    {% if order.customer_complaint %}
+      <p class="m-os-head__complaint">
+        <strong>Queixa:</strong> {{ order.customer_complaint|truncatechars:120 }}
+      </p>
+    {% endif %}
+    {% if order.brought_by_name %}
+      <p class="m-os-head__meta">Trouxe: {{ order.brought_by_name }}</p>
+    {% endif %}
     <ul class="m-summary" aria-label="Resumo da vistoria">
       <li class="m-summary__ok">{{ summary.ok }} OK</li>
       <li class="m-summary__warn">{{ summary.attention }} atenção</li>
