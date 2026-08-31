@@ -308,7 +308,9 @@ class MobileEntryTests(TestCase):
         response = self.client.get(reverse("mobile:entry_start"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("mobile:entry_read_plate"))
+        self.assertContains(response, reverse("mobile:entry_warmup_ocr"))
         self.assertContains(response, "data-plate-ocr-url")
+        self.assertContains(response, "data-plate-ocr-warmup-url")
 
 
 class PlateOcrUnitTests(TestCase):
@@ -392,3 +394,25 @@ class PlateOcrUnitTests(TestCase):
         response = client.post(reverse("mobile:entry_read_plate"))
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.json()["ok"])
+
+    @override_settings(ENABLE_PLATE_OCR=False)
+    def test_entry_warmup_ocr_reports_disabled(self):
+        reception = make_user("ocr_warm_off", Role.RECEPTION)
+        client = Client()
+        client.force_login(reception)
+        response = client.post(reverse("mobile:entry_warmup_ocr"))
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertFalse(payload["warmed"])
+
+    @patch("apps.mobile.plate_ocr.warmup_engine")
+    @override_settings(ENABLE_PLATE_OCR=True)
+    def test_entry_warmup_ocr_loads_engine(self, mock_warm):
+        reception = make_user("ocr_warm_on", Role.RECEPTION)
+        client = Client()
+        client.force_login(reception)
+        response = client.post(reverse("mobile:entry_warmup_ocr"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["warmed"])
+        mock_warm.assert_called_once()

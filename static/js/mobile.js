@@ -117,7 +117,7 @@
   }
 
   function resizePlatePhoto(file, maxSide) {
-    maxSide = maxSide || 1280;
+    maxSide = maxSide || 800;
     return new Promise(function (resolve, reject) {
       if (!window.createImageBitmap && !window.FileReader) {
         resolve(file);
@@ -152,7 +152,7 @@
             resolve(new File([blob], "placa.jpg", { type: "image/jpeg" }));
           },
           "image/jpeg",
-          0.88
+          0.8
         );
       };
 
@@ -172,14 +172,53 @@
     var endpoint = camera.getAttribute("data-plate-ocr-url");
     if (!endpoint) return;
 
+    var warmupUrl = camera.getAttribute("data-plate-ocr-warmup-url");
+    var warmReady = !warmupUrl;
+    var warmPromise = null;
+
+    function warmEngine() {
+      if (!warmupUrl || warmPromise) return warmPromise;
+      warmPromise = fetch(warmupUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken(),
+          Accept: "application/json",
+        },
+        credentials: "same-origin",
+      })
+        .then(function (response) {
+          warmReady = response.ok;
+          return response;
+        })
+        .catch(function () {
+          warmReady = false;
+        });
+      return warmPromise;
+    }
+
+    // Aquecer em background ao abrir a tela — 1ª foto não paga o load do modelo.
+    window.setTimeout(function () {
+      warmEngine();
+    }, 120);
+
     camera.addEventListener("change", function () {
       var file = camera.files && camera.files[0];
       camera.value = "";
       if (!file) return;
 
-      setPlateStatus("Lendo placa…");
+      setPlateStatus(warmReady ? "Lendo placa…" : "Preparando leitor…");
 
-      resizePlatePhoto(file, 1024)
+      var ready = warmEngine() || Promise.resolve();
+
+      ready
+        .catch(function () {
+          /* segue mesmo sem warm */
+        })
+        .then(function () {
+          setPlateStatus("Lendo placa…");
+          // 800px + JPEG 0.8: menos upload e inferência mais rápida no Starter.
+          return resizePlatePhoto(file, 800);
+        })
         .then(function (uploadFile) {
           var body = new FormData();
           body.append("image", uploadFile, uploadFile.name || "placa.jpg");

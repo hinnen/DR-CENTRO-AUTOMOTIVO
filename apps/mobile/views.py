@@ -4,6 +4,8 @@ Primeiro contato (entrada + vistoria) no celular; detalhes complexos no notebook
 Reutiliza os mesmos models e services do desktop.
 """
 
+import logging
+
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -39,6 +41,8 @@ from apps.workorders.services import (
 )
 
 from .forms import MobileNewEntryForm, MobileReturningEntryForm
+
+logger = logging.getLogger(__name__)
 
 
 def _mobile_inspection_form(*args, items=None, **kwargs):
@@ -215,6 +219,35 @@ def entry_read_plate(request):
             "confidence": result["confidence"],
         }
     )
+
+
+@login_required
+@require_POST
+def entry_warmup_ocr(request):
+    """Pré-carrega o modelo ONNX ao abrir a tela da placa (não no boot).
+
+    Evita a espera longa na 1ª foto sem arriscar 502 no health check do Render.
+    """
+    if not request.user.can_register_entry:
+        raise PermissionDenied("Seu perfil não pode registrar entradas.")
+
+    from django.conf import settings
+
+    if not getattr(settings, "ENABLE_PLATE_OCR", False):
+        return JsonResponse({"ok": True, "warmed": False, "reason": "disabled"})
+
+    try:
+        from .plate_ocr import warmup_engine
+
+        warmup_engine()
+    except ValidationError as error:
+        message = error.messages[0] if hasattr(error, "messages") else str(error)
+        return JsonResponse({"ok": False, "warmed": False, "error": message}, status=422)
+    except Exception:
+        logger.exception("Warmup OCR sob demanda falhou")
+        return JsonResponse({"ok": False, "warmed": False}, status=500)
+
+    return JsonResponse({"ok": True, "warmed": True})
 
 
 @login_required

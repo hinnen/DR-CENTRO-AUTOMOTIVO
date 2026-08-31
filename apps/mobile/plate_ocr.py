@@ -56,8 +56,8 @@ _LETTER_FROM_DIGIT = str.maketrans(
 _DETECT_THRESHOLDS = (0.4, 0.25, 0.15)
 # Para na primeira deteccao com confianca alta (evita 2º/3º limiar).
 _CONF_EARLY_EXIT = 0.42
-# 1024 cobre placa enquadrada; 1280 era mais lento no CPU do Starter.
-_OCR_MAX_SIDE = 1024
+# 800: bom para placa enquadrada no celular; 1024 era pesado no CPU Starter.
+_OCR_MAX_SIDE = 800
 
 
 def _ocr_enabled() -> bool:
@@ -71,6 +71,33 @@ def _keep_engine_loaded() -> bool:
     from django.conf import settings
 
     return bool(getattr(settings, "PLATE_OCR_KEEP_LOADED", True))
+
+
+def _ocr_max_side() -> int:
+    from django.conf import settings
+
+    try:
+        return max(480, int(getattr(settings, "PLATE_OCR_MAX_SIDE", _OCR_MAX_SIDE)))
+    except (TypeError, ValueError):
+        return _OCR_MAX_SIDE
+
+
+def _session_options():
+    """ONNX enxuto para 1 worker CPU (Render Starter)."""
+    import onnxruntime as ort
+
+    from django.conf import settings
+
+    try:
+        threads = max(1, int(getattr(settings, "PLATE_OCR_THREADS", 2)))
+    except (TypeError, ValueError):
+        threads = 2
+
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = threads
+    opts.inter_op_num_threads = 1
+    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+    return opts
 
 
 @lru_cache(maxsize=1)
@@ -89,8 +116,10 @@ def _engine():
             code="ocr_unavailable",
         ) from exc
 
-    return Platerec(providers=["CPUExecutionProvider"])
-
+    return Platerec(
+        providers=["CPUExecutionProvider"],
+        sess_options=_session_options(),
+    )
 
 def release_engine() -> None:
     """Libera o modelo ONNX da memória (escape hatch / PLATE_OCR_KEEP_LOADED=0)."""
@@ -195,14 +224,16 @@ def _pick_best(words: list[str], confidences: list[float] | None = None) -> tupl
     return best_plate, best_conf
 
 
-def _resize_for_ocr(image: Image.Image, max_side: int = _OCR_MAX_SIDE) -> Image.Image:
+def _resize_for_ocr(image: Image.Image, max_side: int | None = None) -> Image.Image:
+    limit = max_side if max_side is not None else _ocr_max_side()
     w, h = image.size
-    scale = min(1.0, max_side / max(w, h))
+    scale = min(1.0, limit / max(w, h))
     if scale >= 1.0:
         return image
+    # BILINEAR é bem mais rápido que LANCZOS no Starter e basta para OCR.
     return image.resize(
         (max(1, int(w * scale)), max(1, int(h * scale))),
-        Image.Resampling.LANCZOS,
+        Image.Resampling.BILINEAR,
     )
 
 
@@ -290,9 +321,10 @@ def _slow_variants(image: Image.Image) -> list[Image.Image]:
     contrast = ImageEnhance.Contrast(image).enhance(1.6)
     variants.append(ImageEnhance.Sharpness(contrast).enhance(1.4))
 
+    # Upscale só em foto bem pequena (evita 800→1600 no caminho lento).
     w, h = image.size
-    if max(w, h) < 900:
-        variants.append(image.resize((w * 2, h * 2), Image.Resampling.LANCZOS))
+    if max(w, h) < 480:
+        variants.append(image.resize((w * 2, h * 2), Image.Resampling.BILINEAR))
 
     return variants
 
@@ -337,11 +369,16 @@ def read_plate_from_image(image: Image.Image) -> dict:
                     break
 
         if not plate:
+            # Rotações: um limiar só (thorough=False). Thorough só na original.
             for variant in _slow_variants(image):
-                plate, confidence, words = _try_image(engine, variant, thorough=True)
+                plate, confidence, words = _try_image(engine, variant, thorough=False)
                 raw_words.extend(words)
                 if plate:
                     break
+
+        if not plate:
+            plate, confidence, words = _try_image(engine, image, thorough=True)
+            raw_words.extend(words)
     except ValidationError:
         raise
     except Exception:

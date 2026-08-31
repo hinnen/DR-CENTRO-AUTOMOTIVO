@@ -223,6 +223,8 @@ ENABLE_PLATE_OCR = env_bool("ENABLE_PLATE_OCR", DEBUG)
 PLATE_OCR_WARMUP = env_bool("PLATE_OCR_WARMUP", False)
 # Mantém modelo após 1ª foto (muito mais rápido). Desligar só se memória apertar.
 PLATE_OCR_KEEP_LOADED = env_bool("PLATE_OCR_KEEP_LOADED", True)
+PLATE_OCR_MAX_SIDE = int(os.getenv("PLATE_OCR_MAX_SIDE", "800"))
+PLATE_OCR_THREADS = int(os.getenv("PLATE_OCR_THREADS", "2"))
 
 
 LOGGING = {

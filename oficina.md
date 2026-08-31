@@ -253,8 +253,9 @@ python manage.py seed_demo --reset   # senha default oficina123
 - **Sistema no PC:** `https://drcentroautomotivo.com/` (Kanban / OS)
 - **App no celular:** `/m/` (login) após instalar ou “Continuar no navegador”
 - Fluxo: entrada (placa → cliente/KM/queixa) → vistoria → fotos
-- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize 1024
-  - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1`
+- OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize **800**
+  - Ao abrir `/m/entrada/`: `POST /m/entrada/aquecer-ocr/` pré-carrega o modelo (não no boot — evita 502)
+  - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1` · `PLATE_OCR_MAX_SIDE=800` · `PLATE_OCR_THREADS=2`
   - Mercosul **e** antiga: EXIF, limiar de detecção mais baixo, contraste, rotações; I/L/O → dígito na 5ª posição (ex. `JKK2I88` → `JKK2188`)
   - Auto-preenche cliente/veículo **só do banco local** (já veio → lookup). API externa de placa = depois (roadmap).
 - Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI só no mobile por enquanto
@@ -279,11 +280,11 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **`0660bfe`** (fonte placa + ignora traço)  
-https://drcentroautomotivo.com/ · `/entrada/nova/`
+**Produção Live (autorizado 31/08 · senha):** `main` @ **OCR-fast** (warm na tela + 800px)  
+https://drcentroautomotivo.com/ · `/m/entrada/`
 
-**Rollback deste pacote (só frase+senha):** tag `rollback/pre-plate-entry-20260831` @ `a6c21cf` · branch `main-backup-pre-plate-entry-20260831` · `docs/ROLLBACK-PLATE-ENTRY-20260831.md`  
-(Anteriores: `rollback/pre-og-install-20260831` · `rollback/pre-ocr-logo-20260831`)
+**Rollback deste pacote (só frase+senha):** tag `rollback/pre-ocr-fast-20260831` @ `735c962` · branch `main-backup-pre-ocr-fast-20260831` · `docs/ROLLBACK-OCR-FAST-20260831.md`  
+(Anteriores: `rollback/pre-plate-entry-20260831` · `rollback/pre-og-install-20260831`)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
@@ -295,6 +296,7 @@ https://drcentroautomotivo.com/ · `/entrada/nova/`
 | **P1** | Página `/m/instalar/` — prompt instalar PWA (estilo Ajuste) | ✅ **Enviado** | `/m/instalar/` público |
 | **P1** | WhatsApp: ícone no domínio `.com` (bot preview + PUBLIC_BASE_URL) | ✅ **Enviado** | SocialPreviewMiddleware · og v=3 |
 | **P1** | Nova entrada: fonte/placa + busca ignora traço | ✅ **Enviado** | tag `live/plate-entry-20260831` |
+| **P1** | OCR mais rápido (warm na tela + 800px) | ✅ **Enviado** | tag `live/ocr-fast-20260831` |
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
@@ -302,10 +304,10 @@ https://drcentroautomotivo.com/ · `/entrada/nova/`
 
 | | |
 | - | - |
-| Live | `0660bfe` · tag `live/plate-entry-20260831` |
-| Reverter para | `a6c21cf` · tag `rollback/pre-plate-entry-20260831` |
-| Doc | `docs/ROLLBACK-PLATE-ENTRY-20260831.md` |
-| Pytest | vehicles+workorders+mobile **97** passed |
+| Live | (após push) tag `live/ocr-fast-20260831` |
+| Reverter para | `735c962` · tag `rollback/pre-ocr-fast-20260831` |
+| Doc | `docs/ROLLBACK-OCR-FAST-20260831.md` |
+| Pytest | mobile+healthz+social **32** passed |
 
 ---
 

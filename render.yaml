@@ -53,6 +53,10 @@ services:
         value: "1"
       - key: PLATE_OCR_KEEP_LOADED
         value: "1"
+      - key: PLATE_OCR_MAX_SIDE
+        value: "800"
+      - key: PLATE_OCR_THREADS
+        value: "2"
       - key: SECURE_SSL_REDIRECT
         value: "True"
       - key: USE_X_FORWARDED_PROTO
