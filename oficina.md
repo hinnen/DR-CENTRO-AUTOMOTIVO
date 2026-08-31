@@ -285,22 +285,15 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live:** `main` @ **`e66b1cb`** (primeiro contato `/m/`) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`b601b9b`** (wizard + OCR Mercosul) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-| P | Item | Status | Verificação |
-| - | ---- | ------ | ----------- |
-| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | 2aafdb0 · I≠1 · UI Confirmar/Corrigir |
-| **P1** | Entrada `/m/`: wizard cliente→queixa→veículo | **Pronto para envio** | **b601b9b** · `?v=15` · pytest **34** · Continuar/Voltar |
-
-**Inclui OCR:** 5ª letra Mercosul; auto-preenche só ~99% sem ambiguidade; senão Confirmar/Corrigir.
-
-**Inclui wizard:** telas separadas, campos maiores; opcionais em detalhes; Enter avança.
+*(vazio — último pacote enviado abaixo)*
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR-fast · logo · instalar · OG · placa · primeiro contato | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR-fast · logo · instalar · OG · placa · primeiro contato · **OCR Mercosul** · **wizard entrada** | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -308,8 +301,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `e66b1cb` · `live/first-contact-20260831` |
-| Rollback | `25137d0` · `rollback/pre-first-contact-20260831` |
+| Live | `b601b9b` · `live/wizard-ocr-20260831` |
+| Rollback | `e66b1cb` · `rollback/pre-wizard-ocr-20260831` · branch `main-backup-pre-wizard-ocr-20260831` |
+| Doc | `docs/ROLLBACK-WIZARD-OCR-20260831.md` |
+| Smoke | `/healthz` ok · static wizard `initEntryWizard` + `.m-wizard-dot` em `?v=15` |
 
 ---
 
