@@ -288,7 +288,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | **Pronto para envio** | migração `0006` · pytest **101** · `/m/entrada/` |
+| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | **Pronto para envio** | `e66b1cb` · migração `0006` · pytest **101** |
 
 **Inclui:** forms reordenados (cliente → queixa/KM → veículo); nome editável no retorno; chips Normal/Urgente; `brought_by_name`; queixa na vistoria + resumo OS.
 
