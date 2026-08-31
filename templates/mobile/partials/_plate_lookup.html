@@ -41,6 +41,11 @@
     </article>
   {% endwith %}
 
+{% elif typing %}
+  <p class="m-plate-card__help" role="status">
+    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}.
+  </p>
+
 {% elif not_found %}
   <article class="m-hit m-hit--new">
     <div class="m-hit__top">

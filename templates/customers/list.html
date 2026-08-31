@@ -40,7 +40,10 @@
               <td data-label="Atendimentos">{{ client.order_count }}</td>
               <td data-label="Última visita">{{ client.last_visit|date:"d/m/Y"|default:"—" }}</td>
               <td data-label="Ações">
-                <a class="btn btn--secondary btn--sm" href="{% url 'customers:detail' client.uuid %}">Abrir</a>
+                <div class="table-actions">
+                  {% include "components/_whatsapp_button.html" with url=client.whatsapp_url label=client.name compact=True %}
+                  <a class="btn btn--secondary btn--sm" href="{% url 'customers:detail' client.uuid %}">Abrir</a>
+                </div>
               </td>
             </tr>
           {% endfor %}

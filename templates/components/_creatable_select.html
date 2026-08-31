@@ -1,0 +1,16 @@
+{% comment %}
+Select com ação de cadastro rápido (estilo iFood).
+Espera: field, target_id, create_label, panel_url, can_create
+{% endcomment %}
+<div class="creatable-select" id="{{ target_id }}" data-creatable-select>
+  {% include "components/_field.html" with field=field %}
+  {% if can_create %}
+    <button type="button" class="creatable-select__add btn btn--ghost btn--sm"
+            hx-get="{{ panel_url }}?target_id={{ target_id|urlencode }}&field_name={{ field.html_name|urlencode }}&empty_label={{ empty_label|urlencode }}&selected={{ field.value|default_if_none:''|urlencode }}"
+            hx-target="#{{ target_id }}-panel"
+            hx-swap="innerHTML">
+      <span aria-hidden="true">+</span> {{ create_label }}
+    </button>
+  {% endif %}
+  <div class="creatable-select__panel" id="{{ target_id }}-panel" aria-live="polite"></div>
+</div>

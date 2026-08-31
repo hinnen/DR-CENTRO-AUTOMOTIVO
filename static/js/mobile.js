@@ -116,6 +116,55 @@
     }
   }
 
+  function resizePlatePhoto(file, maxSide) {
+    maxSide = maxSide || 1280;
+    return new Promise(function (resolve, reject) {
+      if (!window.createImageBitmap && !window.FileReader) {
+        resolve(file);
+        return;
+      }
+
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = img.naturalWidth || img.width;
+        var h = img.naturalHeight || img.height;
+        var scale = Math.min(1, maxSide / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale));
+        var ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement("canvas");
+        canvas.width = cw;
+        canvas.height = ch;
+        var ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, cw, ch);
+        canvas.toBlob(
+          function (blob) {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            resolve(new File([blob], "placa.jpg", { type: "image/jpeg" }));
+          },
+          "image/jpeg",
+          0.88
+        );
+      };
+
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+
+      img.src = url;
+    });
+  }
+
   function initPlateOcr() {
     var camera = document.querySelector("[data-plate-ocr]");
     if (!camera) return;
@@ -130,18 +179,21 @@
 
       setPlateStatus("Lendo placa…");
 
-      var body = new FormData();
-      body.append("image", file, file.name || "placa.jpg");
+      resizePlatePhoto(file, 1280)
+        .then(function (uploadFile) {
+          var body = new FormData();
+          body.append("image", uploadFile, uploadFile.name || "placa.jpg");
 
-      fetch(endpoint, {
-        method: "POST",
-        body: body,
-        headers: {
-          "X-CSRFToken": csrfToken(),
-          Accept: "application/json",
-        },
-        credentials: "same-origin",
-      })
+          return fetch(endpoint, {
+            method: "POST",
+            body: body,
+            headers: {
+              "X-CSRFToken": csrfToken(),
+              Accept: "application/json",
+            },
+            credentials: "same-origin",
+          });
+        })
         .then(function (response) {
           return response.json().then(function (data) {
             return { ok: response.ok, data: data };

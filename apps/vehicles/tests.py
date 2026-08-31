@@ -9,7 +9,7 @@ from apps.customers.models import Client
 
 from .forms import VehicleForm
 from .models import Vehicle, normalize_plate, validate_plate
-from .services import find_by_plate
+from .services import build_plate_lookup_context, find_by_plate
 
 
 class PlateNormalizationTests(TestCase):
@@ -95,6 +95,17 @@ class VehicleLookupTests(TestCase):
 
     def test_find_by_plate_returns_none_when_missing(self):
         self.assertIsNone(find_by_plate("ZZZ9Z99"))
+
+    def test_plate_lookup_context_waits_for_full_plate(self):
+        ctx = build_plate_lookup_context(plate="ABC", raw="ABC")
+        self.assertTrue(ctx.get("typing"))
+        self.assertEqual(ctx["remaining"], 4)
+        self.assertNotIn("not_found", ctx)
+
+    def test_plate_lookup_context_finds_vehicle_when_complete(self):
+        ctx = build_plate_lookup_context(plate="DEF2G45", raw="DEF-2G45")
+        self.assertIn("summary", ctx)
+        self.assertEqual(ctx["summary"]["vehicle"].pk, self.vehicle.pk)
 
 
 class VehicleViewTests(TestCase):

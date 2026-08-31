@@ -6,6 +6,7 @@ from django.db import transaction
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView
 
@@ -15,7 +16,7 @@ from apps.customers.forms import ClientForm
 from apps.customers.models import Client
 from apps.vehicles.forms import VehicleForm
 from apps.vehicles.models import VehicleLocation, normalize_plate
-from apps.vehicles.services import find_by_plate, vehicle_summary
+from apps.vehicles.services import build_plate_lookup_context, find_by_plate, vehicle_summary
 
 from .filters import active_filters, apply_filters
 from .forms import (
@@ -88,27 +89,12 @@ def whatsapp_picker(request):
 
 
 @login_required
+@never_cache
 def plate_lookup(request):
-    """Busca por placa da Nova Entrada (HTMX, dispara a cada tecla)."""
+    """Busca por placa da Nova Entrada (HTMX, após placa completa)."""
     raw = request.GET.get("plate", "")
     plate = normalize_plate(raw)
-
-    context = {"plate": plate, "raw": raw}
-
-    if len(plate) >= 3:
-        vehicle = find_by_plate(plate)
-        if vehicle:
-            context["summary"] = vehicle_summary(vehicle)
-            context["open_order"] = (
-                ServiceOrder.objects.with_related()
-                .in_workshop()
-                .filter(vehicle=vehicle)
-                .order_by("-entry_at")
-                .first()
-            )
-        else:
-            context["not_found"] = True
-
+    context = build_plate_lookup_context(plate=plate, raw=raw)
     return render(request, "workorders/partials/_plate_lookup.html", context)
 
 

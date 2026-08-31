@@ -21,7 +21,7 @@ from django.views.decorators.http import require_GET, require_POST
 from apps.customers.models import Client
 from apps.customers.services import find_by_phone
 from apps.vehicles.models import Vehicle, normalize_plate
-from apps.vehicles.services import find_by_plate, vehicle_summary
+from apps.vehicles.services import build_plate_lookup_context, find_by_plate, vehicle_summary
 from apps.workorders.forms import InspectionForm, PhotoUploadForm
 from apps.workorders.models import (
     GUIDED_PHOTO_ANGLES,
@@ -167,16 +167,7 @@ def entry_plate_lookup(request):
 
     raw = request.GET.get("plate", "")
     plate = normalize_plate(raw)
-    context = {"plate": plate, "raw": raw}
-
-    if len(plate) >= 3:
-        vehicle = find_by_plate(plate)
-        if vehicle:
-            context["summary"] = vehicle_summary(vehicle)
-            context["open_order"] = _open_order_for_vehicle(vehicle)
-        else:
-            context["not_found"] = True
-
+    context = build_plate_lookup_context(plate=plate, raw=raw)
     return render(request, "mobile/partials/_plate_lookup.html", context)
 
 

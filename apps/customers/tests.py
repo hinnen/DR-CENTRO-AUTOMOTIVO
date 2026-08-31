@@ -109,6 +109,12 @@ class ClientViewPermissionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Fernanda Lopes")
 
+    def test_client_list_shows_whatsapp_link_when_phone_exists(self):
+        self.client.force_login(make_user("recepcao3", Role.RECEPTION))
+        response = self.client.get(reverse("customers:list"))
+        self.assertContains(response, "wa.me/55")
+        self.assertContains(response, "Abrir WhatsApp de Fernanda Lopes")
+
     def test_phone_lookup_warns_about_existing_client(self):
         self.client.force_login(make_user("recepcao2", Role.RECEPTION))
         response = self.client.get(

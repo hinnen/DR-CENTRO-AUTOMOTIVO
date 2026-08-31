@@ -54,6 +54,9 @@ _LETTER_FROM_DIGIT = str.maketrans(
 )
 
 _DETECT_THRESHOLDS = (0.4, 0.25, 0.15)
+# Para na primeira deteccao com confianca alta (evita 2º/3º limiar).
+_CONF_EARLY_EXIT = 0.42
+_OCR_MAX_SIDE = 1280
 
 
 @lru_cache(maxsize=1)
@@ -61,6 +64,11 @@ def _engine():
     from platerec import Platerec
 
     return Platerec(providers=["CPUExecutionProvider"])
+
+
+def warmup_engine() -> None:
+    """Carrega o modelo ONNX no boot (Render: evita 5–15s na 1ª foto)."""
+    _engine()
 
 
 def _strip_region(raw: str) -> str:
@@ -156,7 +164,7 @@ def _pick_best(words: list[str], confidences: list[float] | None = None) -> tupl
     return best_plate, best_conf
 
 
-def _resize_for_ocr(image: Image.Image, max_side: int = 1600) -> Image.Image:
+def _resize_for_ocr(image: Image.Image, max_side: int = _OCR_MAX_SIDE) -> Image.Image:
     w, h = image.size
     scale = min(1.0, max_side / max(w, h))
     if scale >= 1.0:
@@ -199,47 +207,51 @@ def _detect_read(engine, image: Image.Image, conf_threshold: float) -> dict:
     }
 
 
-def _try_image(engine, image: Image.Image) -> tuple[str, float, list[str]]:
+def _try_image(engine, image: Image.Image, *, thorough: bool = False) -> tuple[str, float, list[str]]:
     all_words: list[str] = []
     all_confs: list[float] = []
+    thresholds = _DETECT_THRESHOLDS if thorough else _DETECT_THRESHOLDS[:2]
 
-    for threshold in _DETECT_THRESHOLDS:
+    for threshold in thresholds:
         result = _detect_read(engine, image, threshold)
         words = list(result.get("words") or [])
         confs = list(result.get("words_confidences") or [])
         all_words.extend(words)
         all_confs.extend(confs)
         plate, confidence = _pick_best(words, confs)
-        if plate:
+        if plate and (not thorough or confidence >= _CONF_EARLY_EXIT):
             return plate, confidence, words
 
-    # Fallback: foto ja bem enquadrada (placa ocupando o quadro).
-    try:
-        direct = engine.read(image)
-        word = direct.get("word") or ""
-        conf = float(direct.get("confidence") or 0)
-        all_words.append(word)
-        all_confs.append(conf)
-        plate, confidence = _pick_best([word], [conf])
-        if plate:
-            return plate, confidence, all_words
-    except Exception:
-        logger.exception("Fallback platerec.read falhou")
+    if thorough:
+        try:
+            direct = engine.read(image)
+            word = direct.get("word") or ""
+            conf = float(direct.get("confidence") or 0)
+            all_words.append(word)
+            all_confs.append(conf)
+            plate, confidence = _pick_best([word], [conf])
+            if plate:
+                return plate, confidence, all_words
+        except Exception:
+            logger.exception("Fallback platerec.read falhou")
 
     plate, confidence = _pick_best(all_words, all_confs)
     return plate, confidence, all_words
 
 
-def _image_variants(image: Image.Image) -> list[Image.Image]:
-    """Variantes que ajudam placa cinza antiga e fotos deitadas no celular."""
-    variants = [image]
+def _fast_variants(image: Image.Image) -> list[Image.Image]:
+    """Original + contraste — cobre a maioria das fotos bem enquadradas."""
+    contrast = ImageEnhance.Contrast(image).enhance(1.6)
+    return [image, contrast]
 
-    # Rotacoes cedo: celular as vezes manda pixel deitado sem EXIF util.
+
+def _slow_variants(image: Image.Image) -> list[Image.Image]:
+    """Rotacoes e nitidez — so quando o passe rapido falha."""
+    variants: list[Image.Image] = []
     for degrees in (90, 270, 180):
         variants.append(image.rotate(degrees, expand=True))
 
     contrast = ImageEnhance.Contrast(image).enhance(1.6)
-    variants.append(contrast)
     variants.append(ImageEnhance.Sharpness(contrast).enhance(1.4))
 
     w, h = image.size
@@ -247,6 +259,11 @@ def _image_variants(image: Image.Image) -> list[Image.Image]:
         variants.append(image.resize((w * 2, h * 2), Image.Resampling.LANCZOS))
 
     return variants
+
+
+def _image_variants(image: Image.Image) -> list[Image.Image]:
+    """Mantido para testes; producao usa fast + slow em sequencia."""
+    return _fast_variants(image) + _slow_variants(image)
 
 
 def read_plate_from_image(image: Image.Image) -> dict:
@@ -268,11 +285,18 @@ def read_plate_from_image(image: Image.Image) -> dict:
     confidence = 0.0
 
     try:
-        for variant in _image_variants(image):
-            plate, confidence, words = _try_image(engine, variant)
+        for variant in _fast_variants(image):
+            plate, confidence, words = _try_image(engine, variant, thorough=False)
             raw_words.extend(words)
             if plate:
                 break
+
+        if not plate:
+            for variant in _slow_variants(image):
+                plate, confidence, words = _try_image(engine, variant, thorough=True)
+                raw_words.extend(words)
+                if plate:
+                    break
     except ValidationError:
         raise
     except Exception:

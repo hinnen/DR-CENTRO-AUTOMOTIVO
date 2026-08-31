@@ -43,6 +43,11 @@
     </div>
   {% endwith %}
 
+{% elif typing %}
+  <p class="lookup lookup--typing field__help" role="status">
+    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}.
+  </p>
+
 {% elif not_found %}
   <div class="lookup lookup--empty">
     <p class="lookup__title">Veículo não encontrado</p>

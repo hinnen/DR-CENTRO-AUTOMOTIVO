@@ -188,6 +188,7 @@ Fluxo típico:
 
 - Placa chave de entrada; `VehicleDetailView` com timeline de OS (tarefas + thumbs)
 - Localizações: `VehicleLocation` (elevador, box…)
+- **Cadastro rápido localização** nos forms (entrada/OS): recepção/admin → só nome (`apps/vehicles/services.py`)
 
 ### 4.11 Busca global
 
@@ -198,6 +199,7 @@ Fluxo típico:
 
 - `Role`: ADMINISTRADOR, RECEPCAO, MECANICO
 - Capabilities: `can_register_entry`, `can_deliver_vehicle`, `can_cancel_order`, `can_delete_photos`, etc.
+- **Cadastro rápido mecânico** (forms da OS): admin → nome + usuário + PIN 4 dígitos + telefone opcional (`apps/accounts/services.py`)
 
 ### 4.13 Auditoria
 
@@ -294,6 +296,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | 30/08 | Header: atalho WhatsApp (wa.me) — lista oficina + busca + prioridade da OS aberta | não é CRM/API · `whatsapp_picker` |
 | 30/08 | Aba Diagnóstico: upload e galeria de fotos (categoria DIAGNOSTICO) | `detail.html` · `_photo_list.html` · âncora `#diagnostico` |
 | 30/08 | Fix: fotos `/media/` 404 com DEBUG=False — view autenticada + disco Render | `apps/core/media.py` · `render.yaml` disk |
+| 31/08 | Select + cadastrar: mecânico (admin, PIN 4) e localização (recepção/admin) nos forms da OS | `catalog_views.py` · `_creatable_select.html` |
+| 31/08 | WhatsApp inline: botão wa.me na lista de clientes e no card expandido do Kanban | `_whatsapp_button.html` |
+| 31/08 | Busca por placa: consulta só com 7 chars + menos queries no resumo | `build_plate_lookup_context` |
+| 31/08 | OCR placa: resize no celular, passe rápido/lento no platerec, warmup no boot | `plate_ocr.py` · `mobile.js?v=9` |
 
 ### Pendências conhecidas
 

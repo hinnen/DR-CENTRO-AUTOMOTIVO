@@ -26,7 +26,7 @@
                placeholder="ABC1D23" autocomplete="off" autocapitalize="characters"
                autofocus inputmode="text"
                hx-get="{% url 'workorders:plate_lookup' %}"
-               hx-trigger="input changed delay:300ms"
+               hx-trigger="input changed delay:350ms"
                hx-target="#resultado-placa"
                hx-indicator="#buscando-placa">
         <p class="field__help">Aceita placa antiga (ABC1234) e Mercosul (ABC1D23).</p>
@@ -76,9 +76,11 @@
       {% include "components/_field.html" with field=form.customer_complaint %}
 
       <div class="form-grid">
-        {% include "components/_field.html" with field=form.mechanic %}
+        {% url 'workorders:quick_mechanic_panel' as mechanic_panel_url %}
+        {% include "components/_creatable_select.html" with field=form.mechanic target_id="creatable-mechanic-entry" empty_label="Definir depois" create_label="Cadastrar mecânico" can_create=user.can_manage_users panel_url=mechanic_panel_url %}
         {% include "components/_field.html" with field=form.expected_delivery_at %}
-        {% include "components/_field.html" with field=form.location %}
+        {% url 'workorders:quick_location_panel' as location_panel_url %}
+        {% include "components/_creatable_select.html" with field=form.location target_id="creatable-location-entry" empty_label="Definir depois" create_label="Cadastrar localização" can_create=user.can_register_entry panel_url=location_panel_url %}
         {% include "components/_field.html" with field=form.priority %}
       </div>
 

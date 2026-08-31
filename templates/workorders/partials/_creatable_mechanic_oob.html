@@ -1,0 +1,5 @@
+<div id="{{ target_id }}" hx-swap-oob="outerHTML">
+  {% url 'workorders:quick_mechanic_panel' as panel_url %}
+  {% include "workorders/partials/_creatable_mechanic_field.html" %}
+</div>
+<div id="{{ target_id }}-panel" hx-swap-oob="innerHTML"></div>

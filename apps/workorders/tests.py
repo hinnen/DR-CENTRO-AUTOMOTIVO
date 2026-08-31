@@ -257,6 +257,12 @@ class EntryFlowViewTests(ServiceOrderFactoryMixin, TestCase):
         response = self.client.get(reverse("workorders:plate_lookup"), {"plate": "AB"})
         self.assertNotContains(response, "Veículo não encontrado")
 
+    def test_plate_lookup_waits_for_full_plate(self):
+        self.client.force_login(self.reception)
+        response = self.client.get(reverse("workorders:plate_lookup"), {"plate": "ABC1D2"})
+        self.assertContains(response, "placa completa")
+        self.assertNotContains(response, "Veículo não encontrado")
+
     def test_mechanic_cannot_open_new_entry(self):
         self.client.force_login(self.mechanic)
         response = self.client.get(reverse("workorders:new_entry"))

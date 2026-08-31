@@ -412,6 +412,87 @@ a:hover { text-decoration: underline; }
   font-size: var(--fs-sm);
 }
 
+/* Botão WhatsApp inline (clientes, cards) */
+.wa-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  color: #25d366;
+  background: rgba(37, 211, 102, 0.12);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.wa-link:hover {
+  background: rgba(37, 211, 102, 0.22);
+  color: #1da851;
+}
+
+.wa-link--compact {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.wa-link__icon {
+  display: block;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Select + cadastrar (mecânico / localização) */
+.creatable-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.creatable-select__add {
+  align-self: flex-start;
+  margin-top: calc(var(--sp-1) * -1);
+}
+
+.creatable-select__panel:not(:empty) {
+  margin-top: var(--sp-1);
+}
+
+.creatable-panel {
+  padding: var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.creatable-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.creatable-panel__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.creatable-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
 .app-header__actions {
   display: flex;
   align-items: center;
@@ -1142,9 +1223,18 @@ body.is-kanban-dragging .card-os .plate { pointer-events: none; }
 
 .card-os__client {
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
   font-size: var(--fs-xs);
   color: var(--c-text-muted);
   line-height: 1.3;
+}
+
+.card-os__client-name {
+  min-width: 0;
+  flex: 1 1 auto;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -1,0 +1,40 @@
+<div class="creatable-panel">
+  <div class="creatable-panel__head">
+    <p class="creatable-panel__title">Novo mecânico</p>
+    <button type="button" class="btn btn--icon btn--sm creatable-panel__close"
+            aria-label="Fechar"
+            onclick="this.closest('.creatable-select__panel').innerHTML=''">
+      ✕
+    </button>
+  </div>
+
+  <form method="post"
+        action="{% url 'workorders:quick_mechanic_create' %}"
+        hx-post="{% url 'workorders:quick_mechanic_create' %}"
+        hx-swap="none">
+    {% csrf_token %}
+    <input type="hidden" name="target_id" value="{{ target_id }}">
+    <input type="hidden" name="field_name" value="{{ field_name }}">
+    <input type="hidden" name="empty_label" value="{{ empty_label }}">
+    <input type="hidden" name="selected" value="{{ selected|default_if_none:'' }}">
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--danger" role="alert">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
+
+    {% include "components/_field.html" with field=form.name %}
+    {% include "components/_field.html" with field=form.username %}
+    {% include "components/_field.html" with field=form.pin %}
+    {% include "components/_field.html" with field=form.phone %}
+
+    <div class="creatable-panel__actions">
+      <button class="btn btn--primary btn--sm" type="submit">Salvar e selecionar</button>
+      <button class="btn btn--ghost btn--sm" type="button"
+              onclick="this.closest('.creatable-select__panel').innerHTML=''">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</div>

@@ -141,6 +141,60 @@ class LocationChangeForm(forms.Form):
         self.fields["location"].queryset = VehicleLocation.objects.filter(is_active=True)
 
 
+def mechanic_select_field(*, selected=None, empty_label="Sem responsável"):
+    form = MechanicChangeForm(initial={"mechanic": selected})
+    form.fields["mechanic"].empty_label = empty_label
+    return form["mechanic"]
+
+
+def location_select_field(*, selected=None, empty_label="Sem localização"):
+    form = LocationChangeForm(initial={"location": selected})
+    form.fields["location"].empty_label = empty_label
+    return form["location"]
+
+
+class QuickMechanicForm(forms.Form):
+    name = forms.CharField(
+        label="Nome completo",
+        max_length=150,
+        widget=forms.TextInput(attrs={"autocomplete": "name", "placeholder": "Carlos Silva"}),
+    )
+    username = forms.CharField(
+        label="Usuário",
+        max_length=150,
+        widget=forms.TextInput(attrs={"autocomplete": "username", "placeholder": "carlos"}),
+    )
+    pin = forms.CharField(
+        label="PIN (4 dígitos)",
+        min_length=4,
+        max_length=4,
+        widget=forms.PasswordInput(
+            attrs={
+                "inputmode": "numeric",
+                "pattern": "[0-9]{4}",
+                "maxlength": "4",
+                "autocomplete": "new-password",
+                "placeholder": "••••",
+            }
+        ),
+        help_text="Senha de login do mecânico — exatamente 4 números.",
+    )
+    phone = forms.CharField(
+        label="Telefone",
+        required=False,
+        max_length=20,
+        widget=forms.TextInput(attrs={"inputmode": "tel", "placeholder": "opcional"}),
+    )
+
+
+class QuickLocationForm(forms.Form):
+    name = forms.CharField(
+        label="Nome da localização",
+        max_length=60,
+        widget=forms.TextInput(attrs={"placeholder": "Ex.: Elevador 1, Pátio A"}),
+    )
+
+
 class ExpectedDeliveryForm(forms.Form):
     expected_delivery_at = forms.DateTimeField(
         label="Previsão de entrega", required=False, widget=LocalDateTimeInput()

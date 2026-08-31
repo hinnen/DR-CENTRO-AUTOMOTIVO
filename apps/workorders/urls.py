@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import catalog_views, views
 
 app_name = "workorders"
 
@@ -12,6 +12,10 @@ urlpatterns = [
     path("historico/", views.HistoryListView.as_view(), name="history"),
     path("buscar/", views.global_search, name="search"),
     path("whatsapp/oficina/", views.whatsapp_picker, name="whatsapp_picker"),
+    path("catalogo/mecanicos/painel/", catalog_views.quick_mechanic_panel, name="quick_mechanic_panel"),
+    path("catalogo/mecanicos/rapido/", catalog_views.quick_mechanic_create, name="quick_mechanic_create"),
+    path("catalogo/localizacoes/painel/", catalog_views.quick_location_panel, name="quick_location_panel"),
+    path("catalogo/localizacoes/rapido/", catalog_views.quick_location_create, name="quick_location_create"),
     path("os/<uuid:uuid>/", views.ServiceOrderDetailView.as_view(), name="detail"),
     path("os/<uuid:uuid>/status/", views.change_status, name="change_status"),
     path("os/<uuid:uuid>/mover/", views.change_status_from_board, name="move"),

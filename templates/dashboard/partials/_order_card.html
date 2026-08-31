@@ -32,7 +32,10 @@ Expandido: tags de status no rodapé em linha própria, para caber 2+.
   </div>
 
   <div class="card-os__details">
-    <p class="card-os__client">{{ order.client.name }}</p>
+    <p class="card-os__client">
+      <span class="card-os__client-name">{{ order.client.name }}</span>
+      {% include "components/_whatsapp_button.html" with url=order.client.whatsapp_url label=order.client.name compact=True %}
+    </p>
 
     <dl class="card-os__meta">
       <div>

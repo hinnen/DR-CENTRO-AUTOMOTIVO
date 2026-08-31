@@ -222,4 +222,20 @@
   } else {
     initWhatsAppPicker();
   }
+
+  // ---------- Select + cadastrar (mecânico / localização) ----------
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    document.querySelectorAll(".creatable-select__panel:not(:empty)").forEach((panel) => {
+      panel.innerHTML = "";
+    });
+  });
+
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    const panel = event.target.closest?.(".creatable-select__panel");
+    if (!panel) return;
+    const focusable = panel.querySelector("input:not([type=hidden]), select, textarea, button");
+    if (focusable) focusable.focus();
+  });
 })();

@@ -46,6 +46,8 @@ class DashboardBoardTests(TestCase):
         response = self.client.get(reverse("dashboard:home"))
         self.assertContains(response, "ABC1D23")
         self.assertContains(response, "DEF2G45")
+        self.assertContains(response, "wa.me/55")
+        self.assertContains(response, "Marcos Ferreira")
 
     def test_board_has_one_column_per_board_status(self):
         self.client.force_login(self.reception)
