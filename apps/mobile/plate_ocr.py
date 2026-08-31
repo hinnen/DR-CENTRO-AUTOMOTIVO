@@ -61,7 +61,13 @@ _OCR_MAX_SIDE = 1280
 
 @lru_cache(maxsize=1)
 def _engine():
-    from platerec import Platerec
+    try:
+        from platerec import Platerec
+    except ImportError as exc:
+        raise ValidationError(
+            "OCR de placa indisponível neste ambiente (platerec não instalado).",
+            code="ocr_unavailable",
+        ) from exc
 
     return Platerec(providers=["CPUExecutionProvider"])
 

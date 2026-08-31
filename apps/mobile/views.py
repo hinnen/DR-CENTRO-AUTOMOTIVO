@@ -39,7 +39,6 @@ from apps.workorders.services import (
 )
 
 from .forms import MobileNewEntryForm, MobileReturningEntryForm
-from .plate_ocr import read_plate_from_upload
 
 
 def _mobile_inspection_form(*args, items=None, **kwargs):
@@ -183,6 +182,8 @@ def entry_read_plate(request):
         return JsonResponse({"ok": False, "error": "Envie uma foto da placa."}, status=400)
 
     try:
+        from .plate_ocr import read_plate_from_upload
+
         result = read_plate_from_upload(upload)
     except ValidationError as error:
         message = error.messages[0] if hasattr(error, "messages") else str(error)

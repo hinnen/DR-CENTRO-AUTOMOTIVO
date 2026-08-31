@@ -14,9 +14,11 @@ services:
     plan: starter
     region: oregon
     branch: main
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput
+    # Sem platerec/onnx no build padrão — Starter (512MB) morre com OOM → 502.
+    # Para religar OCR: ENABLE_PLATE_OCR=1 no Dashboard + rebuild.
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && if [ "$ENABLE_PLATE_OCR" = "1" ]; then pip install 'platerec==0.0.3' 'onnxruntime==1.29.0'; fi && python manage.py collectstatic --noinput
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 180
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 120
     healthCheckPath: /healthz
     disk:
       name: dr-centro-media
@@ -34,9 +36,9 @@ services:
           name: dr-centro-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: ".onrender.com"
+        value: ".onrender.com,drcentroautomotivo.com,www.drcentroautomotivo.com"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://dr-centro-automotivo.onrender.com"
+        value: "https://dr-centro-automotivo.onrender.com,https://drcentroautomotivo.com,https://www.drcentroautomotivo.com"
       - key: WORKSHOP_NAME
         value: "DR Centro Automotivo"
       - key: USE_MANIFEST_STATIC
@@ -44,6 +46,8 @@ services:
       - key: MEDIA_ROOT
         value: /var/data/media
       - key: PLATE_OCR_WARMUP
+        value: "0"
+      - key: ENABLE_PLATE_OCR
         value: "0"
       - key: SECURE_SSL_REDIRECT
         value: "True"

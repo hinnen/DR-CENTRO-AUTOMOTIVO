@@ -5,8 +5,10 @@ python-dotenv==1.2.3
 whitenoise==6.12.0
 Pillow==10.4.0
 gunicorn==23.0.0
-platerec==0.0.3
-onnxruntime==1.29.0
+
+# OCR de placa (pesado p/ Starter — instalar só com ENABLE_PLATE_OCR=1 no build)
+# platerec==0.0.3
+# onnxruntime==1.29.0
 
 # Desenvolvimento e testes
 pytest==9.1.1

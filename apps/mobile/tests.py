@@ -354,7 +354,7 @@ class PlateOcrUnitTests(TestCase):
         client = Client()
         client.force_login(reception)
 
-        with patch("apps.mobile.views.read_plate_from_upload") as mock_read:
+        with patch("apps.mobile.plate_ocr.read_plate_from_upload") as mock_read:
             mock_read.return_value = {"plate": "REI5G32", "confidence": 0.95, "raw": []}
             response = client.post(
                 reverse("mobile:entry_read_plate"),
