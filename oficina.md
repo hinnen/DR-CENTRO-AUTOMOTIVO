@@ -280,7 +280,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | Data | O quê | Notas |
 | ---- | ----- | ----- |
-| 31/08 | **Prod 502** → restore árvore `341e099` + `PLATE_OCR_WARMUP=0` (sem warmup bloqueante) | features Config/planilha/demo ficam para re-subir depois |
+| 31/08 | **Prod 502** → restore `0e268ef` (árvore 341e099) + migrations `3ff83b8` + `PLATE_OCR_WARMUP=0` | ainda 502 ao monitorar — precisa logs Render Dashboard |
 | 30/08 | Fix deploy: Pillow **10.4.0** (exigência `platerec`) | Build Render |
 | 30/08 | `render.yaml` + `runtime.txt` + `/healthz` | Blueprint Oregon · não misturar SistVale |
 | 30/08 | Docs `oficina.md` + `oficina-roteiro.md` + rule Cursor | Espelho do padrão banana do Agro |
