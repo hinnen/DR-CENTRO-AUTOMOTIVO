@@ -116,6 +116,50 @@
     }
   }
 
+  function hidePlateConfirm() {
+    var box = document.getElementById("m-plate-confirm");
+    if (box) box.hidden = true;
+  }
+
+  function showPlateConfirm(plate, alternatives) {
+    var box = document.getElementById("m-plate-confirm");
+    var msg = document.getElementById("m-plate-confirm-msg");
+    var okBtn = document.getElementById("m-plate-confirm-ok");
+    var editBtn = document.getElementById("m-plate-confirm-edit");
+    var input = document.getElementById("m-plate");
+    if (!box || !msg || !okBtn || !editBtn || !input) {
+      applyPlate(plate);
+      setPlateStatus("Confira a placa: " + plate);
+      return;
+    }
+
+    var altText = "";
+    if (alternatives && alternatives.length) {
+      altText = " Outra leitura possível: " + alternatives.join(", ") + ".";
+    }
+    msg.textContent =
+      "Li a placa como " +
+      plate +
+      ". Confirme se está correta antes de seguir." +
+      altText;
+    box.hidden = false;
+    input.value = plate;
+
+    okBtn.onclick = function () {
+      hidePlateConfirm();
+      applyPlate(plate);
+      setPlateStatus("Placa confirmada: " + plate);
+    };
+    editBtn.onclick = function () {
+      hidePlateConfirm();
+      setPlateStatus("Corrija a placa e continue.");
+      input.focus();
+      try {
+        input.select();
+      } catch (_) {}
+    };
+  }
+
   function resizePlatePhoto(file, maxSide) {
     maxSide = maxSide || 800;
     return new Promise(function (resolve, reject) {
@@ -243,7 +287,14 @@
             var error =
               (result.data && result.data.error) ||
               "Não deu para ler. Digite a placa ou tente outra foto.";
+            hidePlateConfirm();
             setPlateStatus(error, true);
+            return;
+          }
+          hidePlateConfirm();
+          if (result.data.needs_confirmation) {
+            setPlateStatus("Confirme a placa lida.");
+            showPlateConfirm(result.data.plate, result.data.alternatives || []);
             return;
           }
           applyPlate(result.data.plate);

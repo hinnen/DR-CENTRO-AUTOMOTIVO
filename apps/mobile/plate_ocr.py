@@ -24,8 +24,9 @@ logger = logging.getLogger(__name__)
 # Prefixo de regiao que o platerec devolve, ex.: "[br]REI5G32"
 _REGION_PREFIX = re.compile(r"^\[[a-z]{2}\]", re.IGNORECASE)
 
-# Letras que o modelo troca por digito em placa antiga (5a posicao).
-_OLD_DIGIT_LOOKALIKES = frozenset("ILO")
+# Letras que o OCR confunde com dígito (e vice-versa) na 5ª posição.
+_POS5_LETTER_LOOKALIKES = frozenset("ILO")
+_POS5_DIGIT_LOOKALIKES = frozenset("10")  # 1↔I/L, 0↔O
 
 _DIGIT_FROM_LETTER = str.maketrans(
     {
@@ -56,6 +57,8 @@ _LETTER_FROM_DIGIT = str.maketrans(
 _DETECT_THRESHOLDS = (0.4, 0.25, 0.15)
 # Para na primeira deteccao com confianca alta (evita 2º/3º limiar).
 _CONF_EARLY_EXIT = 0.42
+# Só aplica direto no campo se a confiança for praticamente plena.
+_CONF_AUTO_APPLY = 0.99
 # 800: bom para placa enquadrada no celular; 1024 era pesado no CPU Starter.
 _OCR_MAX_SIDE = 800
 
@@ -188,20 +191,76 @@ def _score(plate: str) -> int:
     return -1
 
 
-def _prefer_old_over_mercosul(candidates: list[str]) -> list[str]:
-    """Se a 5a letra parece digito (I/L/O), placa antiga costuma ser a correta."""
+def _pos5_ambiguous_pair(mercosul: str, old: str) -> bool:
+    """True se a única divergência relevante é I/L/O ↔ 1/0 na 5ª posição."""
+    if len(mercosul) != 7 or len(old) != 7:
+        return False
+    if not (PLATE_MERCOSUL_RE.match(mercosul) and PLATE_OLD_RE.match(old)):
+        return False
+    if mercosul[:4] != old[:4] or mercosul[5:] != old[5:]:
+        return False
+    return (
+        mercosul[4] in _POS5_LETTER_LOOKALIKES
+        and old[4] in _POS5_DIGIT_LOOKALIKES
+        and mercosul[4].translate(_DIGIT_FROM_LETTER) == old[4]
+    )
+
+
+def _prefer_mercosul_letter_at_5(candidates: list[str]) -> list[str]:
+    """Mercosul: 5ª posição é sempre letra (ABC1D23).
+
+    O OCR troca I↔1 (e L/O↔1/0). Antes preferíamos placa antiga; agora,
+    nesse empate, a leitura Mercosul com letra ganha — padrão atual das placas.
+    """
     mercosul_hits = [c for c in candidates if PLATE_MERCOSUL_RE.match(c)]
     old_hits = [c for c in candidates if PLATE_OLD_RE.match(c)]
     if not (mercosul_hits and old_hits):
         return candidates
 
+    preferred: list[str] = []
+    demoted_old: set[str] = set()
+
     for merc in mercosul_hits:
-        if len(merc) != 7 or merc[4] not in _OLD_DIGIT_LOOKALIKES:
+        if merc[4] not in _POS5_LETTER_LOOKALIKES:
             continue
-        fixed_old = _fix_old(merc)
-        if fixed_old in old_hits and PLATE_OLD_RE.match(fixed_old):
-            return [fixed_old] + [c for c in candidates if c != merc]
-    return candidates
+        for old in old_hits:
+            if _pos5_ambiguous_pair(merc, old):
+                demoted_old.add(old)
+                if merc not in preferred:
+                    preferred.append(merc)
+
+    if not preferred:
+        return candidates
+
+    rest = [c for c in candidates if c not in preferred and c not in demoted_old]
+    return preferred + rest
+
+
+def _collect_valid_formats(raw_word: str) -> tuple[list[str], list[str]]:
+    candidates = _candidates_from_raw(raw_word)
+    merc = [c for c in candidates if PLATE_MERCOSUL_RE.match(c)]
+    old = [c for c in candidates if PLATE_OLD_RE.match(c)]
+    return merc, old
+
+
+def _is_format_ambiguous(raw_words: list[str], chosen: str) -> bool:
+    """Dúvida típica: 5ª posição I/L/O (Mercosul) ↔ 1/0 (antiga)."""
+    for word in raw_words:
+        merc, old = _collect_valid_formats(word)
+        for m in merc:
+            for o in old:
+                if _pos5_ambiguous_pair(m, o) and chosen in (m, o):
+                    return True
+    return False
+
+
+def _auto_confidence_threshold() -> float:
+    from django.conf import settings
+
+    try:
+        return float(getattr(settings, "PLATE_OCR_AUTO_CONFIDENCE", _CONF_AUTO_APPLY))
+    except (TypeError, ValueError):
+        return _CONF_AUTO_APPLY
 
 
 def _pick_best(words: list[str], confidences: list[float] | None = None) -> tuple[str, float]:
@@ -211,7 +270,7 @@ def _pick_best(words: list[str], confidences: list[float] | None = None) -> tupl
     confidences = confidences or [0.0] * len(words)
 
     for word, conf in zip(words, confidences):
-        candidates = _prefer_old_over_mercosul(_candidates_from_raw(word))
+        candidates = _prefer_mercosul_letter_at_5(_candidates_from_raw(word))
 
         for candidate in candidates:
             score = _score(candidate)
@@ -402,10 +461,22 @@ def read_plate_from_image(image: Image.Image) -> dict:
             seen.add(word)
             unique_raw.append(word)
 
+    ambiguous = _is_format_ambiguous(unique_raw, plate)
+    auto_ok = float(confidence) >= _auto_confidence_threshold() and not ambiguous
+
+    alternatives: list[str] = []
+    for word in unique_raw:
+        merc, old = _collect_valid_formats(word)
+        for candidate in merc + old:
+            if candidate != plate and candidate not in alternatives:
+                alternatives.append(candidate)
+
     return {
         "plate": plate,
         "confidence": round(confidence, 4),
         "raw": unique_raw,
+        "needs_confirmation": not auto_ok,
+        "alternatives": alternatives[:3],
     }
 
 def read_plate_from_upload(upload) -> dict:

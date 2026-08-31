@@ -258,7 +258,8 @@ python manage.py seed_demo --reset   # senha default oficina123
 - OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize **800**
   - Ao abrir `/m/entrada/`: `POST /m/entrada/aquecer-ocr/` pré-carrega o modelo (não no boot — evita 502)
   - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1` · `PLATE_OCR_MAX_SIDE=800` · `PLATE_OCR_THREADS=2`
-  - Mercosul **e** antiga: EXIF, limiar de detecção mais baixo, contraste, rotações; I/L/O → dígito na 5ª posição (ex. `JKK2I88` → `JKK2188`)
+  - Mercosul: 5ª posição **sempre letra** (I≠1); empate I/1 pede confirmação do usuário
+  - Auto-preenche a placa só com confiança ≥ ~99% e sem ambiguidade; senão pede **Confirmar / Corrigir**
   - Auto-preenche cliente/veículo **só do banco local** (já veio → lookup). API externa de placa = depois (roadmap).
 - Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI só no mobile por enquanto
 - Exemplos SVG: `static/mobile/shots/*.svg` — silhuetas por angulo (frente/traseira/laterais/diagonal), ASCII-only; cache `?v=` no `_photos.html`
@@ -282,24 +283,28 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **`e66b1cb`** (primeiro contato `/m/`) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`e66b1cb`** (primeiro contato `/m/`) · https://drcentroautomotivo.com/
 
-**Rollback (só frase+senha):** `rollback/pre-first-contact-20260831` @ `25137d0` · `main-backup-pre-first-contact-20260831` · `docs/ROLLBACK-FIRST-CONTACT-20260831.md`
+### PACOTE PRONTO (falta subir · senha 99738595)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa · OCR-fast | ✅ **Enviado** | |
-| **P1** | Mobile primeiro contato — queixa, nome, urgente, quem trouxe | ✅ **Enviado** | `e66b1cb` · `live/first-contact-20260831` · migração `0006` |
-| **P2** | Media S3/R2 · fotos desktop | **Pendente** | |
-| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | |
+| **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | (hash) · pytest **33** · I≠1 · UI Confirmar/Corrigir |
+
+**Inclui:** prioriza letra na 5ª (Mercosul); auto-preenche só ~99% sem ambiguidade; senão pede confirmação.
+
+| P | Item | Status |
+| - | ---- | ------ |
+| **P0/P1** | 502 · config · OCR-fast · logo · instalar · OG · placa · primeiro contato | ✅ **Enviado** |
+| **P2** | Media S3/R2 · fotos desktop | **Pendente** |
+| **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
 ### Checkpoint Live
 
 | | |
 | - | - |
 | Live | `e66b1cb` · `live/first-contact-20260831` |
-| Reverter para | `25137d0` · `rollback/pre-first-contact-20260831` |
-| Doc | `docs/ROLLBACK-FIRST-CONTACT-20260831.md` |
+| Rollback | `25137d0` · `rollback/pre-first-contact-20260831` |
 
 ---
 

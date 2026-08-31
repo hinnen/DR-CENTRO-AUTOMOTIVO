@@ -346,12 +346,21 @@ class MobileEntryTests(TestCase):
 
 
 class PlateOcrUnitTests(TestCase):
-    def test_fix_old_plate_i_as_1(self):
-        from apps.mobile.plate_ocr import _fix_old, _pick_best
+    def test_fix_old_helper_still_maps_i_to_1(self):
+        from apps.mobile.plate_ocr import _fix_old
 
         self.assertEqual(_fix_old("JKK2I88"), "JKK2188")
+
+    def test_pick_best_prefers_mercosul_letter_at_position_5(self):
+        """5ª posição Mercosul = letra. I não vira 1 (placa antiga)."""
+        from apps.mobile.plate_ocr import _pick_best
+
         plate, _conf = _pick_best(["[br]JKK2I88"], [0.9])
-        self.assertEqual(plate, "JKK2188")
+        self.assertEqual(plate, "JKK2I88")
+
+        # OCR devolveu dígito na 5ª — corrige para letra Mercosul.
+        plate2, _conf2 = _pick_best(["[br]JKK2188"], [0.9])
+        self.assertEqual(plate2, "JKK2I88")
 
     def test_pick_mercosul_strips_region(self):
         from apps.mobile.plate_ocr import _pick_best
@@ -384,13 +393,14 @@ class PlateOcrUnitTests(TestCase):
             "boxes": {"boxes": [[0, 0, 10, 10]]},
             "pil": {"images": [make_image("crop.jpg")]},
         }
-        engine.read.return_value = {"word": "[br]REI5G32", "confidence": 0.98}
+        engine.read.return_value = {"word": "[br]REI5G32", "confidence": 0.995}
         result = read_plate_from_upload(make_image("placa.jpg"))
         self.assertEqual(result["plate"], "REI5G32")
         self.assertGreaterEqual(result["confidence"], 0.98)
+        self.assertFalse(result["needs_confirmation"])
 
     @patch("apps.mobile.plate_ocr._engine")
-    def test_read_plate_accepts_old_format(self, mock_engine):
+    def test_read_plate_accepts_old_format_without_pos5_ambiguity(self, mock_engine):
         from apps.mobile.plate_ocr import read_plate_from_upload
 
         engine = mock_engine.return_value
@@ -398,9 +408,39 @@ class PlateOcrUnitTests(TestCase):
             "boxes": {"boxes": [[0, 0, 10, 10]]},
             "pil": {"images": [make_image("crop.jpg")]},
         }
-        engine.read.return_value = {"word": "[br]JKK2I88", "confidence": 0.88}
+        # Antiga clara: 5ª = 4 (não confunde com I/L/O).
+        engine.read.return_value = {"word": "[br]ABC1234", "confidence": 0.995}
         result = read_plate_from_upload(make_image("placa_antiga.jpg"))
-        self.assertEqual(result["plate"], "JKK2188")
+        self.assertEqual(result["plate"], "ABC1234")
+
+    @patch("apps.mobile.plate_ocr._engine")
+    def test_low_confidence_requires_confirmation(self, mock_engine):
+        from apps.mobile.plate_ocr import read_plate_from_upload
+
+        engine = mock_engine.return_value
+        engine.platedet.inference.return_value = {
+            "boxes": {"boxes": [[0, 0, 10, 10]]},
+            "pil": {"images": [make_image("crop.jpg")]},
+        }
+        engine.read.return_value = {"word": "[br]REI5G32", "confidence": 0.72}
+        result = read_plate_from_upload(make_image("placa.jpg"))
+        self.assertEqual(result["plate"], "REI5G32")
+        self.assertTrue(result["needs_confirmation"])
+
+    @patch("apps.mobile.plate_ocr._engine")
+    def test_i_vs_1_ambiguity_requires_confirmation(self, mock_engine):
+        from apps.mobile.plate_ocr import read_plate_from_upload
+
+        engine = mock_engine.return_value
+        engine.platedet.inference.return_value = {
+            "boxes": {"boxes": [[0, 0, 10, 10]]},
+            "pil": {"images": [make_image("crop.jpg")]},
+        }
+        engine.read.return_value = {"word": "[br]JKK2I88", "confidence": 0.995}
+        result = read_plate_from_upload(make_image("placa.jpg"))
+        self.assertEqual(result["plate"], "JKK2I88")
+        self.assertTrue(result["needs_confirmation"])
+        self.assertIn("JKK2188", result["alternatives"])
 
     def test_entry_read_plate_returns_json(self):
         reception = make_user("ocr_recep", Role.RECEPTION)
@@ -408,7 +448,13 @@ class PlateOcrUnitTests(TestCase):
         client.force_login(reception)
 
         with patch("apps.mobile.plate_ocr.read_plate_from_upload") as mock_read:
-            mock_read.return_value = {"plate": "REI5G32", "confidence": 0.95, "raw": []}
+            mock_read.return_value = {
+                "plate": "REI5G32",
+                "confidence": 0.95,
+                "raw": [],
+                "needs_confirmation": True,
+                "alternatives": [],
+            }
             response = client.post(
                 reverse("mobile:entry_read_plate"),
                 {"image": make_image()},
@@ -418,6 +464,7 @@ class PlateOcrUnitTests(TestCase):
         payload = response.json()
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["plate"], "REI5G32")
+        self.assertTrue(payload["needs_confirmation"])
 
     def test_entry_read_plate_requires_image(self):
         reception = make_user("ocr_empty", Role.RECEPTION)

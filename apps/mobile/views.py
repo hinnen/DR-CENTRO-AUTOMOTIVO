@@ -217,6 +217,8 @@ def entry_read_plate(request):
             "ok": True,
             "plate": result["plate"],
             "confidence": result["confidence"],
+            "needs_confirmation": bool(result.get("needs_confirmation")),
+            "alternatives": result.get("alternatives") or [],
         }
     )
 
