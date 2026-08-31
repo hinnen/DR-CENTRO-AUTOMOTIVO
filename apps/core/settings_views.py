@@ -15,7 +15,6 @@ from apps.core.models import WorkshopSettings
 from apps.core.services.demo_purge import purge_demo_data
 from apps.core.services.demo_seed import DemoDataAlreadyLoaded, load_demo_data
 from apps.core.services.settings import get_workshop_settings, invalidate_workshop_settings_cache
-from apps.core.spreadsheet import build_export_workbook, import_uploaded_file
 from apps.customers.models import Client
 from apps.vehicles.models import Vehicle, VehicleLocation
 from apps.vehicles.services import create_location
@@ -276,6 +275,8 @@ def settings_spreadsheets(request):
     if request.method == "POST":
         upload_form = SpreadsheetUploadForm(request.POST, request.FILES)
         if upload_form.is_valid():
+            from apps.core.spreadsheet import import_uploaded_file
+
             try:
                 last_summary = import_uploaded_file(
                     upload=upload_form.cleaned_data["arquivo"],
@@ -312,6 +313,8 @@ def settings_spreadsheet_download(request):
     mode = request.GET.get("mode", "export")
     if mode not in {"template", "export"}:
         mode = "export"
+    from apps.core.spreadsheet import build_export_workbook
+
     blob = build_export_workbook(mode=mode, actor=request.user)
     prefix = "Modelo" if mode == "template" else "Cadastros"
     filename = f"{prefix}_DR_Centro_{timezone.localdate().strftime('%Y%m%d')}.xlsx"
