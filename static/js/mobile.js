@@ -221,12 +221,95 @@
     navigator.serviceWorker.register("/m/sw.js", { scope: "/m/" }).catch(function () {});
   }
 
+  function isStandalone() {
+    if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
+      return true;
+    }
+    return window.navigator.standalone === true;
+  }
+
+  function isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+  }
+
+  function isLikelyDesktop() {
+    if (window.matchMedia && window.matchMedia("(pointer: fine) and (min-width: 900px)").matches) {
+      return true;
+    }
+    return !/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent || "");
+  }
+
+  function initPwaInstall() {
+    var root = document.querySelector("[data-m-install]");
+    if (!root) return;
+
+    var continueUrl = root.getAttribute("data-continue-url") || "/m/";
+    var loginUrl = root.getAttribute("data-login-url") || "/conta/entrar/?next=/m/";
+    var btn = document.getElementById("m-install-btn");
+    var iosBox = document.getElementById("m-install-ios");
+    var hint = document.getElementById("m-install-hint");
+    var desk = document.getElementById("m-install-desk");
+    var continueLink = document.getElementById("m-install-continue");
+    var deferred = null;
+
+    registerServiceWorker();
+
+    if (isStandalone()) {
+      window.location.replace(continueUrl);
+      return;
+    }
+
+    if (continueLink) {
+      continueLink.setAttribute("href", loginUrl);
+    }
+
+    if (isLikelyDesktop() && desk) {
+      desk.hidden = false;
+    }
+
+    if (isIos()) {
+      if (iosBox) iosBox.hidden = false;
+      return;
+    }
+
+    window.addEventListener("beforeinstallprompt", function (event) {
+      event.preventDefault();
+      deferred = event;
+      if (btn) btn.hidden = false;
+      if (hint) hint.hidden = true;
+    });
+
+    window.addEventListener("appinstalled", function () {
+      deferred = null;
+      if (btn) btn.hidden = true;
+      window.location.replace(loginUrl);
+    });
+
+    if (btn) {
+      btn.addEventListener("click", function () {
+        if (!deferred) return;
+        deferred.prompt();
+        deferred.userChoice.finally(function () {
+          deferred = null;
+          btn.hidden = true;
+          if (hint) hint.hidden = false;
+        });
+      });
+    }
+
+    // Chrome às vezes só libera o evento após interação; mostra dica após 1,2s.
+    window.setTimeout(function () {
+      if (!deferred && hint && !isIos()) hint.hidden = false;
+    }, 1200);
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initChecklist();
     initPhotoAutoSubmit();
     initPlateOcr();
     initToasts();
     registerServiceWorker();
+    initPwaInstall();
   });
 
   document.body.addEventListener("htmx:afterSwap", function (event) {

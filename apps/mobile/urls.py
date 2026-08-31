@@ -6,6 +6,7 @@ app_name = "mobile"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("instalar/", views.install, name="install"),
     path("perfil/", views.profile, name="profile"),
     path("sair/", views.logout_view, name="logout"),
     path("entrada/", views.entry_start, name="entry_start"),

@@ -111,8 +111,27 @@ def _workshop_orders_for_inspection(term: str = ""):
 
 
 # ---------------------------------------------------------------------------
-# Home
+# Home / instalar (público)
 # ---------------------------------------------------------------------------
+
+
+@require_GET
+@never_cache
+def install(request):
+    """Página pública para instalar o PWA — link do WhatsApp no celular.
+
+    Estilo Agro `/ajuste-mobile/`: card central com Instalar.
+    Sem login. Já instalado (standalone) → manda para a home do app.
+    """
+    return render(
+        request,
+        "mobile/install.html",
+        {
+            "page_title": "Instalar",
+            "continue_url": reverse("mobile:home"),
+            "login_url": f"{reverse('accounts:login')}?next={reverse('mobile:home')}",
+        },
+    )
 
 
 @login_required

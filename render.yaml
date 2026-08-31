@@ -39,6 +39,10 @@ services:
         value: "https://dr-centro-automotivo.onrender.com,https://drcentroautomotivo.com,https://www.drcentroautomotivo.com,https://drcentroautomotivo.com.br,https://www.drcentroautomotivo.com.br"
       - key: WORKSHOP_NAME
         value: "DR Centro Automotivo"
+      - key: PUBLIC_BASE_URL
+        value: "https://drcentroautomotivo.com"
+      - key: OG_IMAGE_VERSION
+        value: "3"
       - key: USE_MANIFEST_STATIC
         value: "False"
       - key: MEDIA_ROOT

@@ -159,3 +159,21 @@ class HealthzTests(TestCase):
         response = self.client.get("/healthz/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"ok")
+
+
+class SocialPreviewTests(TestCase):
+    """WhatsApp/Facebook precisam ver og:image no / sem cair no redirect do login."""
+
+    def test_whatsapp_bot_gets_og_image_on_root(self):
+        response = self.client.get(
+            "/",
+            HTTP_USER_AGENT="WhatsApp/2.23.0",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'property="og:image"')
+        self.assertContains(response, "og-share.png")
+
+    def test_human_still_redirects_to_login(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/conta/entrar/", response["Location"])

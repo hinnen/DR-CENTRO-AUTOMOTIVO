@@ -57,6 +57,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "apps.core.middleware.HealthCheckMiddleware",
+    "apps.core.middleware.SocialPreviewMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -82,6 +83,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "apps.core.context_processors.workshop",
                 "apps.core.context_processors.whatsapp_auto_open",
+                "apps.core.context_processors.brand_share",
             ],
         },
     },
@@ -212,6 +214,9 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # Identidade da oficina (exibida no layout)
 
 WORKSHOP_NAME = os.getenv("WORKSHOP_NAME", "DR Centro Automotivo")
+# URL pública canônica (WhatsApp/OG). Preferir o domínio .com da oficina.
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
+OG_IMAGE_VERSION = os.getenv("OG_IMAGE_VERSION", "3")
 
 # OCR de placa (platerec/ONNX). No Starter: ligado sob demanda, sem warmup no boot.
 ENABLE_PLATE_OCR = env_bool("ENABLE_PLATE_OCR", DEBUG)

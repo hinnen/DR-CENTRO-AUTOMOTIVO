@@ -183,6 +183,15 @@ class MobileInspectionTests(TestCase):
         self.assertEqual(sw.status_code, 200)
         self.assertIn("javascript", sw["Content-Type"])
 
+    def test_install_page_is_public_with_install_cta(self):
+        anon = Client()
+        response = anon.get(reverse("mobile:install"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "DR Vistoria")
+        self.assertContains(response, "data-m-install")
+        self.assertContains(response, "Continuar no navegador")
+        self.assertContains(response, reverse("mobile:manifest"))
+
     def test_home_shows_new_entry_cta_not_sistema(self):
         response = self.client.get(reverse("mobile:home"))
         self.assertContains(response, "Nova entrada")

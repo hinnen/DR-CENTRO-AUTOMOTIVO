@@ -18,10 +18,10 @@
   <meta property="og:site_name" content="{{ workshop_name }}">
   <meta property="og:title" content="DR Vistoria — {{ workshop_name }}">
   <meta property="og:description" content="Recepção e vistoria de entrada no celular.">
-  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/og-share.png' %}?v=2">
+  <meta property="og:image" content="{{ og_image_url }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=11">
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=12">
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
@@ -70,7 +70,7 @@
     </a>
   </nav>
 
-  <script src="{% static 'js/mobile.js' %}?v=10" defer></script>
+  <script src="{% static 'js/mobile.js' %}?v=11" defer></script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

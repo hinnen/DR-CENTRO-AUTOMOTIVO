@@ -34,7 +34,7 @@ aqui **sem pedir** quando entregar código ou decisão permanente.
 | **Regra de ouro** | Em segundos: onde está o carro, quem mexeu, há quanto tempo, o que falta |
 | **UX** | Poucos cliques · desktop + mobile · marca vermelho/azul-escuro · nav superior |
 | **Fora de escopo agora** | Financeiro, estoque, CRM, WhatsApp, agendamento, fiscal |
-| **Testes** | `pytest` · **247 OK** (31/08/2026) |
+| **Testes** | `pytest` · **251 OK** (31/08/2026) |
 | **Fases 1–13** | Concluídas (núcleo operacional) |
 
 ---
@@ -241,11 +241,15 @@ python manage.py seed_demo --reset   # senha default oficina123
 - Settings: `config/settings.py` + `.env` (`python-dotenv`, `dj-database-url`)
 - Postgres local portátil: `scripts/pg-start.ps1` / `pg-stop.ps1`
 - Produção: Gunicorn `0.0.0.0:$PORT`, `DEBUG=False`, media em disco Render (`MEDIA_ROOT=/var/data/media`) via view autenticada `apps/core/media.py` (não depende de `static()` do DEBUG)
+- Preview WhatsApp/Facebook: `SocialPreviewMiddleware` responde `/` com HTML OG (200) para bots; `PUBLIC_BASE_URL` + `OG_IMAGE_VERSION` no `render.yaml`
 - Checklist: `check --deploy`, `collectstatic`, `migrate`
 
 ### 4.17 App mobile `/m/` (PWA)
 
 - App: `apps/mobile/` · URLs sob `/m/` · CSS/JS `static/css/mobile.css`, `static/js/mobile.js`
+- **Link WhatsApp / instalar:** `https://drcentroautomotivo.com/m/instalar/` (público) — card central estilo Agro Ajuste; Chrome → Instalar; iOS → Compartilhar → Tela de Início
+- **Sistema no PC:** `https://drcentroautomotivo.com/` (Kanban / OS)
+- **App no celular:** `/m/` (login) após instalar ou “Continuar no navegador”
 - Fluxo: entrada (placa → cliente/KM/queixa) → vistoria → fotos
 - OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` **lazy**; mantém modelo em memória (`PLATE_OCR_KEEP_LOADED=1`) para 2ª+ foto rápida; JS resize 1024
   - Env: `ENABLE_PLATE_OCR=1` · `PLATE_OCR_WARMUP=0` · `PLATE_OCR_KEEP_LOADED=1`
@@ -273,10 +277,11 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **`5fe941b`** (+ docs)  
-https://dr-centro-automotivo.onrender.com/ · `/healthz` ok · favicon/og **200**
+**Produção Live (autorizado 31/08 · senha):** pacote OG WhatsApp + `/m/instalar/` (ver tabela)  
+https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
 
-**Rollback (só frase+senha):** tag `rollback/pre-ocr-logo-20260831` @ `a887ab1` · branch `main-backup-pre-ocr-logo-20260831` · `docs/ROLLBACK-OCR-LOGO-20260831.md`
+**Rollback deste pacote (só frase+senha):** tag `rollback/pre-og-install-20260831` @ `528474e` · branch `main-backup-pre-og-install-20260831` · `docs/ROLLBACK-OG-INSTALL-20260831.md`  
+(Rollback OCR+logo antigo: `rollback/pre-ocr-logo-20260831` @ `a887ab1`)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
@@ -285,7 +290,8 @@ https://dr-centro-automotivo.onrender.com/ · `/healthz` ok · favicon/og **200*
 | **P1** | OCR placa lazy | ✅ **Enviado** | `a887ab1` |
 | **P1** | OCR mais rápido (KEEP_LOADED + 1024) | ✅ **Enviado** | Live `5fe941b` · tag `live/ocr-logo-20260831` |
 | **P1** | Logo DR favicon + PWA + WhatsApp | ✅ **Enviado** | favicon/og 200 em prod |
-| **P1** | Smoke: Ctrl+F5 · 2ª foto OCR · link Zap | **Testar** | Renan · Zap cacheia preview |
+| **P1** | Página `/m/instalar/` — prompt instalar PWA (estilo Ajuste) | ✅ **Enviado** | `/m/instalar/` público |
+| **P1** | WhatsApp: ícone no domínio `.com` (bot preview + PUBLIC_BASE_URL) | ✅ **Enviado** | SocialPreviewMiddleware · og v=3 |
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
@@ -293,9 +299,10 @@ https://dr-centro-automotivo.onrender.com/ · `/healthz` ok · favicon/og **200*
 
 | | |
 | - | - |
-| Live | `5fe941b` · tag `live/ocr-logo-20260831` |
-| Reverter para | `a887ab1` · tag `rollback/pre-ocr-logo-20260831` |
-| Doc | `docs/ROLLBACK-OCR-LOGO-20260831.md` |
+| Live | (após push) tag `live/og-install-20260831` |
+| Reverter para | `528474e` · tag `rollback/pre-og-install-20260831` |
+| Doc | `docs/ROLLBACK-OG-INSTALL-20260831.md` |
+| Pytest | **251** passed (31/08) |
 
 ---
 

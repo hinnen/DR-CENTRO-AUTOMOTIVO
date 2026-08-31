@@ -47,7 +47,7 @@
         {% if redirect_field_value and "/m/" in redirect_field_value %}
           Após entrar, você vai direto ao app de vistoria.
         {% else %}
-          <a href="{% url 'accounts:login' %}?next={% url 'mobile:home' %}">Abrir app de vistoria no celular</a>
+          <a href="{% url 'mobile:install' %}">App de vistoria no celular (instalar)</a>
         {% endif %}
       </p>
     </div>
