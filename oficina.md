@@ -292,7 +292,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
 | **P1** | OCR: Mercosul 5ª=letra + confirmar se dúvida | **Pronto para envio** | 2aafdb0 · I≠1 · UI Confirmar/Corrigir |
-| **P1** | Entrada `/m/`: wizard cliente→queixa→veículo | **Pronto para envio** | `?v=15` · 3/2 etapas · pytest **34** · Continuar/Voltar |
+| **P1** | Entrada `/m/`: wizard cliente→queixa→veículo | **Pronto para envio** | **b601b9b** · `?v=15` · pytest **34** · Continuar/Voltar |
 
 **Inclui OCR:** 5ª letra Mercosul; auto-preenche só ~99% sem ambiguidade; senão Confirmar/Corrigir.
 
