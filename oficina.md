@@ -299,7 +299,7 @@ https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
 
 | | |
 | - | - |
-| Live | (após push) tag `live/og-install-20260831` |
+| Live | `2600b9f` · tag `live/og-install-20260831` |
 | Reverter para | `528474e` · tag `rollback/pre-og-install-20260831` |
 | Doc | `docs/ROLLBACK-OG-INSTALL-20260831.md` |
 | Pytest | **251** passed (31/08) |
