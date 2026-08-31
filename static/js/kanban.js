@@ -81,6 +81,9 @@
 
       card.dataset.orderStatus = data.status;
       toast(data.message);
+      if (data.whatsapp_notify_url) {
+        window.open(data.whatsapp_notify_url, "_blank", "noopener,noreferrer");
+      }
     } catch (error) {
       revert();
       toast("Sem conexão com o servidor. O card voltou para a posição anterior.", "error");

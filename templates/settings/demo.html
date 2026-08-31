@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dados de exemplo — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="page-kicker"><a href="{% url 'core:settings_index' %}">Configurações</a></p>
+      <h1 class="page-title">Dados de exemplo</h1>
+      <p class="page-subtitle">
+        Clientes, veículos e ordens de serviço em vários status do Kanban — para treinar ou demonstrar.
+      </p>
+    </div>
+  </div>
+
+  <section class="card mb-4">
+    <h2 class="section-title">Situação atual</h2>
+    {% if demo_loaded %}
+      <p>Exemplos carregados: <strong>{{ demo_orders }}</strong> OS · <strong>{{ demo_vehicles }}</strong> veículos · <strong>{{ demo_clients }}</strong> clientes.</p>
+    {% else %}
+      <p class="empty-state">Nenhum pacote de exemplo ativo no momento.</p>
+    {% endif %}
+  </section>
+
+  <div class="settings-split">
+    <section class="card form-narrow">
+      <h2 class="section-title">Carregar exemplos</h2>
+      <p class="text-muted">
+        Cria cadastros marcados como demonstração e distribui OS pelo Kanban (aguardando avaliação até finalizado).
+        Não altera cadastros reais já existentes com os mesmos telefones ou placas.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="load">
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit" {% if demo_loaded %}disabled{% endif %}>
+            Carregar pacote de exemplo
+          </button>
+        </div>
+      </form>
+      {% if demo_loaded %}
+        <p class="form-hint mt-2">Limpe os exemplos antes de recarregar.</p>
+      {% endif %}
+    </section>
+
+    <section class="card form-narrow">
+      <h2 class="section-title">Limpar exemplos</h2>
+      <p class="text-muted">
+        Remove somente registros marcados como demonstração. Confirme com a <strong>senha do administrador logado</strong>.
+      </p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="purge">
+        {% include "components/_field.html" with field=purge_form.password %}
+        {% if purge_form.non_field_errors %}
+          <div class="alert alert--danger" role="alert">
+            {% for error in purge_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        <div class="form-actions">
+          <button class="btn btn--danger" type="submit" {% if not demo_loaded %}disabled{% endif %}>
+            Limpar dados de exemplo
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+{% endblock %}

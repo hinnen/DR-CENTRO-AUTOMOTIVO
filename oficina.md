@@ -199,7 +199,8 @@ Fluxo típico:
 
 - `Role`: ADMINISTRADOR, RECEPCAO, MECANICO
 - Capabilities: `can_register_entry`, `can_deliver_vehicle`, `can_cancel_order`, `can_delete_photos`, etc.
-- **Cadastro rápido mecânico** (forms da OS): admin → nome + usuário + PIN 4 dígitos + telefone opcional (`apps/accounts/services.py`)
+- **Cadastro rápido mecânico** (forms da OS): admin → nome + usuário + PIN 4 dígitos + telefone opcional (`apps/accounts/services.py`); recepção **só se** preferência em Configurações
+- **Aba Configurações** (`/configuracoes/`): **admin only** — preferências, usuários/PINs, localizações
 
 ### 4.13 Auditoria
 
@@ -233,6 +234,30 @@ python manage.py seed_demo --reset   # senha default oficina123
 - Postgres local portátil: `scripts/pg-start.ps1` / `pg-stop.ps1`
 - Produção: Gunicorn `0.0.0.0:$PORT`, `DEBUG=False`, media em disco Render (`MEDIA_ROOT=/var/data/media`) via view autenticada `apps/core/media.py` (não depende de `static()` do DEBUG)
 - Checklist: `check --deploy`, `collectstatic`, `migrate`
+- **Deploy produção:** só com frase explícita + senha **`99738595`** na mesma mensagem (roteiro §0.3 — espelho Agro)
+- **Domínio:** `drcentroautomotivo.com` (Hostinger) → apontar DNS para Render + custom domain no serviço web
+
+#### Domínio `drcentroautomotivo.com` (Hostinger → Render)
+
+1. Render → serviço **dr-centro-automotivo** → **Settings → Custom Domains** → adicionar `drcentroautomotivo.com` e `www.drcentroautomotivo.com`
+2. Hostinger → DNS do domínio (substituir *dns-parking*):
+   - **`www`** → CNAME → `dr-centro-automotivo.onrender.com`
+   - **apex** (`@`) → CNAME/ALIAS para o host que o Render indicar *ou* redirecionar `@` → `www` (Hostinger tem atalho “Redirecionar domínio”)
+3. Aguardar propagação (minutos a horas) · Render emite HTTPS automático
+4. `render.yaml` já inclui hosts/CSRF; após sync Blueprint, redeploy
+5. Testar login, upload de foto e Kanban em `https://drcentroautomotivo.com`
+
+### 4.18 Configurações (`/configuracoes/`)
+
+- **Somente administradores** (`can_manage_users`) — header, perfil mobile e todas as telas
+- **Preferências:** toggle “Recepção pode cadastrar mecânicos” no cadastro rápido da OS (`WorkshopSettings`)
+- **WhatsApp status (wa.me):** toggle “Avisar cliente ao mudar status” — abre WhatsApp com mensagem pronta (Kanban, detalhe, entrega). **Não** é API; operador confirma o envio
+- **Usuários e PINs:** cadastro de administrador, recepção ou mecânico + redefinir PIN (4 dígitos) de qualquer usuário
+- **Localizações:** lista + cadastro de pátio/box
+- **Planilhas de cadastro:** modelo vazio, export dos cadastros atuais e import `.xlsx` (4 abas: localizações, clientes, veículos, usuários) — padrão Agro Consulta · `apps/core/spreadsheet/`
+- **Dados de exemplo:** carregar pacote demo (OS em vários status) ou limpar com senha do admin logado · `is_demo` nos models · `demo_seed.py` / `demo_purge.py`
+- Admin avançado → link `/admin/`
+- Serviços: `apps/accounts/services.py` (`create_operational_user`, `set_user_pin`)
 
 ### 4.17 App mobile `/m/` (PWA)
 
@@ -241,7 +266,7 @@ python manage.py seed_demo --reset   # senha default oficina123
 - OCR placa: foto → `POST /m/entrada/ler-placa/` → `platerec` (ONNX) no servidor; JS preenche `#m-plate` + HTMX lookup
   - Mercosul **e** antiga: EXIF, limiar de detecção mais baixo, contraste, rotações; I/L/O → dígito na 5ª posição (ex. `JKK2I88` → `JKK2188`)
   - Auto-preenche cliente/veículo **só do banco local** (já veio → lookup). API externa de placa = depois (roadmap).
-- Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI só no mobile por enquanto
+- Fotos guiadas: 5 ângulos + extras (`PhotoAngle`) — UI mobile; **desktop:** vistoria guiada planejada, **sem** OCR de placa (Renan 31/08)
 - Exemplos SVG: `static/mobile/shots/*.svg` — silhuetas por angulo (frente/traseira/laterais/diagonal), ASCII-only; cache `?v=` no `_photos.html`
 - Checklist de portabilidade para o desktop: `oficina-roteiro.md` §8
 
@@ -274,7 +299,8 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 - **Custo estimado:** web Starter ~US$ 7 + Postgres Basic-256mb ~US$ 6 ≈ **US$ 13/mês**
 - **Login demo:** só no **PC local** após `seed_demo` — user `admin` / senha `oficina123` (seed **bloqueado** em produção DEBUG=False)
 - **Atenção fotos:** P-002 — media no disco Render some no restart; OK pra smoke; produção com fotos → S3/R2
-- **Produção:** ainda **sem** superuser até criar no Shell Render (`createsuperuser`)
+- **Produção:** superuser criado no Shell Render (31/08)
+- **Domínio:** `drcentroautomotivo.com` comprado Hostinger — DNS pendente (ver §4.16)
 
 ### WIP / recentes
 
@@ -300,14 +326,22 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | 31/08 | WhatsApp inline: botão wa.me na lista de clientes e no card expandido do Kanban | `_whatsapp_button.html` |
 | 31/08 | Busca por placa: consulta só com 7 chars + menos queries no resumo | `build_plate_lookup_context` |
 | 31/08 | OCR placa: resize no celular, passe rápido/lento no platerec, warmup no boot | `plate_ocr.py` · `mobile.js?v=9` |
+| 31/08 | Aba Configurações: preferências, usuários+PINs, localizações (admin only) | `WorkshopSettings` · `/configuracoes/usuarios/` |
+| 31/08 | Deploy produção: regra frase + senha `99738595` (espelho Agro) | `oficina-roteiro.md` §0.3 |
+| 31/08 | WhatsApp status automático (wa.me): toggle em Preferências + abre ao mudar status | `status_whatsapp.py` · `WorkshopSettings` |
+| 31/08 | Dados de exemplo + planilhas Excel (import/export cadastros) | `is_demo` · `/configuracoes/exemplos/` · `/configuracoes/planilhas/` · `openpyxl` · testes `test_demo_spreadsheet.py` |
+
+**Rollback (31/08):** reverter commit desta entrega na `main` se demo/planilhas causarem problema — migrations `0002_is_demo` (accounts), `0003_is_demo` (customers/vehicles), `0005_is_demo` (workorders).
 
 ### Pendências conhecidas
 
 | ID | Item | Prioridade |
 | -- | ---- | ---------- |
-| P-001 | Conferir visual dos cards no monitor do Renan (altura 248/72 + ícones) | Baixa — ajustar se pedir |
-| P-002 | Media storage S3/R2 (disco Render cobre o curto prazo) | Média quando volume crescer |
+| P-001 | Cards Kanban calibrados p/ notebook 17–19" (248/72 px) — TV conferir depois | Baixa |
+| P-002 | **Radar:** Media storage S3/R2 antes de volume alto de fotos (disco Render = piloto) | **Alta quando crescer volume** |
 | P-003 | Auto-start do Postgres no Windows (hoje manual) | Baixa — Renan inicia com script |
+| P-004 | Vistoria guiada (5 ângulos) no **desktop** — sem OCR de placa | Média — portar UI mobile |
+| P-005 | DNS/domínio `drcentroautomotivo.com` → Render | Renan configura Hostinger |
 
 ### Instruções ao assistente (vivo)
 

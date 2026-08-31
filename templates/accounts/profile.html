@@ -19,6 +19,9 @@
         <li><a class="btn btn--secondary btn--block" href="{% url 'mobile:home' %}">Vistoria (celular)</a></li>
       {% endif %}
       <li><a class="btn btn--secondary btn--block" href="{% url 'workorders:history' %}">Histórico</a></li>
+      {% if user.can_access_settings %}
+        <li><a class="btn btn--secondary btn--block" href="{% url 'core:settings_index' %}">Configurações</a></li>
+      {% endif %}
     </ul>
   </section>
 
