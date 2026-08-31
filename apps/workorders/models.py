@@ -240,6 +240,7 @@ class ServiceOrder(BaseModel):
         null=True,
         blank=True,
     )
+    is_demo = models.BooleanField("dado de demonstração", default=False, db_index=True)
 
     objects = ServiceOrderQuerySet.as_manager()
 

@@ -34,9 +34,9 @@ services:
           name: dr-centro-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: ".onrender.com"
+        value: ".onrender.com,drcentroautomotivo.com,www.drcentroautomotivo.com"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://dr-centro-automotivo.onrender.com"
+        value: "https://dr-centro-automotivo.onrender.com,https://drcentroautomotivo.com,https://www.drcentroautomotivo.com"
       - key: WORKSHOP_NAME
         value: "DR Centro Automotivo"
       - key: USE_MANIFEST_STATIC

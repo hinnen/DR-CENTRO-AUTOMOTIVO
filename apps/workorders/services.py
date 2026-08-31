@@ -167,7 +167,11 @@ def transition_service_order_status(
         raise PermissionDenied("Seu perfil não pode alterar o status.")
 
     # Relê com trava para não sobrescrever mudança feita em outro computador.
-    locked = ServiceOrder.objects.select_for_update().get(pk=order.pk)
+    locked = (
+        ServiceOrder.objects.select_for_update()
+        .select_related("client", "vehicle")
+        .get(pk=order.pk)
+    )
 
     if locked.status != new_status:
         validate_transition(locked, new_status)
@@ -203,11 +207,17 @@ def transition_service_order_status(
             previous_status=previous_status,
             new_status=new_status,
         )
+        from .status_whatsapp import attach_status_whatsapp_notify
+
+        attach_status_whatsapp_notify(
+            locked, previous_status=previous_status, new_status=new_status
+        )
 
     # A instância recebida continua válida para quem chamou: sem isso, quem
     # guardou a referência anterior seguiria enxergando o status antigo.
     order.status = locked.status
     order.finished_at = locked.finished_at
+    order.status_whatsapp_notify_url = getattr(locked, "status_whatsapp_notify_url", "")
     return order
 
 
@@ -645,7 +655,11 @@ def deliver_vehicle(
     if not user.can_deliver_vehicle:
         raise PermissionDenied("Seu perfil não pode registrar a saída do veículo.")
 
-    locked = ServiceOrder.objects.select_for_update().get(pk=order.pk)
+    locked = (
+        ServiceOrder.objects.select_for_update()
+        .select_related("client", "vehicle")
+        .get(pk=order.pk)
+    )
 
     if locked.status in CLOSED_STATUSES:
         raise ValidationError(
@@ -722,6 +736,11 @@ def deliver_vehicle(
         received_by_name=locked.received_by_name,
         has_signature=bool(locked.delivery_signature),
     )
+    from .status_whatsapp import attach_status_whatsapp_notify
+
+    attach_status_whatsapp_notify(
+        locked, previous_status=previous_status, new_status=Status.DELIVERED
+    )
 
     for field in (
         "status",
@@ -736,6 +755,7 @@ def deliver_vehicle(
         "delivery_signature",
     ):
         setattr(order, field, getattr(locked, field))
+    order.status_whatsapp_notify_url = getattr(locked, "status_whatsapp_notify_url", "")
     return order
 
 
