@@ -256,4 +256,64 @@
     const focusable = panel.querySelector("input:not([type=hidden]), select, textarea, button");
     if (focusable) focusable.focus();
   });
+
+  // ---------- Placa (nova entrada): ignora traço / formata digitação ----------
+
+  function normalizePlateInput(value) {
+    return String(value || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 7);
+  }
+
+  function formatPlateInput(cleaned) {
+    // Antiga em digitação (3 letras + só dígitos): mostra ABC-1234.
+    // Mercosul (letra na 5ª posição) fica sem traço.
+    if (/^[A-Z]{3}\d{0,4}$/.test(cleaned) && cleaned.length > 3) {
+      return cleaned.slice(0, 3) + "-" + cleaned.slice(3);
+    }
+    return cleaned;
+  }
+
+  function bindPlateInput(input) {
+    if (!input || input.dataset.plateBound === "1") return;
+    input.dataset.plateBound = "1";
+    input.setAttribute("maxlength", "8");
+    input.setAttribute("spellcheck", "false");
+
+    input.addEventListener("input", () => {
+      const cleaned = normalizePlateInput(input.value);
+      const display = formatPlateInput(cleaned);
+      if (input.value === display) return;
+      input.value = display;
+      try {
+        input.setSelectionRange(display.length, display.length);
+      } catch (_) {
+        /* type=search em alguns browsers */
+      }
+    });
+
+    // Colar "abc-1234" ou "abc 1d23" já entra limpo.
+    input.addEventListener("paste", (event) => {
+      const text = (event.clipboardData || window.clipboardData).getData("text");
+      if (!text) return;
+      event.preventDefault();
+      const display = formatPlateInput(normalizePlateInput(text));
+      input.value = display;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  }
+
+  function initPlateInputs(root) {
+    (root || document).querySelectorAll("[data-plate-input], .input-plate").forEach(bindPlateInput);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => initPlateInputs());
+  } else {
+    initPlateInputs();
+  }
+  document.body.addEventListener("htmx:afterSwap", (event) => {
+    initPlateInputs(event.target);
+  });
 })();

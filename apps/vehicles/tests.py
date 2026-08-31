@@ -17,13 +17,22 @@ class PlateNormalizationTests(TestCase):
         self.assertEqual(normalize_plate("abc-1d23"), "ABC1D23")
         self.assertEqual(normalize_plate(" abc 1234 "), "ABC1234")
         self.assertEqual(normalize_plate("abc.1234"), "ABC1234")
+        self.assertEqual(normalize_plate("AFG-2562"), "AFG2562")
 
     def test_empty_value(self):
         self.assertEqual(normalize_plate(None), "")
 
+    def test_format_display_old_and_mercosul(self):
+        from .models import format_plate_display
+
+        self.assertEqual(format_plate_display("afg2562"), "AFG-2562")
+        self.assertEqual(format_plate_display("AFG-2562"), "AFG-2562")
+        self.assertEqual(format_plate_display("abc1d23"), "ABC1D23")
+
     def test_accepts_old_and_mercosul_formats(self):
         validate_plate("ABC1234")
         validate_plate("abc-1d23")
+        validate_plate("AFG-2562")
 
     def test_rejects_invalid_formats(self):
         for invalid in ["AB1234", "ABCD123", "1234ABC", "ABC12E4", ""]:
@@ -92,6 +101,23 @@ class VehicleLookupTests(TestCase):
 
     def test_find_by_plate_ignores_formatting(self):
         self.assertEqual(find_by_plate("def-2g45"), self.vehicle)
+        self.assertEqual(find_by_plate("DEF2G45"), self.vehicle)
+
+    def test_find_by_plate_old_format_with_or_without_hyphen(self):
+        old = Vehicle.objects.create(
+            client=self.owner, plate="AFG2562", brand="Fiat", model="Uno"
+        )
+        self.assertEqual(find_by_plate("AFG-2562"), old)
+        self.assertEqual(find_by_plate("afg2562"), old)
+        self.assertEqual(find_by_plate("AFG 2562"), old)
+
+    def test_find_by_plate_matches_dirty_hyphen_in_database(self):
+        dirty = Vehicle(client=self.owner, plate="SGH4563", brand="VW", model="Gol")
+        dirty.save()
+        # Simula registro legado gravado com traço (bypass do save).
+        Vehicle.objects.filter(pk=dirty.pk).update(plate="SGH-4563")
+        self.assertEqual(find_by_plate("SGH4563"), dirty)
+        self.assertEqual(find_by_plate("sgh-4563"), dirty)
 
     def test_find_by_plate_returns_none_when_missing(self):
         self.assertIsNone(find_by_plate("ZZZ9Z99"))
@@ -106,6 +132,11 @@ class VehicleLookupTests(TestCase):
         ctx = build_plate_lookup_context(plate="DEF2G45", raw="DEF-2G45")
         self.assertIn("summary", ctx)
         self.assertEqual(ctx["summary"]["vehicle"].pk, self.vehicle.pk)
+
+    def test_plate_lookup_context_not_found_offers_display(self):
+        ctx = build_plate_lookup_context(plate="AFG2562", raw="AFG-2562")
+        self.assertTrue(ctx.get("not_found"))
+        self.assertEqual(ctx["plate_display"], "AFG-2562")
 
 
 class VehicleViewTests(TestCase):

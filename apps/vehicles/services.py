@@ -2,22 +2,32 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count, Max
 
-from .models import Vehicle, VehicleLocation, normalize_plate
+from .models import Vehicle, VehicleLocation, format_plate_display, normalize_plate
 
 # Placa normalizada (antiga ou Mercosul) sempre tem 7 caracteres.
 PLATE_LOOKUP_LENGTH = 7
 
 
 def find_by_plate(plate: str) -> Vehicle | None:
-    """Busca exata pela placa normalizada."""
+    """Busca pela placa ignorando traço, espaço e pontuação.
+
+    Compara sempre a forma normalizada (ABC1234 = ABC-1234). Se o banco tiver
+    registro antigo sujo com hífen, ainda encontra.
+    """
     normalized = normalize_plate(plate)
     if not normalized:
         return None
-    return (
-        Vehicle.objects.select_related("client")
-        .filter(plate=normalized, is_active=True)
-        .first()
-    )
+
+    qs = Vehicle.objects.select_related("client").filter(is_active=True)
+    hit = qs.filter(plate=normalized).first()
+    if hit:
+        return hit
+
+    # Fallback: cadastros antigos / import com hífen ou espaço no campo.
+    for vehicle in qs.filter(plate__istartswith=normalized[:3]).iterator():
+        if normalize_plate(vehicle.plate) == normalized:
+            return vehicle
+    return None
 
 
 def vehicle_summary(vehicle: Vehicle) -> dict:
@@ -61,7 +71,11 @@ def build_plate_lookup_context(*, plate: str, raw: str) -> dict:
     """
     from apps.workorders.models import ServiceOrder
 
-    context: dict = {"plate": plate, "raw": raw}
+    context: dict = {
+        "plate": plate,
+        "raw": raw,
+        "plate_display": format_plate_display(plate) if plate else "",
+    }
 
     if len(plate) < PLATE_LOOKUP_LENGTH:
         if plate:

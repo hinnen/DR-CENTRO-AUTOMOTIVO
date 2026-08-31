@@ -17,23 +17,27 @@
   </ol>
 
   {% if not vehicle %}
-    <section class="card">
+    <section class="card entry-plate-card">
       <h2 class="section-title">Etapa 1 — Identificar o veículo</h2>
 
-      <div class="field">
+      <div class="field field--plate">
         <label class="field__label" for="placa">Digite a placa</label>
         <input class="input-plate" id="placa" type="search" name="plate"
                placeholder="ABC1D23" autocomplete="off" autocapitalize="characters"
-               autofocus inputmode="text"
+               autofocus inputmode="text" maxlength="8" data-plate-input
+               spellcheck="false"
                hx-get="{% url 'workorders:plate_lookup' %}"
-               hx-trigger="input changed delay:350ms"
+               hx-trigger="input changed delay:280ms"
                hx-target="#resultado-placa"
                hx-indicator="#buscando-placa">
-        <p class="field__help">Aceita placa antiga (ABC1234) e Mercosul (ABC1D23).</p>
+        <p class="field__help">
+          Antiga ou Mercosul — pode digitar <strong>com ou sem traço</strong>
+          (ABC-1234 = ABC1234).
+        </p>
       </div>
 
       <p class="htmx-indicator loading" id="buscando-placa">Buscando…</p>
-      <div id="resultado-placa" aria-live="polite"></div>
+      <div id="resultado-placa" class="entry-plate-result" aria-live="polite"></div>
     </section>
 
   {% else %}

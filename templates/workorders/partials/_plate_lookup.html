@@ -45,14 +45,18 @@
 
 {% elif typing %}
   <p class="lookup lookup--typing field__help" role="status">
-    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}.
+    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}
+    (com ou sem traço).
   </p>
 
 {% elif not_found %}
   <div class="lookup lookup--empty">
+    {% if plate_display %}
+      <span class="plate plate--lg">{{ plate_display }}</span>
+    {% endif %}
     <p class="lookup__title">Veículo não encontrado</p>
-    <p class="lookup__note">Nenhum veículo cadastrado com a placa <strong>{{ plate }}</strong>.</p>
-    <a class="btn btn--primary" href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}">
+    <p class="lookup__note">Nenhum veículo cadastrado com a placa <strong>{{ plate_display|default:plate }}</strong>.</p>
+    <a class="btn btn--primary btn--lg" href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}">
       <span aria-hidden="true">+</span> Cadastrar novo veículo
     </a>
   </div>

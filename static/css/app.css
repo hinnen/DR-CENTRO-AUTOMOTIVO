@@ -1456,29 +1456,67 @@ body.is-kanban-dragging .card-os .plate { pointer-events: none; }
 
 .input-plate {
   width: 100%;
-  min-height: 56px;
-  padding: var(--sp-2) var(--sp-4);
+  min-height: 76px;
+  padding: var(--sp-4) var(--sp-5);
   border: 2px solid var(--c-border-strong);
   border-radius: var(--radius);
   background: var(--c-surface);
   font-family: var(--font-mono);
-  font-size: 1.5rem;
+  font-size: clamp(1.85rem, 3.2vw, 2.35rem);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-align: center;
+  line-height: 1.2;
 }
 .input-plate:focus { border-color: var(--c-primary); box-shadow: 0 0 0 3px var(--c-primary-soft); outline: none; }
 
+.entry-plate-card {
+  padding: var(--sp-6) var(--sp-5);
+}
+.field--plate {
+  margin-top: var(--sp-4);
+  margin-bottom: var(--sp-2);
+}
+.field--plate .field__label {
+  font-size: var(--fs-base);
+  margin-bottom: var(--sp-3);
+}
+.field--plate .field__help {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+}
+.entry-plate-result {
+  margin-top: var(--sp-5);
+  min-height: 4.5rem;
+}
+
 .lookup {
   margin-top: var(--sp-4);
-  padding: var(--sp-4);
+  padding: var(--sp-5) var(--sp-4);
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
   background: var(--c-surface-alt);
 }
 .lookup--found { border-color: #bfe3d1; background: var(--c-success-soft); }
-.lookup--empty { border-style: dashed; text-align: center; }
+.lookup--empty {
+  border-style: dashed;
+  text-align: center;
+  padding: var(--sp-6) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.lookup--empty .plate { margin-bottom: var(--sp-1); }
+.lookup--empty .lookup__title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--c-primary);
+  margin: 0;
+}
+.lookup--empty .lookup__note { margin: 0 0 var(--sp-2); }
+.lookup--empty .btn { margin-top: var(--sp-2); }
 .lookup__head { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-3); }
 .lookup__title { font-weight: 650; margin-bottom: var(--sp-2); }
 .lookup__note { font-size: var(--fs-sm); color: var(--c-text-muted); margin-top: var(--sp-2); }

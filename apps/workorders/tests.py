@@ -251,6 +251,21 @@ class EntryFlowViewTests(ServiceOrderFactoryMixin, TestCase):
         self.client.force_login(self.reception)
         response = self.client.get(reverse("workorders:plate_lookup"), {"plate": "ZZZ9Z99"})
         self.assertContains(response, "Veículo não encontrado")
+        self.assertContains(response, "Cadastrar novo veículo")
+
+    def test_plate_lookup_old_plate_with_hyphen_finds_vehicle(self):
+        from apps.vehicles.models import Vehicle
+
+        Vehicle.objects.create(
+            client=self.owner,
+            plate="AFG2562",
+            brand="Fiat",
+            model="Uno",
+        )
+        self.client.force_login(self.reception)
+        response = self.client.get(reverse("workorders:plate_lookup"), {"plate": "AFG-2562"})
+        self.assertContains(response, "Veículo encontrado")
+        self.assertContains(response, "AFG-2562")
 
     def test_plate_lookup_ignores_short_input(self):
         self.client.force_login(self.reception)
@@ -263,6 +278,12 @@ class EntryFlowViewTests(ServiceOrderFactoryMixin, TestCase):
         self.assertContains(response, "placa completa")
         self.assertNotContains(response, "Veículo não encontrado")
 
+    def test_plate_lookup_hyphenated_partial_still_waits(self):
+        """AFG-256 ainda tem 6 alfanuméricos — não oferece cadastro cedo demais."""
+        self.client.force_login(self.reception)
+        response = self.client.get(reverse("workorders:plate_lookup"), {"plate": "AFG-256"})
+        self.assertContains(response, "placa completa")
+        self.assertNotContains(response, "Cadastrar novo veículo")
     def test_mechanic_cannot_open_new_entry(self):
         self.client.force_login(self.mechanic)
         response = self.client.get(reverse("workorders:new_entry"))

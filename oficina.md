@@ -137,6 +137,8 @@ Fluxo típico:
 ### 4.2 Entrada / OS nova
 
 - Fluxo HTMX por placa: `workorders:plate_lookup` → veículo existente ou cadastro
+- Placa: `normalize_plate` ignora traço/espaço (ABC-1234 = ABC1234); antiga e Mercosul
+- Campo grande na etapa 1; JS formata digitação; sem cadastro → CTA **Cadastrar novo veículo**
 - Criação: `create_service_order` em `services.py`
 - URL: `/entrada/nova/`
 
@@ -277,11 +279,11 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live (autorizado 31/08 · senha):** `main` @ **`2600b9f`** (OG WhatsApp + /m/instalar)  
-https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
+**Produção Live (autorizado 31/08 · senha):** `main` @ **plate-entry** (fonte placa + ignora traço)  
+https://drcentroautomotivo.com/ · `/entrada/nova/`
 
-**Rollback deste pacote (só frase+senha):** tag `rollback/pre-og-install-20260831` @ `528474e` · branch `main-backup-pre-og-install-20260831` · `docs/ROLLBACK-OG-INSTALL-20260831.md`  
-(Rollback OCR+logo antigo: `rollback/pre-ocr-logo-20260831` @ `a887ab1`)
+**Rollback deste pacote (só frase+senha):** tag `rollback/pre-plate-entry-20260831` @ `a6c21cf` · branch `main-backup-pre-plate-entry-20260831` · `docs/ROLLBACK-PLATE-ENTRY-20260831.md`  
+(Anteriores: `rollback/pre-og-install-20260831` · `rollback/pre-ocr-logo-20260831`)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
@@ -292,6 +294,7 @@ https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
 | **P1** | Logo DR favicon + PWA + WhatsApp | ✅ **Enviado** | favicon/og 200 em prod |
 | **P1** | Página `/m/instalar/` — prompt instalar PWA (estilo Ajuste) | ✅ **Enviado** | `/m/instalar/` público |
 | **P1** | WhatsApp: ícone no domínio `.com` (bot preview + PUBLIC_BASE_URL) | ✅ **Enviado** | SocialPreviewMiddleware · og v=3 |
+| **P1** | Nova entrada: fonte/placa + busca ignora traço | ✅ **Enviado** | tag `live/plate-entry-20260831` |
 | **P2** | Media S3/R2 · fotos guiadas desktop | **Pendente** | |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** | Fora escopo |
 
@@ -299,10 +302,10 @@ https://drcentroautomotivo.com/ · `/healthz` · bots no `/` com og:image
 
 | | |
 | - | - |
-| Live | `2600b9f` · tag `live/og-install-20260831` |
-| Reverter para | `528474e` · tag `rollback/pre-og-install-20260831` |
-| Doc | `docs/ROLLBACK-OG-INSTALL-20260831.md` |
-| Pytest | **251** passed (31/08) |
+| Live | (após push) tag `live/plate-entry-20260831` |
+| Reverter para | `a6c21cf` · tag `rollback/pre-plate-entry-20260831` |
+| Doc | `docs/ROLLBACK-PLATE-ENTRY-20260831.md` |
+| Pytest | vehicles+workorders+mobile **97** passed |
 
 ---
 

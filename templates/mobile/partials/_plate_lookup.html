@@ -43,14 +43,15 @@
 
 {% elif typing %}
   <p class="m-plate-card__help" role="status">
-    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}.
+    Digite a placa completa{% if remaining %} — faltam {{ remaining }} caractere{{ remaining|pluralize }}{% endif %}
+    (com ou sem traço).
   </p>
 
 {% elif not_found %}
   <article class="m-hit m-hit--new">
     <div class="m-hit__top">
       <span class="m-hit__chip">Placa nova</span>
-      <p class="m-hit__plate">{{ plate }}</p>
+      <p class="m-hit__plate">{{ plate_display|default:plate }}</p>
       <p class="m-hit__car">Ainda não tem cadastro — vamos registrar o essencial.</p>
     </div>
     <a class="m-hit__btn" href="{% url 'mobile:entry_new' %}?plate={{ plate }}">

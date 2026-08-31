@@ -16,11 +16,21 @@ def normalize_plate(value: str | None) -> str:
 
     A placa é a chave de entrada do sistema inteiro: é por ela que a recepção
     encontra o veículo. Guardar sempre no mesmo formato é o que torna a busca
-    confiável, não importa como foi digitada.
+    confiável, não importa como foi digitada (ABC-1234 = ABC1234 = Mercosul).
     """
     if not value:
         return ""
     return re.sub(r"[^A-Za-z0-9]", "", value).upper()
+
+
+def format_plate_display(value: str | None) -> str:
+    """Exibição amigável: antiga com traço (ABC-1234); Mercosul sem (ABC1D23)."""
+    plate = normalize_plate(value)
+    if not plate:
+        return ""
+    if PLATE_OLD_RE.match(plate):
+        return f"{plate[:3]}-{plate[3:]}"
+    return plate
 
 
 def validate_plate(value: str) -> None:
@@ -130,6 +140,4 @@ class Vehicle(BaseModel):
     @property
     def plate_display(self) -> str:
         """Mercosul: ABC1D23. Antiga: ABC-1234."""
-        if PLATE_OLD_RE.match(self.plate):
-            return f"{self.plate[:3]}-{self.plate[3:]}"
-        return self.plate
+        return format_plate_display(self.plate)
