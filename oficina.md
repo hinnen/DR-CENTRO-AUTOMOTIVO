@@ -272,15 +272,14 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção hoje:** https://dr-centro-automotivo.onrender.com/ · Live `02ff94c` · `/healthz` 200  
-**Próximo push:** `97ff12d` — Configurações + exemplos + planilhas (mantém fix 502)
+**Produção hoje:** https://dr-centro-automotivo.onrender.com/ · Live `ae2b0ac` · `/healthz` 200 · `/configuracoes/` 302 (login)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | **Pronto para envio** · no ar | `/healthz` → 200 em prod |
-| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | **Pronto para envio** | Commit `97ff12d` · 247 pytest · migrações `is_demo` + `WorkshopSettings` |
-| **P0** | `openpyxl` no build · `platerec` comentado no `requirements.txt` | **Pronto para envio** | Import lazy nas views de planilha |
-| **P1** | Smoke pós-deploy: login admin → `/configuracoes/` → carregar exemplos → download planilha | **Testar** | Prod ainda 404 em `/configuracoes/` até push |
+| **P0** | Fix 502 — `HealthCheckMiddleware` + OCR fora do boot | **No ar** | `/healthz` → 200 |
+| **P0** | Hub `/configuracoes/` (preferências, usuários, locais, exemplos, planilhas) | **No ar** | 302 anon · 247 pytest local · migrações OK |
+| **P0** | `openpyxl` no build · `platerec` comentado no `requirements.txt` | **No ar** | Build Render OK |
+| **P1** | Smoke pós-deploy: login admin → `/configuracoes/` → exemplos → planilha | **Testar** | Renan no browser |
 | **P1** | Superuser produção (`createsuperuser` no Shell Render) | **Testar** | Sem admin ainda no ar |
 | **P1** | Kanban + aviso WhatsApp opcional (preferência) | **Testar** | `test_status_whatsapp` OK local |
 | **P2** | Media S3/R2 (fotos persistem após restart) | **Pendente** | Disco Render = curto prazo |
@@ -315,7 +314,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 1. Abre chat novo
 2. Anexa `@oficina-roteiro` (ou confia na rule) e descreve a tarefa
 3. Assistente lê o roteiro → só os trechos necessários da `oficina.md`
-4. Entrega código + atualiza CHECKPOINT
+4. Entrega código + atualiza CHECKLIST ÚNICO
 5. Renan testa no PC (`8010`)
 
 Espelho do fluxo **banana / banana-roteiro** do Agro Consulta, com nomes do domínio da oficina.
