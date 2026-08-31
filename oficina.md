@@ -329,9 +329,12 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | 31/08 | Aba Configurações: preferências, usuários+PINs, localizações (admin only) | `WorkshopSettings` · `/configuracoes/usuarios/` |
 | 31/08 | Deploy produção: regra frase + senha `99738595` (espelho Agro) | `oficina-roteiro.md` §0.3 |
 | 31/08 | WhatsApp status automático (wa.me): toggle em Preferências + abre ao mudar status | `status_whatsapp.py` · `WorkshopSettings` |
-| 31/08 | Dados de exemplo + planilhas Excel (import/export cadastros) | `is_demo` · `/configuracoes/exemplos/` · `/configuracoes/planilhas/` · `openpyxl` · testes `test_demo_spreadsheet.py` |
+| 31/08 | Dados de exemplo + planilhas Excel (import/export cadastros) | `is_demo` · `/configuracoes/exemplos/` · `/configuracoes/planilhas/` · `openpyxl` |
+| 31/08 | **Deploy prod 502** — investigar logs Render · rollback manual commit `341e099` no Dashboard se não voltar | código atual `8faf197` (reapply + lazy openpyxl + fix localização pk) |
 
-**Rollback (31/08):** reverter commit desta entrega na `main` se demo/planilhas causarem problema — migrations `0002_is_demo` (accounts), `0003_is_demo` (customers/vehicles), `0005_is_demo` (workorders).
+**Rollback imediato:** Render Dashboard → **dr-centro-automotivo** → Deploys → redeploy do commit **`341e099`** (último live antes desta entrega). Git: `git revert 8faf197..8418d92` ou restaurar `main` em `341e099`.
+
+**Rollback (31/08):** migrations desta entrega — `0002_is_demo` (accounts), `0003_is_demo` (customers/vehicles), `0005_is_demo` (workorders), `0001`/`0002` (core WorkshopSettings). Só relevantes se migrate rodou em prod.
 
 ### Pendências conhecidas
 
