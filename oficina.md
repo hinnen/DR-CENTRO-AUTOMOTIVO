@@ -280,7 +280,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | Data | O quê | Notas |
 | ---- | ----- | ----- |
-| 31/08 | **Prod 502** → restore + **remove platerec/onnx do requirements** (OOM Starter) | OCR desligado até `ENABLE_PLATE_OCR=1`; religar depois |
+| 31/08 | **Prod 502** — live preso em `341e099`; deploys `1bbc93b` falharam ~16 min (health check) | `HealthCheckMiddleware` + sem OCR no boot + hosts `.com.br` |
 | 30/08 | Fix deploy: Pillow **10.4.0** (exigência `platerec`) | Build Render |
 | 30/08 | `render.yaml` + `runtime.txt` + `/healthz` | Blueprint Oregon · não misturar SistVale |
 | 30/08 | Docs `oficina.md` + `oficina-roteiro.md` + rule Cursor | Espelho do padrão banana do Agro |

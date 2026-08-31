@@ -147,3 +147,15 @@ class TemplateHygieneTests(TestCase):
                 content.count("{% endcomment %}"),
                 f"{path.name} tem bloco de comentário sem fechamento.",
             )
+
+
+class HealthzTests(TestCase):
+    def test_healthz_returns_ok_without_login(self):
+        response = self.client.get("/healthz")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
+
+    def test_healthz_slash_alias(self):
+        response = self.client.get("/healthz/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"ok")
