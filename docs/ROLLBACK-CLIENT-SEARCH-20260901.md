@@ -10,8 +10,8 @@
 
 | Tipo | Nome | Commit |
 | ---- | ---- | ------ |
-| Tag rollback | `rollback/pre-client-search-20260901` | `b9eb8bd` (Live anterior: bug report) |
-| Branch backup | `main-backup-pre-client-search-20260901` | `b9eb8bd` |
+| Tag rollback | `rollback/pre-client-search-20260901` | `b9eb8d9` (Live anterior: bug report) |
+| Branch backup | `main-backup-pre-client-search-20260901` | `b9eb8d9` |
 | Tag live | `live/client-search-20260901` | `fbd222d` |
 
 ## Quando reverter

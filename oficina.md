@@ -293,7 +293,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`b9eb8bd`** (bug report 🐞) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`b9eb8d9`** (bug report 🐞) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
@@ -311,8 +311,8 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `b9eb8bd` · `live/bug-report-20260901` |
-| Rollback próximo pacote | `b9eb8bd` · `rollback/pre-client-search-20260901` |
+| Live | `b9eb8d9` · `live/bug-report-20260901` |
+| Rollback próximo pacote | `b9eb8d9` · `rollback/pre-client-search-20260901` |
 | Doc | `docs/ROLLBACK-CLIENT-SEARCH-20260901.md` |
 | Smoke | `/healthz` · busca `/clientes/buscar/` · wizard etapa 1 **Usar** |
 
