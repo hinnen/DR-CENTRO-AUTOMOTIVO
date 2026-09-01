@@ -38,6 +38,13 @@ def settings_index(request):
     except PermissionDenied as error:
         return HttpResponseForbidden(str(error))
 
+    from apps.core.models import BugReport
+
+    bug_novos = BugReport.objects.filter(status=BugReport.STATUS_NOVO).count()
+    bug_desc = "Feedback da equipe com print da tela (botão 🐞 no sistema)."
+    if bug_novos:
+        bug_desc = f"Feedback da equipe · {bug_novos} novo(s) aguardando."
+
     cards = [
         {
             "title": "Preferências",
@@ -70,6 +77,12 @@ def settings_index(request):
             "icon": "🧪",
         },
         {
+            "title": "Bugs reportados",
+            "description": bug_desc,
+            "url_name": "core:bug_reports_lista",
+            "icon": "🐞",
+        },
+        {
             "title": "Administração avançada",
             "description": "Painel Django para manutenção técnica de dados.",
             "href": "/admin/",
@@ -85,6 +98,7 @@ def settings_index(request):
             "user_count": User.objects.filter(is_active=True).count(),
             "mechanic_count": User.objects.filter(role=Role.MECHANIC, is_active=True).count(),
             "location_count": VehicleLocation.objects.filter(is_active=True).count(),
+            "bug_novos": bug_novos,
         },
     )
 

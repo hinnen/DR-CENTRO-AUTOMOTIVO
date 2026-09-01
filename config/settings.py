@@ -218,6 +218,9 @@ WORKSHOP_NAME = os.getenv("WORKSHOP_NAME", "DR Centro Automotivo")
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
 OG_IMAGE_VERSION = os.getenv("OG_IMAGE_VERSION", "3")
 
+# E-mail opcional quando alguém reporta bug (requer SMTP configurado).
+BUG_REPORT_EMAIL = os.getenv("BUG_REPORT_EMAIL", "").strip()
+
 # OCR de placa (platerec/ONNX). No Starter: ligado sob demanda, sem warmup no boot.
 ENABLE_PLATE_OCR = env_bool("ENABLE_PLATE_OCR", DEBUG)
 PLATE_OCR_WARMUP = env_bool("PLATE_OCR_WARMUP", False)

@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from . import settings_views
+from . import bug_report_views, settings_views
 
 app_name = "core"
 
@@ -27,4 +27,7 @@ urlpatterns = [
         name="settings_spreadsheet_download",
     ),
     path("exemplos/", settings_views.settings_demo, name="settings_demo"),
+    path("bugs/", bug_report_views.bug_reports_lista_view, name="bug_reports_lista"),
+    path("bugs/<int:pk>/", bug_report_views.bug_report_detalhe_view, name="bug_report_detalhe"),
+    path("bugs/<int:pk>/print/", bug_report_views.bug_report_print_view, name="bug_report_print"),
 ]

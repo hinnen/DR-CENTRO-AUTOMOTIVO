@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Bug #{{ report.pk }} — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="page-kicker"><a href="{% url 'core:bug_reports_lista' %}">Bugs reportados</a></p>
+      <h1 class="page-title">Bug #{{ report.pk }}</h1>
+      <p class="page-subtitle">{{ report.created_at|date:"d/m/Y H:i" }} · {{ report.get_app_context_display|default:"?" }}</p>
+    </div>
+    <div class="page-header__actions">
+      <button type="button" class="btn btn--secondary" id="bug-copiar-prompt">Copiar prompt Cursor</button>
+    </div>
+  </div>
+
+  <section class="card mt-4">
+    <p class="text-muted" style="font-size: var(--fs-sm); margin: 0;">
+      Cole no Cursor com <strong>@oficina-roteiro</strong>. Se houver print, abra a imagem abaixo e anexe no chat.
+    </p>
+  </section>
+
+  <section class="card mt-4">
+    <dl class="settings-summary__grid settings-summary__grid--3">
+      <div><dt>Quem</dt><dd>{{ report.usuario_nome|default:"—" }}</dd></div>
+      <div><dt>Aparelho</dt><dd>{{ report.dispositivo_nome|default:"—" }}</dd></div>
+      <div><dt>Resolução</dt><dd>{{ report.tela|default:"—" }}</dd></div>
+      <div style="grid-column: 1 / -1;"><dt>URL</dt><dd style="word-break: break-all;">{{ report.url_pagina|default:"—" }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="section-title">O que aconteceu</h2>
+    <p style="white-space: pre-wrap; margin: 0;">{{ report.o_que_aconteceu }}</p>
+  </section>
+
+  <section class="card mt-4">
+    <h2 class="section-title">O que esperava</h2>
+    <p style="white-space: pre-wrap; margin: 0;">{{ report.o_que_esperava|default:"—" }}</p>
+  </section>
+
+  {% if report.print_base64 %}
+    <section class="card mt-4">
+      <h2 class="section-title">Print da tela</h2>
+      <a href="{% url 'core:bug_report_print' report.pk %}" target="_blank" rel="noopener">
+        <img src="data:{{ report.print_mime|default:'image/jpeg' }};base64,{{ report.print_base64 }}"
+             alt="Print #{{ report.pk }}"
+             style="max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--c-border);">
+      </a>
+    </section>
+  {% endif %}
+
+  <section class="card">
+    <h2 class="section-title">Status</h2>
+    <div class="form-actions" id="bug-status-btns" data-pk="{{ report.pk }}" data-csrf="{{ csrf_token }}">
+      <button type="button" data-st="novo" class="btn {% if report.status == 'novo' %}btn--primary{% else %}btn--ghost{% endif %}">Novo</button>
+      <button type="button" data-st="visto" class="btn {% if report.status == 'visto' %}btn--primary{% else %}btn--ghost{% endif %}">Visto</button>
+      <button type="button" data-st="feito" class="btn {% if report.status == 'feito' %}btn--primary{% else %}btn--ghost{% endif %}">Feito</button>
+    </div>
+  </section>
+
+  {{ bug_cursor_prompt|json_script:"bug-cursor-prompt-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  var box = document.getElementById("bug-status-btns");
+  if (box) {
+    box.addEventListener("click", function (ev) {
+      var btn = ev.target.closest("button[data-st]");
+      if (!btn) return;
+      fetch("/api/bug-report/" + box.getAttribute("data-pk") + "/status/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": box.getAttribute("data-csrf") },
+        body: JSON.stringify({ status: btn.getAttribute("data-st") }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j && j.ok) location.reload();
+          else alert((j && j.erro) || "Falha");
+        })
+        .catch(function () { alert("Falha de rede"); });
+    });
+  }
+
+  function montarPrompt(d) {
+    var linhas = [
+      "@oficina-roteiro",
+      "",
+      "Bug report DR Oficina #" + (d.pk || "?") + " — investigar e corrigir.",
+      "",
+      "## Relato",
+      "- O que aconteceu: " + (d.aconteceu || "—"),
+      "- O que esperava: " + (d.esperava || "—"),
+      "",
+      "## Contexto",
+      "- Quem: " + (d.quem || "—"),
+      "- Aparelho: " + (d.dispositivo || "—"),
+      "- Sistema: " + (d.contexto || "—"),
+      "- URL: " + (d.url || "—"),
+      "- Quando: " + (d.quando || "—"),
+      "- Status: " + (d.status || "—"),
+      "- Tela: " + (d.tela || "—"),
+    ];
+    if (d.print_url) {
+      linhas.push("- Print: " + d.print_url + " (anexe a imagem no chat se puder)");
+    } else {
+      linhas.push("- Print: sem captura");
+    }
+    linhas.push("");
+    linhas.push("## Pedido");
+    linhas.push("1. Ler oficina-roteiro + módulo da URL.");
+    linhas.push("2. Reproduzir com o relato e o print.");
+    linhas.push("3. Corrigir localmente e rodar pytest do módulo.");
+    linhas.push("4. Responder: causa + o que mudou + como testar.");
+    return linhas.join("\n");
+  }
+
+  var copyBtn = document.getElementById("bug-copiar-prompt");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var raw = document.getElementById("bug-cursor-prompt-data");
+      var d = {};
+      try { d = JSON.parse(raw && raw.textContent ? raw.textContent : "{}"); } catch (e) { d = {}; }
+      var txt = montarPrompt(d);
+      function ok() {
+        var old = copyBtn.textContent;
+        copyBtn.textContent = "Copiado ✓";
+        setTimeout(function () { copyBtn.textContent = old; }, 1800);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(ok).catch(function () {
+          window.prompt("Copie (Ctrl+C):", txt);
+        });
+      } else {
+        window.prompt("Copie (Ctrl+C):", txt);
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

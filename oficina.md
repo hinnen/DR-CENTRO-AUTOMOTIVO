@@ -224,6 +224,11 @@ Fluxo típico:
 - **Nav superior** (`templates/partials/_header.html`) — sem sidebar; libera largura do Kanban
 - **Atalho WhatsApp** no header (ícone): lista OS na oficina → `wa.me` (telefone/Zap do cliente). Busca por placa/nome/OS. Na página da OS, o cliente atual vem primeiro. *Não* é integração CRM/API.
 - **Mobile:** barra inferior (`_mobile_nav.html`); header compacto (marca + avatar + sair)
+- **Reportar bug (global):** botão 🐞 canto inferior direito · Alt+B · desktop + `/m/` (logado)
+  - JS: `static/js/bug_report.js` · API `POST /api/bug-report/` · print automático (html2canvas)
+  - Lista admin: `Configurações → Bugs reportados` · detalhe com **Copiar prompt Cursor** (`@oficina-roteiro`)
+  - Model: `apps/core/models.py` · `BugReport` · migrate `core.0003`
+  - E-mail opcional: env `BUG_REPORT_EMAIL` (SMTP configurado)
 - Mobile: Kanban por abas de coluna; OS por abas de seção
 - Comentários Django multilinha: usar `{% comment %}` — `{# #}` em várias linhas **vaza** texto na UI
 
@@ -244,7 +249,7 @@ python manage.py seed_demo --reset   # senha default oficina123
 - Postgres local portátil: `scripts/pg-start.ps1` / `pg-stop.ps1`
 - Produção: Gunicorn `0.0.0.0:$PORT`, `DEBUG=False`, media em disco Render (`MEDIA_ROOT=/var/data/media`) via view autenticada `apps/core/media.py` (não depende de `static()` do DEBUG)
 - Preview WhatsApp/Facebook: `SocialPreviewMiddleware` responde `/` com HTML OG (200) para bots; `PUBLIC_BASE_URL` + `OG_IMAGE_VERSION` no `render.yaml`
-- Checklist: `check --deploy`, `collectstatic`, `migrate`
+- Checklist: `check --deploy`, `collectstatic`, `migrate` (incl. `core.0003` bug report)
 
 ### 4.17 App mobile `/m/` (PWA)
 
@@ -289,7 +294,9 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-*(vazio — último pacote enviado abaixo)*
+| P | Item | Status | Verificação |
+| - | ---- | ------ | ----------- |
+| **P1** | Botão reportar bug global (estilo Agro) | **Pronto para envio à produção** | migrate `core.0003` · pytest **7** · smoke local OK (login 9973 · API · lista · detalhe · `/m/`) |
 
 | P | Item | Status |
 | - | ---- | ------ |

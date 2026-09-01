@@ -1,0 +1,5 @@
+{% load static %}
+{% if user.is_authenticated %}
+<meta name="dr-user-display" content="{{ user.display_name|escape }}">
+<script src="{% static 'js/bug_report.js' %}?v=1" defer></script>
+{% endif %}

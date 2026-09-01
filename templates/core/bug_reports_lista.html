@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Bugs reportados — {{ workshop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="page-kicker"><a href="{% url 'core:settings_index' %}">Configurações</a></p>
+      <h1 class="page-title">Bugs reportados</h1>
+      <p class="page-subtitle">{{ total }} no total{% if novos %} · {{ novos }} novo(s){% endif %}</p>
+    </div>
+  </div>
+
+  <section class="card table-card">
+    {% if reports %}
+      <div class="table-scroll">
+        <table class="table table--compact">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Quando</th>
+              <th>Quem</th>
+              <th>Aparelho</th>
+              <th>Contexto</th>
+              <th>Relato</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reports %}
+              <tr>
+                <td data-label="#"><a href="{% url 'core:bug_report_detalhe' r.pk %}">#{{ r.pk }}</a></td>
+                <td data-label="Quando">{{ r.created_at|date:"d/m/Y H:i" }}</td>
+                <td data-label="Quem">{{ r.usuario_nome|default:"—" }}</td>
+                <td data-label="Aparelho">{{ r.dispositivo_nome|default:"—" }}</td>
+                <td data-label="Contexto">{{ r.get_app_context_display|default:"—" }}</td>
+                <td data-label="Relato">{{ r.o_que_aconteceu|truncatechars:90 }}</td>
+                <td data-label="Status">
+                  {% if r.status == "novo" %}
+                    <span class="badge">Novo</span>
+                  {% elif r.status == "visto" %}
+                    <span class="badge">Visto</span>
+                  {% else %}
+                    <span class="badge badge--success">Feito</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="empty-state__text">Nenhum report ainda. A equipe usa o botão 🐞 no canto da tela.</p>
+    {% endif %}
+  </section>
+{% endblock %}
