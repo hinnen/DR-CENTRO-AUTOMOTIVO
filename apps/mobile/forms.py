@@ -170,15 +170,29 @@ class MobileVehicleFields(forms.Form):
 class MobileNewEntryForm(MobileClientFields, MobileEntryForm, MobileVehicleFields):
     """Cadastro completo de primeiro contato: cliente → queixa → veículo."""
 
+    client_uuid = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    def clean_client_uuid(self):
+        value = (self.cleaned_data.get("client_uuid") or "").strip()
+        if not value:
+            return ""
+        from apps.customers.models import Client
+
+        if not Client.objects.filter(uuid=value, is_active=True).exists():
+            raise forms.ValidationError("Cliente selecionado não encontrado. Busque de novo e toque em Usar.")
+        return value
+
     def __init__(self, *args, initial_plate="", **kwargs):
         super().__init__(*args, **kwargs)
         if initial_plate and not self.is_bound:
             self.fields["plate"].initial = initial_plate
+        self.fields["client_uuid"].widget.attrs["id"] = "m-client-uuid"
         for name in ("name", "phone", "plate", "brand", "model", "entry_km", "customer_complaint"):
             self.fields[name].widget.attrs.setdefault("required", True)
         # Ordem mental do pátio: quem é → o que pediu → qual carro.
         self.order_fields(
             [
+                "client_uuid",
                 "name",
                 "phone",
                 "phone_whatsapp",

@@ -65,6 +65,26 @@ class ClientSearchTests(TestCase):
         self.assertEqual(find_by_phone("13992345678").count(), 1)
         self.assertEqual(find_by_phone("13900000000").count(), 0)
 
+    def test_find_by_phone_matches_whatsapp_field(self):
+        Client.objects.create(name="Zap Only", phone="13991111111", phone_whatsapp="13992222222")
+        self.assertEqual(find_by_phone("13992222222").count(), 1)
+
+    def test_client_lookup_finds_by_name(self):
+        user = make_user("recepcao_lookup", Role.RECEPTION)
+        self.client.force_login(user)
+        response = self.client.get(reverse("customers:client_lookup"), {"q": "juli"})
+        self.assertContains(response, "Juliana Prado")
+        self.assertContains(response, "Usar")
+
+    def test_client_lookup_mobile_mode_uses_pick_button(self):
+        user = make_user("recepcao_lookup2", Role.RECEPTION)
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse("customers:client_lookup"), {"q": "roberto", "mode": "mobile"}
+        )
+        self.assertContains(response, "data-pick-client")
+        self.assertContains(response, "Roberto Menezes")
+
 
 class ClientFormTests(TestCase):
     def test_rejects_phone_without_area_code(self):

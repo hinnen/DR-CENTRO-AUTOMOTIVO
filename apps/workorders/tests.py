@@ -338,6 +338,24 @@ class EntryFlowViewTests(ServiceOrderFactoryMixin, TestCase):
         self.assertEqual(vehicle.client.name, "Simone Barbosa")
         self.assertEqual(vehicle.client.phone, "13990123456")
 
+    def test_new_vehicle_can_use_existing_client(self):
+        self.client.force_login(self.reception)
+        response = self.client.post(
+            reverse("workorders:new_entry_vehicle"),
+            {
+                "plate": "LMN4B77",
+                "client_uuid": str(self.owner.uuid),
+                "brand": "Honda",
+                "model": "Civic",
+            },
+        )
+        vehicle = Vehicle.objects.get(plate="LMN4B77")
+        self.assertRedirects(
+            response, f"{reverse('workorders:new_entry')}?vehicle={vehicle.uuid}"
+        )
+        self.assertEqual(vehicle.client, self.owner)
+        self.assertEqual(self.owner.vehicles.count(), 2)
+
 
 class ServiceOrderViewTests(ServiceOrderFactoryMixin, TestCase):
     def setUp(self):

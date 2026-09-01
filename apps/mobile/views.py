@@ -339,20 +339,31 @@ def entry_new(request):
         form = MobileNewEntryForm(request.POST, initial_plate=plate)
         if form.is_valid():
             data = form.cleaned_data
+            client_uuid = (data.get("client_uuid") or "").strip()
+            selected_client = (
+                Client.objects.filter(uuid=client_uuid, is_active=True).first() if client_uuid else None
+            )
             try:
                 with transaction.atomic():
-                    matches = list(find_by_phone(data["phone"])[:1])
-                    if matches:
-                        client = matches[0]
+                    if selected_client:
+                        client = selected_client
                         client.name = data["name"]
+                        client.phone = data["phone"]
                         client.phone_whatsapp = data.get("phone_whatsapp") or ""
                         client.save()
                     else:
-                        client = Client.objects.create(
-                            name=data["name"],
-                            phone=data["phone"],
-                            phone_whatsapp=data.get("phone_whatsapp") or "",
-                        )
+                        matches = list(find_by_phone(data["phone"])[:1])
+                        if matches:
+                            client = matches[0]
+                            client.name = data["name"]
+                            client.phone_whatsapp = data.get("phone_whatsapp") or ""
+                            client.save()
+                        else:
+                            client = Client.objects.create(
+                                name=data["name"],
+                                phone=data["phone"],
+                                phone_whatsapp=data.get("phone_whatsapp") or "",
+                            )
 
                     vehicle = Vehicle.objects.create(
                         client=client,

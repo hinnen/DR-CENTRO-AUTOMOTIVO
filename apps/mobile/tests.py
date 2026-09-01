@@ -280,14 +280,53 @@ class MobileEntryTests(TestCase):
     def test_new_entry_form_shows_three_wizard_steps(self):
         response = self.client.get(reverse("mobile:entry_new") + "?plate=ZZZ9Z99")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-m-wizard')
-        self.assertContains(response, 'data-step="0"')
-        self.assertContains(response, 'data-step="1"')
+        self.assertContains(response, "Buscar cliente cadastrado")
+        self.assertContains(response, 'id="m-client-uuid"')
         self.assertContains(response, 'data-step="2"')
-        self.assertContains(response, 'id="m-wizard-next"')
-        self.assertContains(response, 'id="m-wizard-submit"')
-        self.assertContains(response, "m-app--wizard")
-        self.assertContains(response, "Cor e ano")
+
+    def test_new_entry_rejects_stale_client_uuid(self):
+        response = self.client.post(
+            reverse("mobile:entry_new") + "?plate=QWE2R24",
+            {
+                "client_uuid": "00000000-0000-0000-0000-000000000099",
+                "name": "Teste",
+                "phone": "13998887766",
+                "plate": "QWE2R24",
+                "brand": "VW",
+                "model": "Gol",
+                "entry_km": 1000,
+                "customer_complaint": "Teste",
+                "priority": "NORMAL",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Busque de novo")
+        self.assertFalse(Vehicle.objects.filter(plate="QWE2R24").exists())
+
+    def test_new_entry_links_second_vehicle_to_existing_client(self):
+        response = self.client.post(
+            reverse("mobile:entry_new") + "?plate=QWE1R23",
+            {
+                "client_uuid": str(self.owner.uuid),
+                "name": "Marcos Ferreira",
+                "phone": "13991234567",
+                "phone_whatsapp": "",
+                "plate": "QWE1R23",
+                "brand": "VW",
+                "model": "Polo",
+                "color": "Branco",
+                "model_year": 2022,
+                "entry_km": 12000,
+                "customer_complaint": "Segundo carro",
+                "priority": "NORMAL",
+                "brought_by_name": "",
+            },
+        )
+        vehicle = Vehicle.objects.get(plate="QWE1R23")
+        self.assertEqual(vehicle.client, self.owner)
+        self.assertEqual(Customer.objects.filter(phone="13991234567").count(), 1)
+        self.assertEqual(self.owner.vehicles.count(), 2)
+        self.assertEqual(response.status_code, 302)
 
     def test_open_order_redirects_to_inspection_instead_of_duplicating(self):
         order = create_service_order(

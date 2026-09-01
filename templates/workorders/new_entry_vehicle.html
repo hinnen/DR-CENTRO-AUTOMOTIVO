@@ -30,6 +30,22 @@
           </a>
         </div>
       {% else %}
+        <div class="field">
+          <label class="field__label" for="client-search-q">Buscar cliente cadastrado</label>
+          <input type="search"
+                 id="client-search-q"
+                 name="q"
+                 class="field__input"
+                 placeholder="Nome ou telefone"
+                 autocomplete="off"
+                 hx-get="{% url 'customers:client_lookup' %}?plate={{ plate }}"
+                 hx-trigger="input changed delay:350ms"
+                 hx-target="#client-lookup-results"
+                 hx-include="#client-search-q">
+          <p class="field__help">Cliente com vários carros? Busque aqui antes de cadastrar outro nome.</p>
+          <div id="client-lookup-results"></div>
+        </div>
+
         <div class="field {% if client_form.phone.errors %}field--error{% endif %}">
           <label class="field__label" for="{{ client_form.phone.id_for_label }}">
             {{ client_form.phone.label }} <span class="field__required" aria-hidden="true">*</span>

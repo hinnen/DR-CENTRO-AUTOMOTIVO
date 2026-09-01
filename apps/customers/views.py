@@ -10,7 +10,7 @@ from apps.core.permissions import RoleRequiredMixin
 
 from .forms import ClientForm
 from .models import Client
-from .services import find_by_phone
+from .services import find_by_phone, search_clients
 
 
 class ClientListView(LoginRequiredMixin, QueryStringMixin, ListView):
@@ -100,4 +100,24 @@ def phone_lookup(request):
         request,
         "customers/partials/_phone_lookup.html",
         {"clients": clients, "phone": phone, "plate": request.GET.get("plate", "")},
+    )
+
+
+@login_required
+def client_lookup(request):
+    """Busca cliente por nome ou telefone — vincular veículo novo (HTMX)."""
+    term = request.GET.get("q", "")
+    pick_mode = request.GET.get("mode", "desktop")
+    if pick_mode not in {"desktop", "mobile"}:
+        pick_mode = "desktop"
+    clients = search_clients(term)
+    return render(
+        request,
+        "customers/partials/_client_lookup.html",
+        {
+            "clients": clients,
+            "term": term.strip(),
+            "plate": request.GET.get("plate", ""),
+            "pick_mode": pick_mode,
+        },
     )

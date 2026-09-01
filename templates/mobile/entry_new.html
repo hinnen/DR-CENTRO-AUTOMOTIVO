@@ -26,14 +26,40 @@
         {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
       </div>
     {% endif %}
+    {% if form.client_uuid.errors %}
+      <div class="m-alert" role="alert">
+        {% for error in form.client_uuid.errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
 
     <section class="m-wizard-step is-active" data-step="0" data-title="Dados do cliente">
-      {% include "mobile/partials/_field.html" with field=form.name %}
-      {% include "mobile/partials/_field.html" with field=form.phone %}
-      <details class="m-more" {% if form.phone_whatsapp.value or form.phone_whatsapp.errors %}open{% endif %}>
-        <summary>WhatsApp diferente do telefone?</summary>
-        {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
-      </details>
+      <div class="m-client-search">
+        <label class="m-field-label" for="m-client-search">Buscar cliente cadastrado</label>
+        <input type="search"
+               id="m-client-search"
+               name="client_search_q"
+               class="m-field-input"
+               placeholder="Nome ou telefone"
+               autocomplete="off"
+               hx-get="{% url 'customers:client_lookup' %}?mode=mobile"
+               hx-trigger="input changed delay:350ms"
+               hx-target="#m-client-results"
+               hx-include="#m-client-search">
+        <p class="m-field-hint">Vários carros no mesmo dono? Busque aqui antes de criar outro cadastro.</p>
+        <div id="m-client-results" class="m-client-results"></div>
+      </div>
+
+      {{ form.client_uuid }}
+      <div id="m-client-selected" class="m-client-selected" hidden></div>
+
+      <div id="m-client-fields">
+        {% include "mobile/partials/_field.html" with field=form.name %}
+        {% include "mobile/partials/_field.html" with field=form.phone %}
+        <details class="m-more" {% if form.phone_whatsapp.value or form.phone_whatsapp.errors %}open{% endif %}>
+          <summary>WhatsApp diferente do telefone?</summary>
+          {% include "mobile/partials/_field.html" with field=form.phone_whatsapp %}
+        </details>
+      </div>
     </section>
 
     <section class="m-wizard-step" data-step="1" data-title="Queixa e KM" hidden>

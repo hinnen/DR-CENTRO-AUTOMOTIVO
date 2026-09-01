@@ -584,10 +584,72 @@
     showStep(current);
   }
 
+  function initClientPicker() {
+    var form = document.getElementById("m-entry-form");
+    var uuidInput = document.getElementById("m-client-uuid");
+    var selectedBox = document.getElementById("m-client-selected");
+    var results = document.getElementById("m-client-results");
+    if (!form || !uuidInput || !results) return;
+
+    function clearPick() {
+      uuidInput.value = "";
+      if (selectedBox) {
+        selectedBox.hidden = true;
+        selectedBox.innerHTML = "";
+      }
+    }
+
+    function applyPick(btn) {
+      uuidInput.value = btn.getAttribute("data-uuid") || "";
+      var nameEl = form.querySelector('[name="name"]');
+      var phoneEl = form.querySelector('[name="phone"]');
+      var waEl = form.querySelector('[name="phone_whatsapp"]');
+      if (nameEl) nameEl.value = btn.getAttribute("data-name") || "";
+      if (phoneEl) phoneEl.value = btn.getAttribute("data-phone") || "";
+      var waRaw = btn.getAttribute("data-whatsapp") || "";
+      var phoneRaw = btn.getAttribute("data-phone") || "";
+      if (waEl) {
+        waEl.value = waRaw && waRaw !== phoneRaw ? waRaw : "";
+      }
+      if (selectedBox) {
+        var vehicles = btn.getAttribute("data-vehicles") || "0";
+        selectedBox.hidden = false;
+        selectedBox.innerHTML =
+          '<p class="m-client-selected__title"><strong>' +
+          (btn.getAttribute("data-name") || "") +
+          '</strong></p>' +
+          '<p class="m-client-selected__meta">Cliente existente · ' +
+          vehicles +
+          " veículo" +
+          (vehicles === "1" ? "" : "s") +
+          '</p>' +
+          '<button type="button" class="m-client-selected__clear" data-clear-client>Trocar cliente</button>';
+      }
+      results.innerHTML = "";
+      var search = document.getElementById("m-client-search");
+      if (search) search.value = "";
+    }
+
+    results.addEventListener("click", function (ev) {
+      var btn = ev.target.closest("[data-pick-client]");
+      if (!btn) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      applyPick(btn);
+    });
+
+    if (selectedBox) {
+      selectedBox.addEventListener("click", function (ev) {
+        if (ev.target.closest("[data-clear-client]")) clearPick();
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initChecklist();
     initPriority();
     initEntryWizard();
+    initClientPicker();
     initPhotoAutoSubmit();
     initPlateOcr();
     initToasts();

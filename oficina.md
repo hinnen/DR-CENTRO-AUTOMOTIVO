@@ -137,6 +137,8 @@ Fluxo típico:
 ### 4.2 Entrada / OS nova
 
 - Fluxo HTMX por placa: `workorders:plate_lookup` → veículo existente ou cadastro
+- Placa nova: **buscar cliente cadastrado** (nome/telefone) antes de criar outro — desktop (`/clientes/buscar/`) e mobile (etapa 1 do wizard)
+- Um cliente pode ter **vários veículos**; `Vehicle.client` é FK (não 1:1)
 - Placa: `normalize_plate` ignora traço/espaço (ABC-1234 = ABC1234); antiga e Mercosul
 - Campo grande na etapa 1; JS formata digitação; sem cadastro → CTA **Cadastrar novo veículo**
 - Criação: `create_service_order` em `services.py`
@@ -258,6 +260,7 @@ python manage.py seed_demo --reset   # senha default oficina123
 - **Sistema no PC:** `https://drcentroautomotivo.com/` (Kanban / OS)
 - **App no celular:** `/m/` (login) após instalar ou “Continuar no navegador”
 - Fluxo: entrada (placa → **wizard**: cliente → queixa/KM → veículo) → vistoria → fotos
+  - Placa nova: **buscar cliente cadastrado** na etapa 1 (nome/telefone) — vincula 2º+ carro ao mesmo dono
   - Cadastro novo: 3 telas; retorno (placa conhecida): 2 telas — campos maiores; opcionais em “mais opções”
   - Continuar / Voltar + Enter avança; no fim “Abrir OS e ir à vistoria”
   - Nome + telefone obrigatórios; queixa em destaque; quem trouxe (opcional); Normal/Urgente
@@ -290,15 +293,17 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`39be8bd`** (bug report 🐞) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`b9eb8bd`** (bug report 🐞) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-*(vazio — último pacote enviado abaixo)*
+| P | Item | Status | Verificação |
+| - | ---- | ------ | ----------- |
+| **P1** | Busca cliente na entrada (2º+ veículo) | **Pronto para envio à produção** | mobile `/m/` + desktop · pytest **21+** · sem migrate |
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa · primeiro contato · wizard · **bug report** | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR · wizard · **bug report** | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -306,10 +311,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `39be8bd` · `live/bug-report-20260901` |
-| Rollback | `e403d19` · `rollback/pre-bug-report-20260901` · branch `main-backup-pre-bug-report-20260901` |
-| Doc | `docs/ROLLBACK-BUG-REPORT-20260901.md` |
-| Smoke | `/healthz` ok · `static/js/bug_report.js` · migrate `core.0003` |
+| Live | `b9eb8bd` · `live/bug-report-20260901` |
+| Rollback próximo pacote | `b9eb8bd` · `rollback/pre-client-search-20260901` |
+| Doc | `docs/ROLLBACK-CLIENT-SEARCH-20260901.md` |
+| Smoke | `/healthz` · busca `/clientes/buscar/` · wizard etapa 1 **Usar** |
 
 ---
 

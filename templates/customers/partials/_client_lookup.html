@@ -1,0 +1,36 @@
+{% if clients %}
+  <ul class="client-lookup-list{% if pick_mode == 'mobile' %} client-lookup-list--mobile{% endif %}">
+    {% for client in clients %}
+      <li class="client-lookup-item">
+        <div class="client-lookup-item__info">
+          <strong>{{ client.name }}</strong>
+          <span>{{ client.phone_display }}{% if client.phone_whatsapp and client.phone_whatsapp != client.phone %} · Zap {{ client.whatsapp_display }}{% endif %}</span>
+          {% if client.vehicle_count %}
+            <span class="client-lookup-item__meta">{{ client.vehicle_count }} veículo{{ client.vehicle_count|pluralize }}</span>
+          {% endif %}
+        </div>
+        {% if pick_mode == "mobile" %}
+          <button type="button"
+                  class="m-client-pick-btn"
+                  data-pick-client
+                  data-uuid="{{ client.uuid }}"
+                  data-name="{{ client.name|escape }}"
+                  data-phone="{{ client.phone|escape }}"
+                  data-whatsapp="{{ client.phone_whatsapp|default:''|escape }}"
+                  data-vehicles="{{ client.vehicle_count }}">
+            Usar
+          </button>
+        {% else %}
+          <a class="btn btn--secondary btn--sm"
+             href="{% url 'workorders:new_entry_vehicle' %}?plate={{ plate }}&client={{ client.uuid }}">
+            Usar
+          </a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% elif term|length >= 2 %}
+  <p class="client-lookup-empty">Nenhum cliente encontrado para “{{ term }}”.</p>
+{% elif term %}
+  <p class="client-lookup-empty">Digite pelo menos 2 letras ou números.</p>
+{% endif %}
