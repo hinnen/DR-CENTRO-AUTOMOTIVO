@@ -12,7 +12,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-client-search-20260901` | `b9eb8bd` (Live anterior: bug report) |
 | Branch backup | `main-backup-pre-client-search-20260901` | `b9eb8bd` |
-| Tag live | `live/client-search-20260901` | *(commit deste pacote)* |
+| Tag live | `live/client-search-20260901` | `fbd222d` |
 
 ## Quando reverter
 
