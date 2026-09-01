@@ -300,7 +300,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | desktop + `/m/` · `APP_VERSION` · smoke OK · sem migrate |
+| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | `5c5f33c` · smoke OK · sem migrate |
 
 | P | Item | Status |
 | - | ---- | ------ |

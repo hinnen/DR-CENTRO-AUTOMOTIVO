@@ -12,7 +12,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-app-version-20260901` | `0c42632` (Live anterior: busca cliente) |
 | Branch backup | `main-backup-pre-app-version-20260901` | `0c42632` |
-| Tag live | `live/app-version-20260901` | *(commit deste pacote)* |
+| Tag live | `live/app-version-20260901` | `5c5f33c` |
 
 ## Como reverter
 
