@@ -288,20 +288,17 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ---
 
-## CHECKLIST ÚNICO · 31/08/2026
+## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`b601b9b`** (wizard + OCR Mercosul) · https://drcentroautomotivo.com/  
-**Main local (aguarda deploy):** `7227c5e` — bug report 🐞
+**Produção Live:** `main` @ **`39be8bd`** (bug report 🐞) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-| P | Item | Status | Verificação |
-| - | ---- | ------ | ----------- |
-| **P1** | Botão reportar bug global (estilo Agro) | **Pronto para envio à produção** | `7227c5e` · migrate `core.0003` · pytest **7** · smoke local OK |
+*(vazio — último pacote enviado abaixo)*
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR-fast · logo · instalar · OG · placa · primeiro contato · **OCR Mercosul** · **wizard entrada** | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR · logo · instalar · OG · placa · primeiro contato · wizard · **bug report** | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -309,10 +306,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `b601b9b` · `live/wizard-ocr-20260831` |
-| Rollback | `e66b1cb` · `rollback/pre-wizard-ocr-20260831` · branch `main-backup-pre-wizard-ocr-20260831` |
-| Doc | `docs/ROLLBACK-WIZARD-OCR-20260831.md` |
-| Smoke | `/healthz` ok · static wizard `initEntryWizard` + `.m-wizard-dot` em `?v=15` |
+| Live | `39be8bd` · `live/bug-report-20260901` |
+| Rollback | `e403d19` · `rollback/pre-bug-report-20260901` · branch `main-backup-pre-bug-report-20260901` |
+| Doc | `docs/ROLLBACK-BUG-REPORT-20260901.md` |
+| Smoke | `/healthz` ok · `static/js/bug_report.js` · migrate `core.0003` |
 
 ---
 
