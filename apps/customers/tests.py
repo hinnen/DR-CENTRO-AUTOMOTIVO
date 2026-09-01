@@ -85,6 +85,15 @@ class ClientSearchTests(TestCase):
         self.assertContains(response, "data-pick-client")
         self.assertContains(response, "Roberto Menezes")
 
+    def test_client_lookup_accepts_legacy_mobile_param_name(self):
+        user = make_user("recepcao_lookup3", Role.RECEPTION)
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse("customers:client_lookup"),
+            {"client_search_q": "juli", "mode": "mobile"},
+        )
+        self.assertContains(response, "Juliana Prado")
+
 
 class ClientFormTests(TestCase):
     def test_rejects_phone_without_area_code(self):

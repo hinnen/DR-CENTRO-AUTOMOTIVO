@@ -106,7 +106,7 @@ def phone_lookup(request):
 @login_required
 def client_lookup(request):
     """Busca cliente por nome ou telefone — vincular veículo novo (HTMX)."""
-    term = request.GET.get("q", "")
+    term = request.GET.get("q") or request.GET.get("client_search_q") or ""
     pick_mode = request.GET.get("mode", "desktop")
     if pick_mode not in {"desktop", "mobile"}:
         pick_mode = "desktop"

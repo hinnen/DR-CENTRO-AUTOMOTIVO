@@ -138,6 +138,7 @@ Fluxo típico:
 
 - Fluxo HTMX por placa: `workorders:plate_lookup` → veículo existente ou cadastro
 - Placa nova: **buscar cliente cadastrado** (nome/telefone) antes de criar outro — desktop (`/clientes/buscar/`) e mobile (etapa 1 do wizard)
+- HTMX mobile: input `#m-client-search` deve enviar parâmetro **`q`** (igual desktop); nome errado (`client_search_q`) quebrava a busca — corrigido 01/09 noite
 - Um cliente pode ter **vários veículos**; `Vehicle.client` é FK (não 1:1)
 - Placa: `normalize_plate` ignora traço/espaço (ABC-1234 = ABC1234); antiga e Mercosul
 - Campo grande na etapa 1; JS formata digitação; sem cadastro → CTA **Cadastrar novo veículo**
@@ -294,19 +295,18 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`0c42632`** (busca cliente) · https://drcentroautomotivo.com/
-
-**Git remoto:** `origin/main` @ **`888ae1b`** (feat versão `5c5f33c` + doc PACOTE PRONTO) — **push feito** · **deploy produção ainda NÃO** (top bar sem `V: 0.0.1` em 01/09 noite).
+**Produção Live:** verificar pós-deploy · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | `5c5f33c` · **80 testes** (core/customers/mobile/bug) · smoke local OK · **sem migrate** · diff só CSS/templates/settings |
+| **P0** | Fix busca cliente **mobile** (`name="q"`) | **Pronto para envio à produção** | 38 testes · HTTP smoke local (admin/9973) · nome + telefone → **Usar** |
+| **P2** | Versão top bar `V: 0.0.1` | **Pronto para envio à produção** | sem migrate |
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR · wizard · bug report · busca cliente | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR · wizard · bug report · busca desktop | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -314,22 +314,15 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `0c42632` · `live/client-search-20260901` |
-| Próximo live | `5c5f33c` · tag `live/app-version-20260901` |
-| Rollback próximo pacote | `0c42632` · `rollback/pre-app-version-20260901` |
-| Doc | `docs/ROLLBACK-APP-VERSION-20260901.md` |
-| Smoke pós-deploy | `/healthz` 200 · login · `/m/entrada/` · busca cliente **Usar** · **V: 0.0.1** desktop + `/m/` |
+| Rollback | `d888d80` · `rollback/pre-mobile-search-fix-20260901` |
+| Doc | `docs/ROLLBACK-MOBILE-SEARCH-FIX-20260901.md` |
+| Smoke pós-deploy | `/healthz` · `/m/entrada/novo/` → buscar nome/telefone → **Usar** → 2º carro mesmo cliente |
 
-### Roteiro próximo deploy (lojas abertas — só com pausa)
+### Deploy (lojas abertas — pausar antes)
 
-1. Renan pausa vendas nas lojas.
-2. Mensagem: *«pode subir para produção»* + senha **`99738595`**.
-3. Deploy Render (`main` já no remoto) ou trigger manual se auto-deploy off.
-4. Smoke (2 min): `/healthz` · entrar · `/m/entrada/` placa + **Usar** cliente · versão visível.
-5. Se OK → marcar P2 **Enviado**, Live → `5c5f33c`, limpar PACOTE PRONTO.
-6. Se falhar → rollback tag `rollback/pre-app-version-20260901` (doc acima).
-
-**Risco deste pacote:** baixo — só exibe versão na top bar; **não mexe** em entrada, busca cliente, Kanban, bug report nem migrations.
+1. Pausar vendas · *«pode subir para produção»* + senha **`99738595`**
+2. Smoke 2 min (busca mobile + versão na top bar)
+3. OK → marcar **Enviado** · falhou → rollback `rollback/pre-mobile-search-fix-20260901`
 
 ---
 

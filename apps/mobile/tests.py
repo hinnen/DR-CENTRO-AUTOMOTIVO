@@ -282,6 +282,8 @@ class MobileEntryTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Buscar cliente cadastrado")
         self.assertContains(response, 'id="m-client-uuid"')
+        self.assertContains(response, 'id="m-client-search"')
+        self.assertContains(response, 'name="q"')
         self.assertContains(response, 'data-step="2"')
 
     def test_new_entry_rejects_stale_client_uuid(self):
