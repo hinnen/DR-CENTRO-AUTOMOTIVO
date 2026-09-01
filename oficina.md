@@ -299,7 +299,7 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | Busca cliente na entrada (2º+ veículo) | **Pronto para envio à produção** | `fbd222d` · pytest **30** · smoke OK · sem migrate |
+| **P1** | Busca cliente na entrada (2º+ veículo) | **Pronto para envio à produção** | `9ac0e39` · pytest **30** · smoke local OK (9973) · sem migrate |
 
 | P | Item | Status |
 | - | ---- | ------ |
