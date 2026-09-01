@@ -12,7 +12,7 @@
 | ---- | ---- | ------ |
 | Tag rollback | `rollback/pre-client-search-20260901` | `b9eb8d9` (Live anterior: bug report) |
 | Branch backup | `main-backup-pre-client-search-20260901` | `b9eb8d9` |
-| Tag live | `live/client-search-20260901` | `fbd222d` |
+| Tag live | `live/client-search-20260901` | `77e5416` |
 
 ## Quando reverter
 

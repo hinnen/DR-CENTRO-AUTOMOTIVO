@@ -293,17 +293,15 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`b9eb8d9`** (bug report 🐞) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`77e5416`** (busca cliente 2º+ veículo) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-| P | Item | Status | Verificação |
-| - | ---- | ------ | ----------- |
-| **P1** | Busca cliente na entrada (2º+ veículo) | **Pronto para envio à produção** | `9ac0e39` · pytest **30** · smoke local OK (9973) · sem migrate |
+*(vazio — último pacote enviado abaixo)*
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR · wizard · **bug report** | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR · wizard · bug report · **busca cliente** | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -311,10 +309,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `b9eb8d9` · `live/bug-report-20260901` |
-| Rollback próximo pacote | `b9eb8d9` · `rollback/pre-client-search-20260901` |
+| Live | `77e5416` · `live/client-search-20260901` |
+| Rollback | `b9eb8d9` · `rollback/pre-client-search-20260901` · branch `main-backup-pre-client-search-20260901` |
 | Doc | `docs/ROLLBACK-CLIENT-SEARCH-20260901.md` |
-| Smoke | `/healthz` · busca `/clientes/buscar/` · wizard etapa 1 **Usar** |
+| Smoke | `/healthz` ok · `mobile.js?v=18` · `initClientPicker` · sem migrate |
 
 ---
 
