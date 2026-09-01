@@ -148,6 +148,19 @@ a { color: var(--c-brand-navy); text-decoration: none; }
   text-overflow: ellipsis;
 }
 
+.m-top .app-version {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  opacity: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 0.12rem 0.4rem;
+  border-radius: 0.35rem;
+  letter-spacing: 0.02em;
+}
+
 .m-top__user { color: inherit; }
 
 .m-avatar {

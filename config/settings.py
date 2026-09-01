@@ -214,6 +214,7 @@ MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 # Identidade da oficina (exibida no layout)
 
 WORKSHOP_NAME = os.getenv("WORKSHOP_NAME", "DR Centro Automotivo")
+APP_VERSION = os.getenv("APP_VERSION", "0.0.1").strip() or "0.0.1"
 # URL pública canônica (WhatsApp/OG). Preferir o domínio .com da oficina.
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "").rstrip("/")
 OG_IMAGE_VERSION = os.getenv("OG_IMAGE_VERSION", "3")

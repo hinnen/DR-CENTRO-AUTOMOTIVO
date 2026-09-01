@@ -21,7 +21,7 @@
   <meta property="og:image" content="{{ og_image_url }}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=18">
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=19">
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
@@ -34,6 +34,7 @@
       <div class="m-top__text">
         <strong>DR Vistoria</strong>
         <span>{{ workshop_name }}</span>
+        {% include "partials/_app_version.html" %}
       </div>
     </div>
     {% if user.is_authenticated %}

@@ -237,6 +237,31 @@ a:hover { text-decoration: underline; }
   max-width: 11rem;
 }
 
+.app-header__brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-version {
+  display: inline-block;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--c-sidebar-text-strong);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.app-header .app-version {
+  font-size: 0.8125rem;
+}
+
 .app-header__nav {
   display: none;
   align-items: center;

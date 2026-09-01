@@ -224,6 +224,7 @@ Fluxo típico:
 - Tokens CSS: `--c-brand-red`, `--c-brand-navy`
 - Navy = navegação/ações comuns; vermelho = atenção (Nova entrada, atraso, erro)
 - **Nav superior** (`templates/partials/_header.html`) — sem sidebar; libera largura do Kanban
+- **Versão do sistema:** top bar desktop + `/m/` · `APP_VERSION` (default `0.0.1`) · ex.: **V: 0.0.1**
 - **Atalho WhatsApp** no header (ícone): lista OS na oficina → `wa.me` (telefone/Zap do cliente). Busca por placa/nome/OS. Na página da OS, o cliente atual vem primeiro. *Não* é integração CRM/API.
 - **Mobile:** barra inferior (`_mobile_nav.html`); header compacto (marca + avatar + sair)
 - **Reportar bug (global):** botão 🐞 canto inferior direito · Alt+B · desktop + `/m/` (logado)
@@ -293,15 +294,17 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** `main` @ **`77e5416`** (busca cliente 2º+ veículo) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`0c42632`** (busca cliente) · https://drcentroautomotivo.com/
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
-*(vazio — último pacote enviado abaixo)*
+| P | Item | Status | Verificação |
+| - | ---- | ------ | ----------- |
+| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | desktop + `/m/` · `APP_VERSION` · smoke OK · sem migrate |
 
 | P | Item | Status |
 | - | ---- | ------ |
-| **P0/P1** | 502 · config · OCR · wizard · bug report · **busca cliente** | ✅ **Enviado** |
+| **P0/P1** | 502 · config · OCR · wizard · bug report · busca cliente | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
 
@@ -309,10 +312,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
-| Live | `77e5416` · `live/client-search-20260901` |
-| Rollback | `b9eb8d9` · `rollback/pre-client-search-20260901` · branch `main-backup-pre-client-search-20260901` |
-| Doc | `docs/ROLLBACK-CLIENT-SEARCH-20260901.md` |
-| Smoke | `/healthz` ok · `mobile.js?v=18` · `initClientPicker` · sem migrate |
+| Live | `0c42632` · `live/client-search-20260901` |
+| Rollback próximo pacote | `0c42632` · `rollback/pre-app-version-20260901` |
+| Doc | `docs/ROLLBACK-APP-VERSION-20260901.md` |
+| Smoke | `/healthz` · **V: 0.0.1** na top bar |
 
 ---
 

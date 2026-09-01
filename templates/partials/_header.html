@@ -2,7 +2,10 @@
 <header class="app-header" role="banner">
   <a class="app-header__brand" href="{% url 'dashboard:home' %}">
     <img class="app-header__logo" src="{% static 'img/logo-dr-header.png' %}" alt="DR Centro Automotivo" width="110" height="48">
-    <span class="app-header__name">{{ workshop_name }}</span>
+    <span class="app-header__brand-text">
+      <span class="app-header__name">{{ workshop_name }}</span>
+      {% include "partials/_app_version.html" %}
+    </span>
   </a>
 
   <nav class="app-header__nav" aria-label="Navegação principal">

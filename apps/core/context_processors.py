@@ -2,7 +2,10 @@ from django.conf import settings
 
 
 def workshop(request):
-    return {"workshop_name": settings.WORKSHOP_NAME}
+    return {
+        "workshop_name": settings.WORKSHOP_NAME,
+        "app_version": getattr(settings, "APP_VERSION", "0.0.1"),
+    }
 
 
 def whatsapp_auto_open(request):
