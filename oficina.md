@@ -296,11 +296,13 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 **Produção Live:** `main` @ **`0c42632`** (busca cliente) · https://drcentroautomotivo.com/
 
+**Git remoto:** `origin/main` @ **`888ae1b`** (feat versão `5c5f33c` + doc PACOTE PRONTO) — **push feito** · **deploy produção ainda NÃO** (top bar sem `V: 0.0.1` em 01/09 noite).
+
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | `5c5f33c` · smoke OK · sem migrate |
+| **P2** | Versão na top bar (`V: 0.0.1`) | **Pronto para envio à produção** | `5c5f33c` · **80 testes** (core/customers/mobile/bug) · smoke local OK · **sem migrate** · diff só CSS/templates/settings |
 
 | P | Item | Status |
 | - | ---- | ------ |
@@ -313,9 +315,21 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 | | |
 | - | - |
 | Live | `0c42632` · `live/client-search-20260901` |
+| Próximo live | `5c5f33c` · tag `live/app-version-20260901` |
 | Rollback próximo pacote | `0c42632` · `rollback/pre-app-version-20260901` |
 | Doc | `docs/ROLLBACK-APP-VERSION-20260901.md` |
-| Smoke | `/healthz` · **V: 0.0.1** na top bar |
+| Smoke pós-deploy | `/healthz` 200 · login · `/m/entrada/` · busca cliente **Usar** · **V: 0.0.1** desktop + `/m/` |
+
+### Roteiro próximo deploy (lojas abertas — só com pausa)
+
+1. Renan pausa vendas nas lojas.
+2. Mensagem: *«pode subir para produção»* + senha **`99738595`**.
+3. Deploy Render (`main` já no remoto) ou trigger manual se auto-deploy off.
+4. Smoke (2 min): `/healthz` · entrar · `/m/entrada/` placa + **Usar** cliente · versão visível.
+5. Se OK → marcar P2 **Enviado**, Live → `5c5f33c`, limpar PACOTE PRONTO.
+6. Se falhar → rollback tag `rollback/pre-app-version-20260901` (doc acima).
+
+**Risco deste pacote:** baixo — só exibe versão na top bar; **não mexe** em entrada, busca cliente, Kanban, bug report nem migrations.
 
 ---
 
