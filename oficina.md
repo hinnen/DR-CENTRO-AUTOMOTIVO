@@ -295,17 +295,17 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 01/09/2026
 
-**Produção Live:** verificar pós-deploy · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`04a9337`** · https://drcentroautomotivo.com/ · deploy autorizado 01/09 noite
 
-### PACOTE PRONTO (falta subir · senha 99738595)
-
-| P | Item | Status | Verificação |
-| - | ---- | ------ | ----------- |
-| **P0** | Fix busca cliente **mobile** (`name="q"`) | **Pronto para envio à produção** | 38 testes · HTTP smoke local (admin/9973) · nome + telefone → **Usar** |
-| **P2** | Versão top bar `V: 0.0.1` | **Pronto para envio à produção** | sem migrate |
+### PACOTE PRONTO
 
 | P | Item | Status |
 | - | ---- | ------ |
+| — | *(vazio — último pacote enviado)* | |
+
+| P | Item | Status |
+| - | ---- | ------ |
+| **P0** | Fix busca cliente mobile + versão `V: 0.0.1` | ✅ **Enviado** `04a9337` |
 | **P0/P1** | 502 · config · OCR · wizard · bug report · busca desktop | ✅ **Enviado** |
 | **P2** | Media S3/R2 · fotos desktop | **Pendente** |
 | **P3** | Financeiro · estoque · CRM · agendamento · fiscal | **Pendente** |
@@ -314,15 +314,10 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 | | |
 | - | - |
+| Live | `04a9337` · `live/mobile-search-fix-20260901` |
 | Rollback | `d888d80` · `rollback/pre-mobile-search-fix-20260901` |
 | Doc | `docs/ROLLBACK-MOBILE-SEARCH-FIX-20260901.md` |
-| Smoke pós-deploy | `/healthz` · `/m/entrada/novo/` → buscar nome/telefone → **Usar** → 2º carro mesmo cliente |
-
-### Deploy (lojas abertas — pausar antes)
-
-1. Pausar vendas · *«pode subir para produção»* + senha **`99738595`**
-2. Smoke 2 min (busca mobile + versão na top bar)
-3. OK → marcar **Enviado** · falhou → rollback `rollback/pre-mobile-search-fix-20260901`
+| Smoke | `/healthz` 200 · `mobile.css?v=19` · busca mobile `name="q"` |
 
 ---
 
