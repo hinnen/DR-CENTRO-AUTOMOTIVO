@@ -290,13 +290,14 @@ Ordem sugerida quando Renan pedir (não implementar sem confirmação):
 
 ## CHECKLIST ÚNICO · 31/08/2026
 
-**Produção Live:** `main` @ **`b601b9b`** (wizard + OCR Mercosul) · https://drcentroautomotivo.com/
+**Produção Live:** `main` @ **`b601b9b`** (wizard + OCR Mercosul) · https://drcentroautomotivo.com/  
+**Main local (aguarda deploy):** `7227c5e` — bug report 🐞
 
 ### PACOTE PRONTO (falta subir · senha 99738595)
 
 | P | Item | Status | Verificação |
 | - | ---- | ------ | ----------- |
-| **P1** | Botão reportar bug global (estilo Agro) | **Pronto para envio à produção** | migrate `core.0003` · pytest **7** · smoke local OK (login 9973 · API · lista · detalhe · `/m/`) |
+| **P1** | Botão reportar bug global (estilo Agro) | **Pronto para envio à produção** | `7227c5e` · migrate `core.0003` · pytest **7** · smoke local OK |
 
 | P | Item | Status |
 | - | ---- | ------ |
